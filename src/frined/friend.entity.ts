@@ -1,6 +1,5 @@
-import { BaseTimeEntity } from 'src/global/base-entity/base-time.entity';
+import { BaseTimeEntity } from 'global/base-entity/base-time.entity';
 import { Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { User } from '../user/user.entity';
 
 @Entity()
 export class Friend extends BaseTimeEntity {
