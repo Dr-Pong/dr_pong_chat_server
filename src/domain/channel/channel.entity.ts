@@ -5,6 +5,7 @@ import {
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
+  Unique,
 } from 'typeorm';
 import { User } from '../user/user.entity';
 
@@ -17,9 +18,16 @@ export class Channel extends BaseTimeEntity {
   @JoinColumn({ name: 'operator' })
   operator: User;
 
+  @Unique(['name'])
   @Column({ name: 'name', nullable: false })
   name: string;
 
   @Column({ name: 'max_headcount', nullable: false })
   maxHeadCount: number;
+
+  @Column({ name: 'password', nullable: true })
+  password: string;
+
+  @Column({ name: 'type', nullable: false })
+  type: string;
 }
