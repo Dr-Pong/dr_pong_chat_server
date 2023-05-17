@@ -23,4 +23,7 @@ export class DmLog extends BaseTimeEntity {
 
   @Column({ name: 'log', nullable: false })
   log: string;
+
+  @Column({ name: 'time', nullable: false })
+  time: Date;
 }
