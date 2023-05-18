@@ -1,4 +1,7 @@
 import { Module } from '@nestjs/common';
+import { ChannelService } from './channel.service';
 
-@Module({})
+@Module({
+  providers: [ChannelService],
+})
 export class ChannelModule {}
