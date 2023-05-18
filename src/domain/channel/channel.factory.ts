@@ -2,9 +2,12 @@ import { Injectable } from '@nestjs/common';
 import { ChannelModel } from './channel.model';
 import { UserModel } from '../user/user.model';
 import { ChannelType } from 'src/global/type/type.channel';
+import { UserFactory } from '../user/user.factory';
+import { map } from 'rxjs';
 
 @Injectable()
 export class ChannelFactory {
+  constructor(private readonly userFactory: UserFactory) {}
   channels: Map<string, ChannelModel> = new Map();
 
   findChannelByChannelName(name: string): ChannelModel {
@@ -15,6 +18,7 @@ export class ChannelFactory {
     if (!this.channels.get(channel.name)) {
       channel.ownerId = user.id;
       this.join(user, channel);
+      this.userFactory.joinChannel(user, channel);
       this.channels.set(channel.name, channel);
       return true;
     }
@@ -27,6 +31,7 @@ export class ChannelFactory {
       !channel.users.get(user.id)
     ) {
       channel.users.set(user.id, user);
+      this.userFactory.joinChannel(user, channel);
       return true;
     }
     return false;
@@ -35,6 +40,7 @@ export class ChannelFactory {
   leave(user: UserModel, channel: ChannelModel): boolean {
     if (channel.users.get(user.id)) {
       channel.users.delete(user.id);
+      this.userFactory.leaveChannel(user);
       return true;
     }
     return false;
@@ -92,11 +98,16 @@ export class ChannelFactory {
     return false;
   }
 
-  unsetAdmin(user: UserModel, channel: ChannelModel) {
-    channel.adminList.push(user.id);
+  unsetAdmin(user: UserModel, channel: ChannelModel): boolean {
+    if (channel.users.get(user.id)) {
+      channel.adminList.push(user.id);
+      return true;
+    }
+    return false;
   }
 
   delete(channel: ChannelModel): boolean {
+    channel.users.forEach((user) => this.userFactory.leaveChannel(user));
     return this.channels.delete(channel.name);
   }
 }
