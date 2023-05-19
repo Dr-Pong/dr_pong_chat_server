@@ -7,6 +7,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { User } from '../user/user.entity';
+import { FriendType } from 'src/global/type/type.friend.status';
 
 @Entity()
 export class Friend extends BaseTimeEntity {
@@ -22,5 +23,5 @@ export class Friend extends BaseTimeEntity {
   friend: User;
 
   @Column({ name: 'status', nullable: false })
-  status: string;
+  status: FriendType;
 }
