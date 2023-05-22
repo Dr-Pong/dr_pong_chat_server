@@ -1,5 +1,8 @@
-import { User } from 'src/domain/user/user.entity';
+export class user {
+  nickname: string;
+  imgUrl: string;
+}
 
 export class UserFriendsDto {
-  users: User[];
+  users: user[];
 }
