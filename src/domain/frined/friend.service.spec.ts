@@ -299,7 +299,7 @@ describe('FriendService', () => {
       });
 
       it('[Valid Case]이미 친구인 유저에게 친구요청 수락(백에서 씹기)', async () => {
-        await testData.createUserFriends();
+        await testData.createUserFriends(10);
         await testData.createUserRequesting();
         const userFriendsAcceptDto: PostUserFriendAcceptDto = {
           userId: testData.users[0].id,
