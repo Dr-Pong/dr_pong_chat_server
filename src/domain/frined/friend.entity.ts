@@ -8,11 +8,16 @@ import {
 } from 'typeorm';
 import { User } from '../user/user.entity';
 import { FriendType } from 'src/global/type/type.friend.status';
+import { DmLog } from '../dm-log/dm-log.entity';
 
 @Entity()
 export class Friend extends BaseTimeEntity {
   @PrimaryGeneratedColumn()
   id: number;
+
+  @ManyToOne(() => DmLog, { eager: true })
+  @Column({ name: 'room_id', nullable: false })
+  roomId: number;
 
   @ManyToOne(() => User, { eager: true })
   @JoinColumn({ name: 'user_id' })
@@ -24,4 +29,7 @@ export class Friend extends BaseTimeEntity {
 
   @Column({ name: 'status', nullable: false })
   status: FriendType;
+
+  @Column({ name: 'chat_on', nullable: false })
+  chatOn: boolean;
 }
