@@ -175,8 +175,19 @@ describe('FriendService', () => {
       });
     });
     describe('친구요청 목록', () => {
-      it('[Valid Case] 친구요청 목록', async () => {
-        await testData.createUser0Requesting();
+      it('[Valid Case] 친구요청이 없는경우 빈목록', async () => {
+        const userFriendsRequestDto: GetUserPendingFriendDto = {
+          userId: testData.users[0].id,
+        };
+
+        const FriendsList: UserPendingFriendsDto =
+          service.getUserPendingFriendsRequestByNickname(userFriendsRequestDto);
+
+        expect(FriendsList).toBeNull();
+      });
+
+      it('[Valid Case] 친구요청 목록이 정상적으로 반환 되는지 확인', async () => {
+        await testData.createUserRequesting();
 
         const userFriendsRequestDto: GetUserPendingFriendDto = {
           userId: testData.users[0].id,
@@ -203,11 +214,51 @@ describe('FriendService', () => {
         expect(FriendsList.friends[1]).toBe(testData.users[5]);
         expect(FriendsList.friends[2]).toBe(testData.users[6]);
       });
+
+      it('[Valid Case] 친구요청 목록이 알파벳순서로 정렬되는지 확인', async () => {
+        await testData.createUserRequesting();
+
+        const userFriendsRequestDto: GetUserPendingFriendDto = {
+          userId: testData.users[0].id,
+        };
+
+        const FriendsList: UserPendingFriendsDto =
+          service.getUserPendingFriendsRequestByNickname(userFriendsRequestDto);
+
+        expect(FriendsList).toHaveProperty('users');
+        expect(FriendsList.friends).toHaveProperty('nickname');
+        expect(FriendsList.friends).toHaveProperty('imgUrl');
+
+        expect(FriendsList.friends[0]).toBe(testData.users[1]);
+        expect(FriendsList.friends[1]).toBe(testData.users[2]);
+        expect(FriendsList.friends[8]).toBe(testData.users[9]);
+      });
     });
     describe('친구요청 수락', () => {
-      it('[Valid Case]친구요청 수락', async () => {
-        await testData.createUser0Requesting();
+      it('[Valid Case]유효한 친구요청 수락', async () => {
+        await testData.createUserRequesting();
 
+        const userFriendsAcceptDto: PostUserFriendAcceptDto = {
+          userId: testData.users[0].id,
+          friendId: testData.users[1].id,
+        };
+
+        await service.postUserFriendsAcceptByNickname(userFriendsAcceptDto);
+
+        const friendRequest: Friend = await friendRepository.findOne({
+          where: {
+            user: { id: testData.users[0].id },
+            friend: { id: testData.users[1].id },
+            status: Not(FRIENDSTATUS_DELETED),
+          },
+        });
+
+        expect(friendRequest.status).toBe(FRIENDSTATUS_FRIEND);
+      });
+
+      it('[Valid Case]이미 친구인 유저에게 친구요청 수락(백에서 씹기)', async () => {
+        await testData.createUserFriends();
+        await testData.createUserRequesting();
         const userFriendsAcceptDto: PostUserFriendAcceptDto = {
           userId: testData.users[0].id,
           friendId: testData.users[1].id,
@@ -228,7 +279,29 @@ describe('FriendService', () => {
     });
     describe('친구요청 거절', () => {
       it('[Valid Case]친구요청 거절', async () => {
-        await testData.createUser0Requesting();
+        await testData.createUserRequesting();
+
+        const userFriendsAcceptDto: DeleteUserFriendRejectDto = {
+          userId: testData.users[0].id,
+          friendId: testData.users[1].id,
+        };
+
+        await service.postUserFriendsRejectByNickname(userFriendsAcceptDto);
+
+        const friendRequest: Friend = await friendRepository.findOne({
+          where: {
+            user: { id: testData.users[0].id },
+            friend: { id: testData.users[1].id },
+            status: Not(FRIENDSTATUS_DELETED),
+          },
+        });
+
+        expect(friendRequest).toBeNull();
+      });
+
+      it('[Valid Case] 이미 친구인 사용자에게 친구요청 거절(백에서 씹기)', async () => {
+        await testData.createUserFriends();
+        await testData.createUserRequesting();
 
         const userFriendsAcceptDto: DeleteUserFriendRejectDto = {
           userId: testData.users[0].id,
@@ -263,6 +336,25 @@ describe('FriendService', () => {
           where: {
             user: { id: testData.users[0].id },
             friend: { id: testData.users[1].id },
+            status: Not(FRIENDSTATUS_DELETED),
+          },
+        });
+
+        expect(friendRequest).toBeNull();
+      });
+
+      it('[Valid Case]친구가 아닌 사용자 삭제(백에서 씹기)', async () => {
+        const userFriendsAcceptDto: DeleteUserFriendDto = {
+          userId: testData.users[0].id,
+          friendId: testData.users[3].id,
+        };
+
+        await service.deleteUserFriendsByNickname(userFriendsAcceptDto);
+
+        const friendRequest: Friend = await friendRepository.findOne({
+          where: {
+            user: { id: testData.users[0].id },
+            friend: { id: testData.users[3].id },
             status: Not(FRIENDSTATUS_DELETED),
           },
         });
