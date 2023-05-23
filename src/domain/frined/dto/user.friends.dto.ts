@@ -1,8 +1,8 @@
-export class user {
+export class friend {
   nickname: string;
   imgUrl: string;
 }
 
 export class UserFriendsDto {
-  users: user[];
+  friends: friend[];
 }

@@ -7,20 +7,20 @@ import { addTransactionalDataSource } from 'typeorm-transactional';
 import { FrinedModule } from './frined.module';
 import { TestModule } from './test/test.module';
 import { Test, TestingModule } from '@nestjs/testing';
-import { GetUserFriendsDto } from './dto/get.user.friends.dto';
+import { GetUserFriendDto as GetUserFriendDto } from './dto/get.user.friend.dto';
 import { UserFriendsDto } from './dto/user.friends.dto';
-import { PostUserFriendsRequesttDto as PostUserFriendsRequestDto } from './dto/post.user.friends.request.dto';
+import { PostUserFriendRequesttDto as PostUserFriendsRequestDto } from './dto/post.user.friend.request.dto';
 import { Friend } from './friend.entity';
 import {
   FRIENDSTATUS_DELETED,
   FRIENDSTATUS_FRIEND,
   FRIENDSTATUS_REQUESTING,
 } from 'src/global/type/type.friend.status';
-import { GetUserPendingFriendsDto } from './dto/get.user.peding.friends.dto';
+import { GetUserPendingFriendDto } from './dto/get.user.peding.friend.dto';
 import { UserPendingFriendsDto } from './dto/user.pending.friends.dto';
-import { PostUserFriendsAcceptDto } from './dto/post.user.friends.accept.dto';
-import { DeleteUserFriendsRejectDto } from './dto/delete.user.friends.reject.dto';
-import { DeleteUserFriendsDto } from './dto/delete.user.friends..dto';
+import { PostUserFriendAcceptDto } from './dto/post.user.friend.accept.dto';
+import { DeleteUserFriendDto } from './dto/delete.user.friend.dto';
+import { DeleteUserFriendRejectDto } from './dto/delete.user.friend.reject.dto';
 
 describe('FriendService', () => {
   let service: FriendService;
@@ -75,7 +75,7 @@ describe('FriendService', () => {
     describe('친구목록 조회', () => {
       it('[Valid Case]친구목록 조회', async () => {
         await testData.createUser0Friends();
-        const userFriendsDto: GetUserFriendsDto = {
+        const userFriendsDto: GetUserFriendDto = {
           userId: testData.users[0].id,
         };
 
@@ -91,22 +91,22 @@ describe('FriendService', () => {
         });
 
         expect(FriendsList).toHaveProperty('users');
-        expect(FriendsList.users).toHaveProperty('nickname');
-        expect(FriendsList.users).toHaveProperty('imgUrl');
+        expect(FriendsList.friends).toHaveProperty('nickname');
+        expect(FriendsList.friends).toHaveProperty('imgUrl');
 
         expect(friendRequest.status).toBe(FRIENDSTATUS_FRIEND);
 
-        expect(FriendsList.users.length).toBe(9);
-        expect(FriendsList.users[0]).toBe(testData.users[1]);
-        expect(FriendsList.users[1]).toBe(testData.users[2]);
-        expect(FriendsList.users[8]).toBe(testData.users[9]);
+        expect(FriendsList.friends.length).toBe(9);
+        expect(FriendsList.friends[0]).toBe(testData.users[1]);
+        expect(FriendsList.friends[1]).toBe(testData.users[2]);
+        expect(FriendsList.friends[8]).toBe(testData.users[9]);
       });
     });
     describe('친구요청', () => {
       it('[Valid Case]친구요청', async () => {
         const userFriendsRequestDto: PostUserFriendsRequestDto = {
           userId: testData.users[0].id,
-          friendsId: testData.users[1].id,
+          friendId: testData.users[1].id,
         };
 
         await service.postUserFriendsRequestByNickname(userFriendsRequestDto);
@@ -126,7 +126,7 @@ describe('FriendService', () => {
       it('[Valid Case] 친구요청 목록', async () => {
         await testData.createUser0Requesting();
 
-        const userFriendsRequestDto: GetUserPendingFriendsDto = {
+        const userFriendsRequestDto: GetUserPendingFriendDto = {
           userId: testData.users[0].id,
         };
 
@@ -142,23 +142,23 @@ describe('FriendService', () => {
         });
 
         expect(FriendsList).toHaveProperty('users');
-        expect(FriendsList.users).toHaveProperty('nickname');
-        expect(FriendsList.users).toHaveProperty('imgUrl');
+        expect(FriendsList.friends).toHaveProperty('nickname');
+        expect(FriendsList.friends).toHaveProperty('imgUrl');
 
         expect(friendRequest.status).toBe(FRIENDSTATUS_REQUESTING);
 
-        expect(FriendsList.users[0]).toBe(testData.users[4]);
-        expect(FriendsList.users[1]).toBe(testData.users[5]);
-        expect(FriendsList.users[2]).toBe(testData.users[6]);
+        expect(FriendsList.friends[0]).toBe(testData.users[4]);
+        expect(FriendsList.friends[1]).toBe(testData.users[5]);
+        expect(FriendsList.friends[2]).toBe(testData.users[6]);
       });
     });
     describe('친구요청 수락', () => {
       it('[Valid Case]친구요청 수락', async () => {
         await testData.createUser0Requesting();
 
-        const userFriendsAcceptDto: PostUserFriendsAcceptDto = {
+        const userFriendsAcceptDto: PostUserFriendAcceptDto = {
           userId: testData.users[0].id,
-          friendsId: testData.users[1].id,
+          friendId: testData.users[1].id,
         };
 
         await service.postUserFriendsAcceptByNickname(userFriendsAcceptDto);
@@ -178,9 +178,9 @@ describe('FriendService', () => {
       it('[Valid Case]친구요청 거절', async () => {
         await testData.createUser0Requesting();
 
-        const userFriendsAcceptDto: DeleteUserFriendsRejectDto = {
+        const userFriendsAcceptDto: DeleteUserFriendRejectDto = {
           userId: testData.users[0].id,
-          friendsId: testData.users[1].id,
+          friendId: testData.users[1].id,
         };
 
         await service.postUserFriendsRejectByNickname(userFriendsAcceptDto);
@@ -200,9 +200,9 @@ describe('FriendService', () => {
       it('[Valid Case]친구삭제', async () => {
         await testData.createUser0Friends();
 
-        const userFriendsAcceptDto: DeleteUserFriendsDto = {
+        const userFriendsAcceptDto: DeleteUserFriendDto = {
           userId: testData.users[0].id,
-          friendsId: testData.users[1].id,
+          friendId: testData.users[1].id,
         };
 
         await service.deleteUserFriendsByNickname(userFriendsAcceptDto);
