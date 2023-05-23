@@ -64,7 +64,7 @@ export class TestService {
     this.users.push(user);
   }
 
-  async createUser0Requesting(): Promise<Friend[]> {
+  async createUserRequesting(): Promise<Friend[]> {
     const index: number = this.friends.length;
     for (let i = 1; i < 10; i++) {
       const friend = await this.friendRepository.save({
@@ -78,23 +78,39 @@ export class TestService {
     }
   }
 
+  generateRoomId(nickname1: string, nickname2: string): string {
+    const sortedNicknames = [nickname1, nickname2].sort((a, b) =>
+      a.localeCompare(b),
+    );
+    return sortedNicknames.join('+');
+  }
+
   async createUserFriends(): Promise<Friend[]> {
-    const index: number = this.friends.length;
     for (let i = 1; i < 10; i++) {
+      const roomId = this.generateRoomId(
+        this.users[0].nickname,
+        this.users[i].nickname,
+      );
       const friend = await this.friendRepository.save({
-        id: index + i,
+        roomId: roomId,
         user: this.users[0],
         friend: this.users[i],
         status: FRIENDSTATUS_FRIEND,
+        chatOn: false,
       });
       this.friends.push(friend);
     }
     for (let i = 1; i < 10; i++) {
+      const roomId = this.generateRoomId(
+        this.users[i].nickname,
+        this.users[0].nickname,
+      );
       const friend = await this.friendRepository.save({
-        id: i,
+        roomId: roomId,
         user: this.users[i],
         friend: this.users[0],
         status: FRIENDSTATUS_FRIEND,
+        chatOn: false,
       });
       this.friends.push(friend);
     }
