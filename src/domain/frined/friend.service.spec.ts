@@ -74,7 +74,7 @@ describe('FriendService', () => {
   describe('친구관련 Service Logic', () => {
     describe('친구목록 조회', () => {
       it('[Valid Case]친구목록 조회', async () => {
-        await testData.createUserFriends();
+        await testData.createUserFriends(10);
         const userFriendsDto: GetUserFriendDto = {
           userId: testData.users[0].id,
         };
@@ -118,7 +118,7 @@ describe('FriendService', () => {
       });
 
       it('[Valid Case]반환된 친구 목록이 알파벳순서로 정렬되는지 확인', async () => {
-        await testData.createUserFriends();
+        await testData.createUserFriends(10);
 
         const userFriendsDto: GetUserFriendDto = {
           userId: testData.users[0].id,
