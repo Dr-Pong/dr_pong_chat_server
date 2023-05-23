@@ -28,6 +28,6 @@ export class Friend extends BaseTimeEntity {
   @Column({ name: 'status', nullable: false })
   status: FriendType;
 
-  @Column({ name: 'chat_on', nullable: false })
+  @Column({ name: 'is_chat_on', nullable: false })
   isChatOn: boolean;
 }
