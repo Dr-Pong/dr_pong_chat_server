@@ -365,7 +365,7 @@ describe('FriendService', () => {
     });
     describe('친구 삭제', () => {
       it('[Valid Case]친구삭제', async () => {
-        await testData.createUserFriends();
+        await testData.createUserFriends(10);
 
         const userFriendsAcceptDto: DeleteUserFriendDto = {
           userId: testData.users[0].id,
