@@ -9,7 +9,7 @@ import { TestModule } from './test/test.module';
 import { Test, TestingModule } from '@nestjs/testing';
 import { GetUserFriendDto as GetUserFriendDto } from './dto/get.user.friend.dto';
 import { UserFriendsDto } from './dto/user.friends.dto';
-import { PostUserFriendRequesttDto as PostUserFriendsRequestDto } from './dto/post.user.friend.request.dto';
+import { PostUserFriendRequestDto as PostUserFriendsRequestDto } from './dto/post.user.friend.request.dto';
 import { Friend } from './friend.entity';
 import {
   FRIENDSTATUS_DELETED,
@@ -21,7 +21,6 @@ import { UserPendingFriendsDto } from './dto/user.pending.friends.dto';
 import { PostUserFriendAcceptDto } from './dto/post.user.friend.accept.dto';
 import { DeleteUserFriendDto } from './dto/delete.user.friend.dto';
 import { DeleteUserFriendRejectDto } from './dto/delete.user.friend.reject.dto';
-import { FriendChatManager } from 'src/global/utils/generate.room.id';
 
 describe('FriendService', () => {
   let service: FriendService;
@@ -110,12 +109,12 @@ describe('FriendService', () => {
           userId: testData.users[0].id,
         };
 
-        const FriendsList: UserFriendsDto =
+        const friendsList: UserFriendsDto =
           service.getUserFriendsByNickname(userFriendsDto);
 
-        expect(FriendsList).toHaveProperty('users');
-        expect(FriendsList.friends.length).toBe(0);
-        expect(FriendsList.friends).toBe([]);
+        expect(friendsList).toHaveProperty('users');
+        expect(friendsList.friends.length).toBe(0);
+        expect(friendsList.friends).toBe([]);
       });
 
       it('[Valid Case]반환된 친구 목록이 알파벳순서로 정렬되는지 확인', async () => {
@@ -125,15 +124,15 @@ describe('FriendService', () => {
           userId: testData.users[0].id,
         };
 
-        const FriendsList: UserFriendsDto =
+        const friendsList: UserFriendsDto =
           service.getUserFriendsByNickname(userFriendsDto);
 
-        expect(FriendsList).toBeNull();
+        expect(friendsList).toBeNull();
 
-        expect(FriendsList.friends.length).toBe(9);
-        expect(FriendsList.friends[0]).toBe(testData.users[1]);
-        expect(FriendsList.friends[1]).toBe(testData.users[2]);
-        expect(FriendsList.friends[8]).toBe(testData.users[9]);
+        expect(friendsList.friends.length).toBe(9);
+        expect(friendsList.friends[0]).toBe(testData.users[1]);
+        expect(friendsList.friends[1]).toBe(testData.users[2]);
+        expect(friendsList.friends[8]).toBe(testData.users[9]);
       });
     });
     describe('친구요청', () => {
@@ -212,9 +211,15 @@ describe('FriendService', () => {
 
         expect(friendRequest.status).toBe(FRIENDSTATUS_REQUESTING);
 
-        expect(FriendsList.friends[0]).toBe(testData.users[4]);
-        expect(FriendsList.friends[1]).toBe(testData.users[5]);
-        expect(FriendsList.friends[2]).toBe(testData.users[6]);
+        // 리스트 반환시 친구요청 상태인지 확인
+        expect(FriendsList.friends[0].nickname).toBe(
+          testData.users[1].nickname,
+        );
+        expect(FriendsList.friends[0].imgUrl).toBe(testData.users[1].image);
+        expect(FriendsList.friends[1].nickname).toBe(
+          testData.users[2].nickname,
+        );
+        expect(FriendsList.friends[1].imgUrl).toBe(testData.users[2].image);
       });
 
       it('[Valid Case] 친구요청 목록이 알파벳순서로 정렬되는지 확인', async () => {
@@ -231,9 +236,22 @@ describe('FriendService', () => {
         expect(FriendsList.friends).toHaveProperty('nickname');
         expect(FriendsList.friends).toHaveProperty('imgUrl');
 
-        expect(FriendsList.friends[0]).toBe(testData.users[1]);
-        expect(FriendsList.friends[1]).toBe(testData.users[2]);
-        expect(FriendsList.friends[8]).toBe(testData.users[9]);
+        expect(Number(FriendsList.friends[0].nickname)).toBeGreaterThan(
+          Number(FriendsList.friends[1].nickname),
+        );
+        expect(Number(FriendsList.friends[1].nickname)).toBeGreaterThan(
+          Number(FriendsList.friends[2].nickname),
+        );
+
+        // 리스트 반환시 친구요청 상태인지 확인
+        expect(FriendsList.friends[0].nickname).toBe(
+          testData.users[1].nickname,
+        );
+        expect(FriendsList.friends[0].imgUrl).toBe(testData.users[1].image);
+        expect(FriendsList.friends[1].nickname).toBe(
+          testData.users[2].nickname,
+        );
+        expect(FriendsList.friends[1].imgUrl).toBe(testData.users[2].image);
       });
     });
     describe('친구요청 수락', () => {
@@ -251,6 +269,28 @@ describe('FriendService', () => {
           where: {
             user: { id: testData.users[0].id },
             friend: { id: testData.users[1].id },
+            status: Not(FRIENDSTATUS_DELETED),
+          },
+        });
+
+        expect(friendRequest.status).toBe(FRIENDSTATUS_FRIEND);
+      });
+
+      it('[Valid Case] 양쪽에서 친구 요청 보낸경우', async () => {
+        await testData.createUserRequesting();
+        await testData.createAnotherUsersRequesting();
+
+        const userFriendsAcceptDto: PostUserFriendAcceptDto = {
+          userId: testData.users[0].id,
+          friendId: testData.users[1].id,
+        };
+
+        await service.postUserFriendsAcceptByNickname(userFriendsAcceptDto);
+
+        const friendRequest: Friend = await friendRepository.findOne({
+          where: {
+            user: { id: testData.users[1].id },
+            friend: { id: testData.users[0].id },
             status: Not(FRIENDSTATUS_DELETED),
           },
         });
