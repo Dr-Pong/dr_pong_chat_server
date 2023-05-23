@@ -8,7 +8,6 @@ import {
 } from 'typeorm';
 import { User } from '../user/user.entity';
 import { FriendType } from 'src/global/type/type.friend.status';
-import { DmLog } from '../dm-log/dm-log.entity';
 
 @Entity()
 export class Friend extends BaseTimeEntity {
