@@ -113,7 +113,9 @@ describe('FriendService', () => {
         const FriendsList: UserFriendsDto =
           service.getUserFriendsByNickname(userFriendsDto);
 
-        expect(FriendsList).toBeNull();
+        expect(FriendsList).toHaveProperty('users');
+        expect(FriendsList.friends.length).toBe(0);
+        expect(FriendsList.friends).toBe([]);
       });
 
       it('[Valid Case]반환된 친구 목록이 알파벳순서로 정렬되는지 확인', async () => {
