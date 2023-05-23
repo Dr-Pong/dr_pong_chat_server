@@ -29,5 +29,5 @@ export class Friend extends BaseTimeEntity {
   status: FriendType;
 
   @Column({ name: 'chat_on', nullable: false })
-  chatOn: boolean;
+  isChatOn: boolean;
 }
