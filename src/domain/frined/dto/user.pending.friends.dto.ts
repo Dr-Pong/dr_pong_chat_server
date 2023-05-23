@@ -1,5 +1,5 @@
-import { friend } from './user.friends.dto';
+import { FriendDto } from './user.friends.dto';
 
 export class UserPendingFriendsDto {
-  friends: friend[];
+  friends: FriendDto[];
 }
