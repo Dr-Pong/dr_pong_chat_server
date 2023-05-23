@@ -17,7 +17,7 @@ export class Friend extends BaseTimeEntity {
 
   @ManyToOne(() => DmLog, { eager: true })
   @Column({ name: 'room_id', nullable: false })
-  roomId: number;
+  roomId: string;
 
   @ManyToOne(() => User, { eager: true })
   @JoinColumn({ name: 'user_id' })
