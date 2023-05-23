@@ -15,7 +15,6 @@ export class Friend extends BaseTimeEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => DmLog, { eager: true })
   @Column({ name: 'room_id', nullable: false })
   roomId: string;
 
