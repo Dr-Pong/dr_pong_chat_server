@@ -79,39 +79,47 @@ export class TestService {
     }
   }
 
+  async createAnotherUsersRequesting(): Promise<Friend[]> {
+    const index: number = this.friends.length;
+    for (let i = 1; i < 10; i++) {
+      const friend = await this.friendRepository.save({
+        id: index + i,
+        user: this.users[i],
+        friend: this.users[0],
+        status: FRIENDSTATUS_REQUESTING,
+      });
+      this.friends.push(friend);
+      return this.friends;
+    }
+  }
+
   async createUserFriends(): Promise<Friend[]> {
     for (let i = 1; i < 10; i++) {
       const roomId = FriendChatManager.generateRoomId(
         this.users[0].id.toString(),
         this.users[i].id.toString(),
       );
-      const friend = await this.friendRepository.save({
+      const friend1 = await this.friendRepository.save({
         roomId: roomId,
         user: this.users[0],
         friend: this.users[i],
         status: FRIENDSTATUS_FRIEND,
         chatOn: false,
       });
-      this.friends.push(friend);
-    }
-    for (let i = 1; i < 10; i++) {
-      const roomId = FriendChatManager.generateRoomId(
-        this.users[i].id.toString(),
-        this.users[0].id.toString(),
-      );
-      const friend = await this.friendRepository.save({
+      this.friends.push(friend1);
+      const friend2 = await this.friendRepository.save({
         roomId: roomId,
         user: this.users[i],
         friend: this.users[0],
         status: FRIENDSTATUS_FRIEND,
         chatOn: false,
       });
-      this.friends.push(friend);
+      this.friends.push(friend2);
     }
     return this.friends;
   }
 
-  async createUser0Blocks(): Promise<Block[]> {
+  async createUserBlocks(): Promise<Block[]> {
     const index: number = this.blocks.length;
     for (let i = 1; i < 10; i++) {
       const block = await this.blockRepository.save({
