@@ -3,8 +3,5 @@ import { ProfileImageRepository } from '../profile-image/profile-image.repositor
 
 @Injectable()
 export class FriendService {
-  constructor(
-    // private userRepository: UserRepository,
-    private profileImageRepository: ProfileImageRepository,
-  ) {}
+  constructor() {}
 }
