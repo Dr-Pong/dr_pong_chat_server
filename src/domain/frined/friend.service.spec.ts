@@ -289,6 +289,13 @@ describe('FriendService', () => {
 
         const friendRequest: Friend = await friendRepository.findOne({
           where: {
+            user: { id: testData.users[0].id },
+            friend: { id: testData.users[1].id },
+            status: Not(FRIENDSTATUS_DELETED),
+          },
+        });
+        const anotherFriendRequest: Friend = await friendRepository.findOne({
+          where: {
             user: { id: testData.users[1].id },
             friend: { id: testData.users[0].id },
             status: Not(FRIENDSTATUS_DELETED),
@@ -296,11 +303,11 @@ describe('FriendService', () => {
         });
 
         expect(friendRequest.status).toBe(FRIENDSTATUS_FRIEND);
+        expect(anotherFriendRequest.status).toBe(FRIENDSTATUS_FRIEND);
       });
 
       it('[Valid Case]이미 친구인 유저에게 친구요청 수락(백에서 씹기)', async () => {
         await testData.createUserFriends(10);
-        await testData.createUserRequesting();
         const userFriendsAcceptDto: PostUserFriendAcceptDto = {
           userId: testData.users[0].id,
           friendId: testData.users[1].id,
