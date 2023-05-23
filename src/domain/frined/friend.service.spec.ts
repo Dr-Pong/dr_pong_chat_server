@@ -21,6 +21,7 @@ import { UserPendingFriendsDto } from './dto/user.pending.friends.dto';
 import { PostUserFriendAcceptDto } from './dto/post.user.friend.accept.dto';
 import { DeleteUserFriendDto } from './dto/delete.user.friend.dto';
 import { DeleteUserFriendRejectDto } from './dto/delete.user.friend.reject.dto';
+import { FriendChatManager } from 'src/global/utils/generate.room.id';
 
 describe('FriendService', () => {
   let service: FriendService;
@@ -74,7 +75,7 @@ describe('FriendService', () => {
   describe('친구관련 Service Logic', () => {
     describe('친구목록 조회', () => {
       it('[Valid Case]친구목록 조회', async () => {
-        await testData.createUser0Friends();
+        await testData.createUserFriends();
         const userFriendsDto: GetUserFriendDto = {
           userId: testData.users[0].id,
         };
@@ -82,19 +83,50 @@ describe('FriendService', () => {
         const FriendsList: UserFriendsDto =
           service.getUserFriendsByNickname(userFriendsDto);
 
-        const friendRequest: Friend = await friendRepository.findOne({
+        const friendRequest: Friend[] = await friendRepository.find({
           where: {
             user: { id: testData.users[0].id },
-            friend: { id: testData.users[1].id },
             status: Not(FRIENDSTATUS_DELETED),
           },
         });
 
-        expect(FriendsList).toHaveProperty('users');
-        expect(FriendsList.friends).toHaveProperty('nickname');
-        expect(FriendsList.friends).toHaveProperty('imgUrl');
+        expect(FriendsList).toBeNull();
 
-        expect(friendRequest.status).toBe(FRIENDSTATUS_FRIEND);
+        expect(friendRequest[0].status).toBe(FRIENDSTATUS_FRIEND);
+        expect(friendRequest[1].status).toBe(FRIENDSTATUS_FRIEND);
+        expect(friendRequest[2].status).toBe(FRIENDSTATUS_FRIEND);
+        expect(friendRequest[3].status).toBe(FRIENDSTATUS_FRIEND);
+        expect(friendRequest[4].status).toBe(FRIENDSTATUS_FRIEND);
+        expect(friendRequest[8].status).toBe(FRIENDSTATUS_FRIEND);
+
+        expect(FriendsList.friends.length).toBe(9);
+        expect(FriendsList.friends[0]).toBe(testData.users[1]);
+        expect(FriendsList.friends[1]).toBe(testData.users[2]);
+        expect(FriendsList.friends[8]).toBe(testData.users[9]);
+      });
+
+      it('[Valid Case]친구가 없는경우', async () => {
+        const userFriendsDto: GetUserFriendDto = {
+          userId: testData.users[0].id,
+        };
+
+        const FriendsList: UserFriendsDto =
+          service.getUserFriendsByNickname(userFriendsDto);
+
+        expect(FriendsList).toBeNull();
+      });
+
+      it('[Valid Case]반환된 친구 목록이 알파벳순서로 정렬되는지 확인', async () => {
+        await testData.createUserFriends();
+
+        const userFriendsDto: GetUserFriendDto = {
+          userId: testData.users[0].id,
+        };
+
+        const FriendsList: UserFriendsDto =
+          service.getUserFriendsByNickname(userFriendsDto);
+
+        expect(FriendsList).toBeNull();
 
         expect(FriendsList.friends.length).toBe(9);
         expect(FriendsList.friends[0]).toBe(testData.users[1]);
@@ -198,7 +230,7 @@ describe('FriendService', () => {
     });
     describe('친구 삭제', () => {
       it('[Valid Case]친구삭제', async () => {
-        await testData.createUser0Friends();
+        await testData.createUserFriends();
 
         const userFriendsAcceptDto: DeleteUserFriendDto = {
           userId: testData.users[0].id,
