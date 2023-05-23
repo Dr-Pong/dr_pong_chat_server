@@ -36,7 +36,8 @@ export class TestService {
   }
 
   async createProfileImages(): Promise<void> {
-    for (let i = 0; i < 10; i++) {
+    const index: number = this.users.length;
+    for (let i = 0; i < index; i++) {
       const profileImage = await this.profileImageRepository.save({
         url: 'profileImage' + i.toString(),
       });
@@ -44,8 +45,9 @@ export class TestService {
     }
   }
 
-  async createBasicUsers(): Promise<void> {
-    for (let i = 0; i < 10; i++) {
+  async createBasicUsers(person: number): Promise<void> {
+    const index: number = person;
+    for (let i = 0; i < index; i++) {
       const user = await this.userRepository.save({
         id: i,
         nickname: 'user' + i.toString(),
@@ -66,8 +68,8 @@ export class TestService {
   }
 
   async createUserRequesting(): Promise<Friend[]> {
-    const index: number = this.friends.length;
-    for (let i = 1; i < 10; i++) {
+    const index: number = this.users.length;
+    for (let i = 1; i < index; i++) {
       const friend = await this.friendRepository.save({
         id: index + i,
         user: this.users[0],
@@ -80,8 +82,8 @@ export class TestService {
   }
 
   async createAnotherUsersRequesting(): Promise<Friend[]> {
-    const index: number = this.friends.length;
-    for (let i = 1; i < 10; i++) {
+    const index: number = this.users.length;
+    for (let i = 1; i < index; i++) {
       const friend = await this.friendRepository.save({
         id: index + i,
         user: this.users[i],
@@ -93,8 +95,9 @@ export class TestService {
     }
   }
 
-  async createUserFriends(): Promise<Friend[]> {
-    for (let i = 1; i < 10; i++) {
+  async createUserFriends(person: number): Promise<void> {
+    const index: number = person;
+    for (let i = 1; i < index; i++) {
       const roomId = FriendChatManager.generateRoomId(
         this.users[0].id.toString(),
         this.users[i].id.toString(),
@@ -116,19 +119,17 @@ export class TestService {
       });
       this.friends.push(friend2);
     }
-    return this.friends;
   }
 
-  async createUserBlocks(): Promise<Block[]> {
+  async createUserBlocks(): Promise<void> {
     const index: number = this.blocks.length;
-    for (let i = 1; i < 10; i++) {
+    for (let i = 1; i < index; i++) {
       const block = await this.blockRepository.save({
         id: index + i,
         user: this.users[0],
         block: this.users[i],
       });
       this.blocks.push(block);
-      return this.blocks;
     }
   }
 }
