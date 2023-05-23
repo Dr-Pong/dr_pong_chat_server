@@ -16,14 +16,11 @@ import {
   FRIENDSTATUS_FRIEND,
   FRIENDSTATUS_REQUESTING,
 } from 'src/global/type/type.friend.status';
-import { BadRequestException } from '@nestjs/common';
 import { GetUserPendingFriendsDto } from './dto/get.user.peding.friends.dto';
 import { UserPendingFriendsDto } from './dto/user.pending.friends.dto';
 import { PostUserFriendsAcceptDto } from './dto/post.user.friends.accept.dto';
-import {
-  DeleteUserFriendsRejectDto,
-  PostUserFriendsRejectDto,
-} from './dto/delete.user.friends.reject.dto';
+import { DeleteUserFriendsRejectDto } from './dto/delete.user.friends.reject.dto';
+import { DeleteUserFriendsDto } from './dto/delete.user.friends..dto';
 
 describe('FriendService', () => {
   let service: FriendService;
@@ -282,7 +279,7 @@ describe('FriendService', () => {
       it('[Valid Case]친구삭제', async () => {
         await testData.createUser0Friends();
 
-        const userFriendsAcceptDto: DeleteUserFriendDto = {
+        const userFriendsAcceptDto: DeleteUserFriendsDto = {
           userId: testData.users[0].id,
           friendsId: testData.users[1].id,
         };
