@@ -78,7 +78,7 @@ export class TestService {
     }
   }
 
-  async createUser0Friends(): Promise<Friend[]> {
+  async createUserFriends(): Promise<Friend[]> {
     const index: number = this.friends.length;
     for (let i = 1; i < 10; i++) {
       const friend = await this.friendRepository.save({
@@ -88,8 +88,17 @@ export class TestService {
         status: FRIENDSTATUS_FRIEND,
       });
       this.friends.push(friend);
-      return this.friends;
     }
+    for (let i = 1; i < 10; i++) {
+      const friend = await this.friendRepository.save({
+        id: i,
+        user: this.users[i],
+        friend: this.users[0],
+        status: FRIENDSTATUS_FRIEND,
+      });
+      this.friends.push(friend);
+    }
+    return this.friends;
   }
 
   async createUser0Blocks(): Promise<Block[]> {
