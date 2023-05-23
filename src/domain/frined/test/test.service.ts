@@ -9,6 +9,7 @@ import {
   FRIENDSTATUS_FRIEND,
   FRIENDSTATUS_REQUESTING,
 } from 'src/global/type/type.friend.status';
+import { FriendChatManager } from 'src/global/utils/generate.room.id';
 
 @Injectable()
 export class TestService {
@@ -78,18 +79,11 @@ export class TestService {
     }
   }
 
-  generateRoomId(nickname1: string, nickname2: string): string {
-    const sortedNicknames = [nickname1, nickname2].sort((a, b) =>
-      a.localeCompare(b),
-    );
-    return sortedNicknames.join('+');
-  }
-
   async createUserFriends(): Promise<Friend[]> {
     for (let i = 1; i < 10; i++) {
-      const roomId = this.generateRoomId(
-        this.users[0].nickname,
-        this.users[i].nickname,
+      const roomId = FriendChatManager.generateRoomId(
+        this.users[0].id.toString(),
+        this.users[i].id.toString(),
       );
       const friend = await this.friendRepository.save({
         roomId: roomId,
@@ -101,9 +95,9 @@ export class TestService {
       this.friends.push(friend);
     }
     for (let i = 1; i < 10; i++) {
-      const roomId = this.generateRoomId(
-        this.users[i].nickname,
-        this.users[0].nickname,
+      const roomId = FriendChatManager.generateRoomId(
+        this.users[i].id.toString(),
+        this.users[0].id.toString(),
       );
       const friend = await this.friendRepository.save({
         roomId: roomId,
