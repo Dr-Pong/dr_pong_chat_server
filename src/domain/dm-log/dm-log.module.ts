@@ -6,8 +6,8 @@ import { DmLogRepository } from './dm-log.repository';
 
 @Module({
   imports: [TypeOrmModule.forFeature([DmLog])],
-  providers: [DmLogService],
-  exports: [DmLogService, DmLogRepository],
+  providers: [DmLogService, DmLogRepository],
+  exports: [DmLogService],
   controllers: [],
 })
 export class DmLogModule {}
