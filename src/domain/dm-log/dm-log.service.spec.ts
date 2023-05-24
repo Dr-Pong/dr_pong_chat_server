@@ -8,6 +8,8 @@ import { typeORMConfig } from 'src/configs/typeorm.config';
 import { addTransactionalDataSource } from 'typeorm-transactional';
 import { DmLogModule } from './dm-log.module';
 import { TestModule } from './test/test.module';
+import { PostDmLogDto } from './dto/post.dm-log.dto';
+import { FriendChatManager } from 'src/global/utils/generate.room.id';
 
 describe('DmLogService', () => {
   let service: DmLogService;
@@ -65,8 +67,61 @@ describe('DmLogService', () => {
       it('[Valid Case] 비어있는 대화 내역 조회', async () => {});
     });
     describe('DM 전송', () => {
-      it('[Valid Case] DM 전송', async () => {});
-      it('[Valid Case] 친구가 아닌 유저에게 전송이 가능한지', async () => {});
+      it('[Valid Case] DM 전송', async () => {
+        await testData.createUserFriends(10);
+        await testData.createDmLog(10, 10);
+
+        const userDirectMessegeDto: PostDmLogDto = {
+          userId: testData.users[0].id,
+          friendId: testData.users[1].id,
+        };
+
+        await service.postDmLogRequestByNickname(userDirectMessegeDto);
+
+        const dmLog: DmLog[] = await dmlogRepository.find({
+          where: {
+            sender: { id: testData.users[0].id },
+            roomId: FriendChatManager.generateRoomId(
+              testData.users[0].nickname,
+              testData.users[1].nickname,
+            ),
+          },
+        });
+
+        expect(dmLog).toHaveProperty('sender');
+        expect(dmLog).toHaveProperty('receiver');
+        expect(dmLog).toHaveProperty('log');
+
+        expect(dmLog[0].sender).toBe(testData.users[0]);
+        expect(dmLog[0].roomId).toBe(testData.dmLogs[0].roomId);
+        expect(dmLog[0].log).toBe('log0');
+
+        expect(dmLog[1].sender).toBe(testData.users[0]);
+        expect(dmLog[1].roomId).toBe(testData.dmLogs[1].roomId);
+        expect(dmLog[1].log).toBe('log1');
+      });
+      it('[Valid Case] 친구가 아닌 유저에게 전송이 가능한지', async () => {
+        await testData.createDmLog(10, 10);
+
+        const userDirectMessegeDto: PostDmLogDto = {
+          userId: testData.users[0].id,
+          friendId: testData.users[10].id,
+        };
+
+        await service.postDmLogRequestByNickname(userDirectMessegeDto);
+
+        const dmLog: DmLog[] = await dmlogRepository.find({
+          where: {
+            sender: { id: testData.users[0].id },
+            roomId: FriendChatManager.generateRoomId(
+              testData.users[0].nickname,
+              testData.users[10].nickname,
+            ),
+          },
+        });
+
+        expect(dmLog).toBeNull();
+      });
     });
     describe('진행중인 DM 목록 조회', () => {
       it('[Valid Case] DM 목록의 형식확인 (이미지, 이름)', async () => {});
