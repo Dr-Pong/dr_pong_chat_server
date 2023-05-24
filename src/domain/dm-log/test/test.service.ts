@@ -137,4 +137,20 @@ export class TestService {
       this.blocks.push(block);
     }
   }
+
+  async createDmLog(person: number, loglength: number): Promise<void> {
+    const index: number = loglength;
+    for (let i = 1; i < index; i++) {
+      const dmLog = await this.dmLogRepository.save({
+        sender: this.users[0],
+        roomId: FriendChatManager.generateRoomId(
+          this.users[0].id.toString(),
+          this.users[person].id.toString(),
+        ),
+        log: 'log' + i.toString(),
+        time: new Date(),
+      });
+      this.dmLogs.push(dmLog);
+    }
+  }
 }
