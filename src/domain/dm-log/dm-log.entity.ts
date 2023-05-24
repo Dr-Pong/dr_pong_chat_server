@@ -9,7 +9,7 @@ export class DmLog extends BaseTimeEntity {
 
   @ManyToOne(() => User, { eager: true })
   @Column({ name: 'sender', nullable: false })
-  sender: number;
+  sender: User;
 
   @Column({ name: 'room_id', nullable: false })
   roomId: string;
