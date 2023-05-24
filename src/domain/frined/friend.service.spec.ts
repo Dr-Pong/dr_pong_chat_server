@@ -57,7 +57,7 @@ describe('FriendService', () => {
 
   beforeEach(async () => {
     await testData.createProfileImages();
-    await testData.createBasicUsers();
+    await testData.createBasicUsers(10);
   });
 
   afterEach(async () => {
