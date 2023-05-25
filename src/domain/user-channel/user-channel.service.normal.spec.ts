@@ -156,5 +156,44 @@ describe('UserChannelService', () => {
         expect(channelList.totalPage).toBe('totalPage');
       });
     });
+
+    describe('채팅방 참여자 목록 조회', () => {
+      it('[Valid Case] 채팅방 참여자 목록 조회', async () => {
+        const basicChannel: ChannelModel = await testData.createBasicChannel();
+        const user: UserModel = basicChannel.users.get(1);
+        const getChannelParticipantsRequest: GetChannelParticipantsDto = {
+          userId: user.id,
+          channelId: basicChannel.id,
+        };
+
+        const participants: ChannelParticipantsDto =
+          await service.getChannelParticipants(getChannelParticipantsRequest);
+
+        expect(participants).toHaveProperty('me');
+        expect(participants.me).toHaveProperty('nickname');
+        expect(participants.me).toHaveProperty('imgUrl');
+        expect(participants.me).toHaveProperty('roleType');
+        expect(participants.me).toHaveProperty('isMuted');
+        expect(participants).toHaveProperty('participants');
+        expect(participants.participants).toHaveProperty('nickname');
+        expect(participants.participants).toHaveProperty('imgUrl');
+        expect(participants.participants).toHaveProperty('roleType');
+        expect(participants.participants).toHaveProperty('isMuted');
+        expect(participants).toHaveProperty('headCount');
+        expect(participants).toHaveProperty('maxHeadCount');
+      });
+      it('[Error Case] 채팅방에 없는 유저의 요청', async () => {
+        const basicChannel: ChannelModel = await testData.createBasicChannel();
+        const user: UserModel = await testData.createBasicUser();
+        const getChannelParticipantsRequest: GetChannelParticipantsDto = {
+          userId: user.id,
+          channelId: basicChannel.id,
+        };
+
+        await expect(
+          service.getChannelParticipants(getChannelParticipantsRequest),
+        ).rejects.toThrow(new BadRequestException());
+      });
+    });
   });
 });
