@@ -145,7 +145,7 @@ export class TestService {
         sender: this.users[0],
         roomId: FriendChatManager.generateRoomId(
           this.users[0].id.toString(),
-          this.users[person].id.toString(),
+          this.users[i].id.toString(),
         ),
         log: 'log' + i.toString(),
         time: new Date(),
