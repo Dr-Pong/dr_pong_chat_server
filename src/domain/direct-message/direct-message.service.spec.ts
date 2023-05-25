@@ -157,7 +157,7 @@ describe('DmLogService', () => {
 
         expect(dmLog).toHaveProperty('sender');
         expect(dmLog).toHaveProperty('receiver');
-        expect(dmLog).toHaveProperty('log');
+        expect(dmLog).toHaveProperty('message');
 
         expect(dmLog[0].sender).toBe(testData.users[0]);
         expect(dmLog[0].roomId).toBe(testData.directMessage[0].roomId);
