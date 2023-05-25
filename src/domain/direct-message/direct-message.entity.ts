@@ -1,5 +1,11 @@
 import { BaseTimeEntity } from 'src/global/base-entity/base-time.entity';
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { User } from '../user/user.entity';
 import { FriendDirectMessage } from '../friend-direct-message/friend-direct-message.entity';
 
@@ -9,11 +15,11 @@ export class DirectMessage extends BaseTimeEntity {
   id: number;
 
   @ManyToOne(() => User, { eager: true })
-  @Column({ name: 'sender', nullable: false })
+  @JoinColumn({ name: 'user_id' })
   sender: User;
 
   @ManyToOne(() => FriendDirectMessage, { eager: true })
-  @Column({ name: 'room_id', nullable: false })
+  @JoinColumn({ name: 'room_id', referencedColumnName: 'room_id' })
   roomId: FriendDirectMessage;
 
   @Column({ name: 'message', nullable: false })
