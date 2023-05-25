@@ -9,7 +9,8 @@ import { addTransactionalDataSource } from 'typeorm-transactional';
 import { DirectMessageModule } from './direct-message.module';
 import { TestModule } from './test/test.module';
 import { PostDirectMessageDto } from './dto/post.direct-message.dto';
-import { FriendChatManager } from 'src/global/utils/generate.room.id';
+import { GetDirectMessageHistoryDto } from './dto/get.direct-message.history.dto';
+import { GetDirectMessageHistoryResponseDto } from './dto/get.direct-message.history.response.dto';
 
 describe('DmLogService', () => {
   let service: DirectMessageService;
@@ -65,7 +66,9 @@ describe('DmLogService', () => {
   describe('Direct Message Service Logic', () => {
     describe('Direct Message 대화 내역 조회', () => {
       it('[Valid Case] 대화 내역 형식 확인 (닉네임, 사진, 생성일)', async () => {});
+
       it('[Valid Case] 존재하는 대화 내역 조회', async () => {});
+
       it('[Valid Case] 비어있는 대화 내역 조회', async () => {});
     });
     describe('Direct Message 전송', () => {
@@ -78,7 +81,7 @@ describe('DmLogService', () => {
           friendId: testData.users[1].id,
         };
 
-        await service.postDmLogSendByNickname(userDirectMessegeDto);
+        await service.postDirectMessage(userDirectMessegeDto);
 
         const dmLog: DirectMessage[] = await dmlogRepository.find({
           where: {
@@ -107,7 +110,7 @@ describe('DmLogService', () => {
           friendId: testData.users[10].id,
         };
 
-        await service.postDmLogSendByNickname(userDirectMessegeDto);
+        await service.postDirectMessage(userDirectMessegeDto);
 
         const dmLog: DirectMessage[] = await dmlogRepository.find({
           where: {
