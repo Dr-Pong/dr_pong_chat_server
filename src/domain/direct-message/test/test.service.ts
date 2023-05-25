@@ -135,7 +135,6 @@ export class TestService {
     const index: number = this.blocks.length;
     for (let i = 1; i < index; i++) {
       const block = await this.blockRepository.save({
-        id: index + i,
         user: this.users[0],
         block: this.users[i],
       });
@@ -143,19 +142,39 @@ export class TestService {
     }
   }
 
+  //* dm 유저에게 10개씩 생성/
   async createDirectMessage(person: number): Promise<void> {
     const index: number = person;
-    for (let i = 0; i < index; i++) {
-      const dmLog = await this.directMessageRepository.save({
-        id: i,
-        user: this.users[0],
-        friend: this.users[i],
-        message: 'message' + i.toString(),
-      });
-      this.directMessage.push(dmLog);
+    for (let j = 0; j < index; j++) {
+      for (let i = 0; i < 10; i++) {
+        const dmLog = await this.directMessageRepository.save({
+          sender: this.users[j],
+          roomId: this.friendDirectMessage[i],
+          message: 'message' + i.toString(),
+          time: '2021-01-01 00:00:' + i.toString(),
+        });
+        this.directMessage.push(dmLog);
+      }
     }
   }
 
-  //dmlist 만들기
-  async createFriendDirectMessage(): Promise<void> {}
+  //FriendDirectMessage만들기 list
+  async createFriendDirectMessage(): Promise<void> {
+    const index: number = this.users.length;
+    for (let i = 0; i < index; i++) {
+      const friendDirectMessage = await this.friendDirectMessageRepository.save(
+        {
+          userId: this.users[0],
+          friendId: this.users[i],
+          roomId: FriendChatManager.generateRoomId(
+            this.users[0].id.toString(),
+            this.users[i].id.toString(),
+          ),
+          last_message_id: this.directMessage[i],
+          is_chat_on: true,
+        },
+      );
+      this.friendDirectMessage.push(friendDirectMessage);
+    }
+  }
 }
