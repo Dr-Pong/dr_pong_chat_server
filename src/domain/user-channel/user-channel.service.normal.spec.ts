@@ -348,5 +348,108 @@ describe('UserChannelService', () => {
         );
       });
     });
+
+    describe('채팅방 입장', () => {
+      it('[Valid Case] public 채팅방 입장', async () => {
+        await testData.createBasicChannels();
+        const user: UserModel = await testData.createBasicUser();
+        const basicChannel: ChannelModel = await testData.createBasicChannel();
+        const postUserInChannelRequest: PostUserInChannelDto = {
+          userId: user.id,
+          roomId: basicChannel.id,
+          password: null,
+        };
+
+        await service.postUserInChannel(postUserInChannelRequest);
+
+        const savedChannelFt: ChannelModel =
+          channelFactory.findChannelByChannelName(basicChannel.name);
+
+        expect(savedChannelFt.users.size).toBe(basicChannel.users.size + 1);
+      });
+      it('[Valid Case] protected 채팅방 입장', async () => {
+        await testData.createBasicChannels();
+        const user: UserModel = await testData.createBasicUser();
+        const basicChannel: ChannelModel =
+          await testData.createProtectedChannel();
+        const postUserInChannelRequest: PostUserInChannelDto = {
+          userId: user.id,
+          roomId: basicChannel.id,
+          password: 'password',
+        };
+
+        await service.postUserInChannel(postUserInChannelRequest);
+
+        const savedChannelFt: ChannelModel =
+          channelFactory.findChannelByChannelName(basicChannel.name);
+
+        expect(savedChannelFt.users.size).toBe(basicChannel.users.size + 1);
+      });
+      it('[Valid Case] 초대가 와있는데 초대 수락 안하고 입장해버린 경우', async () => {
+        await testData.createBasicChannels();
+        const user: UserModel = await testData.createInvitePendingUser();
+        const basicChannel: ChannelModel =
+          await testData.createProtectedChannel();
+        const postUserInChannelRequest: PostUserInChannelDto = {
+          userId: user.id,
+          roomId: basicChannel.id,
+          password: 'password',
+        };
+
+        await service.postUserInChannel(postUserInChannelRequest);
+
+        const savedChannelFt: ChannelModel =
+          channelFactory.findChannelByChannelName(basicChannel.name);
+
+        const savedUserFt: UserModel = userFactory.findUserById(user.id);
+        expect(savedChannelFt.users.size).toBe(basicChannel.users.size + 1);
+        expect(savedUserFt.inviteList.size).toBe(0);
+      });
+      it('[Error Case] protected 채팅방 입장시 비밀번호가 잘못된 경우', async () => {
+        await testData.createBasicChannels();
+        const user: UserModel = await testData.createInvitePendingUser();
+        const basicChannel: ChannelModel =
+          await testData.createProtectedChannel();
+        const postUserInChannelRequest: PostUserInChannelDto = {
+          userId: user.id,
+          roomId: basicChannel.id,
+          password: 'wrongPassword',
+        };
+
+        await expect(
+          service.postUserInChannel(postUserInChannelRequest),
+        ).rejects.toThrow(new BadRequestException());
+      });
+      it('[Error Case] private 채팅방 입장', async () => {
+        await testData.createBasicChannels();
+        const user: UserModel = await testData.createInvitePendingUser();
+        const basicChannel: ChannelModel =
+          await testData.createPrivateChannel();
+        const postUserInChannelRequest: PostUserInChannelDto = {
+          userId: user.id,
+          roomId: basicChannel.id,
+          password: null,
+        };
+
+        await expect(
+          service.postUserInChannel(postUserInChannelRequest),
+        ).rejects.toThrow(new BadRequestException());
+      });
+      it('[Error Case] Ban되어 있는 경우', async () => {
+        await testData.createBasicChannels();
+        const user: UserModel = await testData.createInvitePendingUser();
+        const basicChannel: ChannelModel = await testData.createBasicChannel();
+        basicChannel.banList.push(user.id);
+        const postUserInChannelRequest: PostUserInChannelDto = {
+          userId: user.id,
+          roomId: basicChannel.id,
+          password: null,
+        };
+
+        await expect(
+          service.postUserInChannel(postUserInChannelRequest),
+        ).rejects.toThrow(new BadRequestException());
+      });
+    });
   });
 });
