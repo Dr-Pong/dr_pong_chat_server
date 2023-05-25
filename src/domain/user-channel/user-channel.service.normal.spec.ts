@@ -195,5 +195,158 @@ describe('UserChannelService', () => {
         ).rejects.toThrow(new BadRequestException());
       });
     });
+
+    describe('채팅방 생성', () => {
+      it('[Valid Case] 채팅방 생성(public)', async () => {
+        const user = await testData.createBasicUser();
+        const postChannelRequest: PostChannelDto = {
+          userId: user.id,
+          title: 'channel',
+          access: CHANNEL_PUBLIC,
+          password: null,
+          maxHeadCount: 10,
+        };
+
+        await service.postChannel(postChannelRequest);
+
+        const savedChannelDb: Channel = await channelRepository.findOne({
+          where: { owner: { id: user.id } },
+        });
+
+        expect(savedChannelDb.operator.id).toBe(user.id);
+        expect(savedChannelDb.name).toBe(postChannelRequest.name);
+        expect(savedChannelDb.type).toBe(postChannelRequest.access);
+        expect(savedChannelDb.name).toBe(postChannelRequest.name);
+        expect(savedChannelDb.password).toBe(null);
+        expect(savedChannelDb.maxHeadCount).toBe(
+          postChannelRequest.maxHeadCount,
+        );
+
+        const savedChannelFt: ChannelModel =
+          channelFactory.findChannelByChannelName(savedChannelDb.name);
+
+        expect(savedChannelFt.ownerId).toBe(user.id);
+        expect(savedChannelFt.name).toBe(postChannelRequest.name);
+        expect(savedChannelFt.type).toBe(postChannelRequest.access);
+        expect(savedChannelFt.name).toBe(postChannelRequest.name);
+        expect(savedChannelFt.password).toBe(null);
+        expect(savedChannelFt.maxHeadCount).toBe(
+          postChannelRequest.maxHeadCount,
+        );
+      });
+
+      it('[Valid Case] 채팅방 생성(protected)', async () => {
+        const user = await testData.createBasicUser();
+        const postChannelRequest: PostChannelDto = {
+          userId: user.id,
+          title: 'channel',
+          access: CHANNEL_PROTECTED,
+          password: 'null',
+          maxHeadCount: 10,
+        };
+
+        await service.postChannel(postChannelRequest);
+
+        const savedChannelDb: Channel = await channelRepository.findOne({
+          where: { owner: { id: user.id } },
+        });
+
+        expect(savedChannelDb.operator.id).toBe(user.id);
+        expect(savedChannelDb.name).toBe(postChannelRequest.name);
+        expect(savedChannelDb.type).toBe(postChannelRequest.access);
+        expect(savedChannelDb.name).toBe(postChannelRequest.name);
+        expect(savedChannelDb.password).toBe(postChannelRequest.password);
+        expect(savedChannelDb.maxHeadCount).toBe(
+          postChannelRequest.maxHeadCount,
+        );
+
+        const savedChannelFt: ChannelModel =
+          channelFactory.findChannelByChannelName(savedChannelDb.name);
+
+        expect(savedChannelFt.ownerId).toBe(user.id);
+        expect(savedChannelFt.name).toBe(postChannelRequest.name);
+        expect(savedChannelFt.type).toBe(postChannelRequest.access);
+        expect(savedChannelFt.name).toBe(postChannelRequest.name);
+        expect(savedChannelFt.password).toBe(postChannelRequest.password);
+        expect(savedChannelFt.maxHeadCount).toBe(
+          postChannelRequest.maxHeadCount,
+        );
+      });
+
+      it('[Valid Case] 채팅방 생성(private)', async () => {
+        const user = await testData.createBasicUser();
+        const postChannelRequest: PostChannelDto = {
+          userId: user.id,
+          title: 'channel',
+          access: CHANNEL_PUBLIC,
+          password: 'null',
+          maxHeadCount: 10,
+        };
+
+        await service.postChannel(postChannelRequest);
+
+        const savedChannelDb: Channel = await channelRepository.findOne({
+          where: { owner: { id: user.id } },
+        });
+
+        expect(savedChannelDb.operator.id).toBe(user.id);
+        expect(savedChannelDb.name).toBe(postChannelRequest.name);
+        expect(savedChannelDb.type).toBe(postChannelRequest.access);
+        expect(savedChannelDb.name).toBe(postChannelRequest.name);
+        expect(savedChannelDb.password).toBe(null);
+        expect(savedChannelDb.maxHeadCount).toBe(
+          postChannelRequest.maxHeadCount,
+        );
+
+        const savedChannelFt: ChannelModel =
+          channelFactory.findChannelByChannelName(savedChannelDb.name);
+
+        expect(savedChannelFt.ownerId).toBe(user.id);
+        expect(savedChannelFt.name).toBe(postChannelRequest.name);
+        expect(savedChannelFt.type).toBe(postChannelRequest.access);
+        expect(savedChannelFt.name).toBe(postChannelRequest.name);
+        expect(savedChannelFt.password).toBe(null);
+        expect(savedChannelFt.maxHeadCount).toBe(
+          postChannelRequest.maxHeadCount,
+        );
+      });
+
+      it('[Error Case] 채팅방 생성 - 이름이 중복된 경우', async () => {
+        const user = await testData.createBasicUser();
+        const user2 = await testData.createBasicUser();
+        const postChannelRequest: PostChannelDto = {
+          userId: user.id,
+          title: 'channel',
+          access: CHANNEL_PUBLIC,
+          password: null,
+          maxHeadCount: 10,
+        };
+        const duplicatedRequest: PostChannelDto = {
+          userId: user2.id,
+          title: 'channel',
+          access: CHANNEL_PUBLIC,
+          password: null,
+          maxHeadCount: 10,
+        };
+
+        await service.postChannel(postChannelRequest);
+
+        await expect(service.postChannel(duplicatedRequest)).rejects.toThrow(
+          new BadRequestException(),
+        );
+
+        const savedChannelFt: ChannelModel =
+          channelFactory.findChannelByChannelName(savedChannelDb.name);
+
+        expect(savedChannelFt.ownerId).toBe(user.id);
+        expect(savedChannelFt.name).toBe(postChannelRequest.name);
+        expect(savedChannelFt.type).toBe(postChannelRequest.access);
+        expect(savedChannelFt.name).toBe(postChannelRequest.name);
+        expect(savedChannelFt.password).toBe(null);
+        expect(savedChannelFt.maxHeadCount).toBe(
+          postChannelRequest.maxHeadCount,
+        );
+      });
+    });
   });
 });
