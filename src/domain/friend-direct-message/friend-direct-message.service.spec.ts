@@ -1,13 +1,13 @@
 import { DataSource, Repository } from 'typeorm';
 import { FriendDirectMessageService } from './friend-direct-message.service';
-import { TestService } from './test/test.service';
 import { FriendDirectMessage } from './friend-direct-message.entity';
 import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
 import { typeORMConfig } from 'src/configs/typeorm.config';
 import { addTransactionalDataSource } from 'typeorm-transactional';
 import { FriendDirectMessageModule } from './friend-direct-message.module';
-import { TestModule } from '../frined/test/test.module';
+import { TestService } from './test/test.service';
+import { TestModule } from './test/test.module';
 
 describe('DmLogService', () => {
   let service: FriendDirectMessageService;
@@ -60,5 +60,12 @@ describe('DmLogService', () => {
   afterAll(async () => {
     await dataSources.dropDatabase();
     await dataSources.destroy();
+  });
+  describe('Friend Direct Message Service Logic', () => {
+    describe('Friend Direct Message 대화 내역 조회', () => {
+      it('[Valid Case] Friend Direct Message 대화 내역 조회', async () => {});
+      it('[Valid Case]', async () => {});
+      it('[Valid Case]', async () => {});
+    });
   });
 });
