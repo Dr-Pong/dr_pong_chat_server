@@ -158,7 +158,7 @@ describe('UserChannelService', () => {
     });
 
     describe('채팅방 참여자 목록 조회', () => {
-      it('[Valid Case] 채팅방 참여자 목록 조회', async () => {
+      it('[Valid Case] 채팅방 참여자 목록 조회 (기본)', async () => {
         const basicChannel: ChannelModel = await testData.createBasicChannel();
         const user: UserModel = basicChannel.users.values().next().value();
         const getChannelParticipantsRequest: GetChannelParticipantsDto = {
@@ -175,10 +175,34 @@ describe('UserChannelService', () => {
         expect(participants.me).toHaveProperty('roleType');
         expect(participants.me).toHaveProperty('isMuted');
         expect(participants).toHaveProperty('participants');
-        expect(participants.participants).toHaveProperty('nickname');
-        expect(participants.participants).toHaveProperty('imgUrl');
-        expect(participants.participants).toHaveProperty('roleType');
-        expect(participants.participants).toHaveProperty('isMuted');
+        expect(participants.participants[0]).toHaveProperty('nickname');
+        expect(participants.participants[0]).toHaveProperty('imgUrl');
+        expect(participants.participants[0]).toHaveProperty('roleType');
+        expect(participants.participants[0]).toHaveProperty('isMuted');
+        expect(participants).toHaveProperty('headCount');
+        expect(participants).toHaveProperty('maxHeadCount');
+      });
+      it('[Valid Case] 채팅방 참여자 목록 조회 (심화)', async () => {
+        const channel: ChannelModel = await testData.createChannelWithAdmins();
+        const user: UserModel = channel.users.values().next().value();
+        const getChannelParticipantsRequest: GetChannelParticipantsDto = {
+          userId: user.id,
+          channelId: channel.id,
+        };
+
+        const participants: ChannelParticipantsDto =
+          await service.getChannelParticipants(getChannelParticipantsRequest);
+
+        expect(participants).toHaveProperty('me');
+        expect(participants.me).toHaveProperty('nickname');
+        expect(participants.me).toHaveProperty('imgUrl');
+        expect(participants.me).toHaveProperty('roleType');
+        expect(participants.me).toHaveProperty('isMuted');
+        expect(participants).toHaveProperty('participants');
+        expect(participants.participants[0].id).toBe(user.id);
+        expect(participants.participants[0].imgUrl).toBe(user.profileImage);
+        expect(participants.participants[0].roleType).toBe('admin');
+        expect(participants.participants[0].isMuted).toBe(false);
         expect(participants).toHaveProperty('headCount');
         expect(participants).toHaveProperty('maxHeadCount');
       });
@@ -210,7 +234,7 @@ describe('UserChannelService', () => {
         await service.postChannel(postChannelRequest);
 
         const savedChannelDb: Channel = await channelRepository.findOne({
-          where: { owner: { id: user.id } },
+          where: { operator: { id: user.id } },
         });
 
         expect(savedChannelDb.operator.id).toBe(user.id);
@@ -248,7 +272,7 @@ describe('UserChannelService', () => {
         await service.postChannel(postChannelRequest);
 
         const savedChannelDb: Channel = await channelRepository.findOne({
-          where: { owner: { id: user.id } },
+          where: { operator: { id: user.id } },
         });
 
         expect(savedChannelDb.operator.id).toBe(user.id);
@@ -286,7 +310,7 @@ describe('UserChannelService', () => {
         await service.postChannel(postChannelRequest);
 
         const savedChannelDb: Channel = await channelRepository.findOne({
-          where: { owner: { id: user.id } },
+          where: { operator: { id: user.id } },
         });
 
         expect(savedChannelDb.operator.id).toBe(user.id);
