@@ -5,7 +5,7 @@ import { FrinedModule } from './domain/frined/frined.module';
 import { UserModule } from './domain/user/user.module';
 import { ProfileImageModule } from './domain/profile-image/profile-image.module';
 import { BlockModule } from './domain/block/block.module';
-import { DmLogModule } from './domain/dm-log/dm-log.module';
+import { DirectMessageModule } from './domain/direct-message/direct-message.module';
 import { ChannelModule } from './domain/channel/channel.module';
 import { ChannelLogModule } from './domain/channel-log/channel-log.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -34,7 +34,7 @@ import { DataSource } from 'typeorm';
     BlockModule,
     ChannelModule,
     ChannelLogModule,
-    DmLogModule,
+    DirectMessageModule,
   ],
   controllers: [AppController],
   providers: [AppService],

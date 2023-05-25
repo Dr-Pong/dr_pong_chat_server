@@ -1,7 +1,7 @@
 import { DataSource, Not, Repository } from 'typeorm';
 import { FriendService } from './friend.service';
 import { TestService } from './test/test.service';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
 import { typeORMConfig } from 'src/configs/typeorm.config';
 import { addTransactionalDataSource } from 'typeorm-transactional';
 import { FrinedModule } from './frined.module';
@@ -52,12 +52,14 @@ describe('FriendService', () => {
     service = module.get<FriendService>(FriendService);
     testData = module.get<TestService>(TestService);
     dataSources = module.get<DataSource>(DataSource);
-    friendRepository = module.get<Repository<Friend>>(Repository);
+    friendRepository = module.get<Repository<Friend>>(
+      getRepositoryToken(Friend),
+    );
   });
 
   beforeEach(async () => {
     await testData.createProfileImages();
-    await testData.createBasicUsers();
+    await testData.createBasicUsers(10);
   });
 
   afterEach(async () => {
@@ -78,26 +80,21 @@ describe('FriendService', () => {
         const userFriendsDto: GetUserFriendDto = {
           userId: testData.users[0].id,
         };
-
         const FriendsList: UserFriendsDto =
           service.getUserFriendsByNickname(userFriendsDto);
-
         const friendRequest: Friend[] = await friendRepository.find({
           where: {
             user: { id: testData.users[0].id },
             status: Not(FRIENDSTATUS_DELETED),
           },
         });
-
         expect(FriendsList).toBeNull();
-
         expect(friendRequest[0].status).toBe(FRIENDSTATUS_FRIEND);
         expect(friendRequest[1].status).toBe(FRIENDSTATUS_FRIEND);
         expect(friendRequest[2].status).toBe(FRIENDSTATUS_FRIEND);
         expect(friendRequest[3].status).toBe(FRIENDSTATUS_FRIEND);
         expect(friendRequest[4].status).toBe(FRIENDSTATUS_FRIEND);
         expect(friendRequest[8].status).toBe(FRIENDSTATUS_FRIEND);
-
         expect(FriendsList.friends.length).toBe(9);
         expect(FriendsList.friends[0]).toBe(testData.users[1]);
         expect(FriendsList.friends[1]).toBe(testData.users[2]);
@@ -108,10 +105,8 @@ describe('FriendService', () => {
         const userFriendsDto: GetUserFriendDto = {
           userId: testData.users[0].id,
         };
-
         const friendsList: UserFriendsDto =
           service.getUserFriendsByNickname(userFriendsDto);
-
         expect(friendsList).toHaveProperty('users');
         expect(friendsList.friends.length).toBe(0);
         expect(friendsList.friends).toBe([]);
@@ -119,16 +114,12 @@ describe('FriendService', () => {
 
       it('[Valid Case]반환된 친구 목록이 알파벳순서로 정렬되는지 확인', async () => {
         await testData.createUserFriends(10);
-
         const userFriendsDto: GetUserFriendDto = {
           userId: testData.users[0].id,
         };
-
         const friendsList: UserFriendsDto =
           service.getUserFriendsByNickname(userFriendsDto);
-
         expect(friendsList).toBeNull();
-
         expect(friendsList.friends.length).toBe(9);
         expect(friendsList.friends[0]).toBe(testData.users[1]);
         expect(friendsList.friends[1]).toBe(testData.users[2]);
