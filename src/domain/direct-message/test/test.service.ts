@@ -145,23 +145,28 @@ export class TestService {
   //* dm 유저에게 10개씩 생성/
   async createDirectMessage(person: number): Promise<void> {
     const index: number = person;
-    for (let j = 0; j < index; j++) {
-      for (let i = 0; i < 10; i++) {
-        const dmLog = await this.directMessageRepository.save({
-          sender: this.users[j],
-          roomId: this.friendDirectMessage[i],
-          message: 'message' + i.toString(),
-          time: '2021-01-01 00:00:' + i.toString(),
-        });
-        this.directMessage.push(dmLog);
-      }
+    for (let i = 0; i < index; i++) {
+      const dmLog = await this.directMessageRepository.save({
+        sender: this.users[0],
+        roomId: this.friendDirectMessage[i],
+        message: 'message' + i.toString(),
+        time: '2021-01-01 00:00:' + i.toString(),
+      });
+      this.directMessage.push(dmLog);
     }
   }
 
   //FriendDirectMessage만들기 list
   async createFriendDirectMessage(): Promise<void> {
     const index: number = this.users.length;
+    const friendDirectMessages: FriendDirectMessage[] = [];
+
     for (let i = 0; i < index; i++) {
+      const lastMessage = await this.directMessageRepository.findOne({
+        where: { roomId: this.friendDirectMessage[i] },
+        order: { time: 'DESC' },
+      });
+
       const friendDirectMessage = await this.friendDirectMessageRepository.save(
         {
           userId: this.users[0],
@@ -170,11 +175,33 @@ export class TestService {
             this.users[0].id.toString(),
             this.users[i].id.toString(),
           ),
-          last_message_id: this.directMessage[i],
+          last_message_id: lastMessage ? lastMessage.id : null,
           is_chat_on: true,
         },
       );
-      this.friendDirectMessage.push(friendDirectMessage);
+
+      friendDirectMessages.push(friendDirectMessage);
     }
+
+    // 시간 순으로 정렬
+    friendDirectMessages.sort((a, b) => {
+      const lastMessageA = a.lastMessageId
+        ? this.directMessage.find((dm) => dm.id === a.lastMessageId)
+        : null;
+      const lastMessageB = b.lastMessageId
+        ? this.directMessage.find((dm) => dm.id === b.lastMessageId)
+        : null;
+      if (lastMessageA && lastMessageB) {
+        return lastMessageB.time.getTime() - lastMessageA.time.getTime();
+      } else if (lastMessageA) {
+        return -1;
+      } else if (lastMessageB) {
+        return 1;
+      } else {
+        return 0;
+      }
+    });
+
+    this.friendDirectMessage = friendDirectMessages;
   }
 }
