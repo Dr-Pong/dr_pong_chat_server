@@ -182,26 +182,5 @@ export class TestService {
 
       friendDirectMessages.push(friendDirectMessage);
     }
-
-    // 시간 순으로 정렬
-    friendDirectMessages.sort((a, b) => {
-      const lastMessageA = a.lastMessageId
-        ? this.directMessage.find((dm) => dm.id === a.lastMessageId)
-        : null;
-      const lastMessageB = b.lastMessageId
-        ? this.directMessage.find((dm) => dm.id === b.lastMessageId)
-        : null;
-      if (lastMessageA && lastMessageB) {
-        return lastMessageB.time.getTime() - lastMessageA.time.getTime();
-      } else if (lastMessageA) {
-        return -1;
-      } else if (lastMessageB) {
-        return 1;
-      } else {
-        return 0;
-      }
-    });
-
-    this.friendDirectMessage = friendDirectMessages;
   }
 }
