@@ -146,13 +146,17 @@ export class TestService {
   async createDirectMessage(person: number): Promise<void> {
     const index: number = person;
     for (let i = 0; i < index; i++) {
-      const dmLog = await this.directMessageRepository.save({
-        sender: this.users[0],
-        roomId: this.friendDirectMessage[i],
-        message: 'message' + i.toString(),
-        time: '2021-01-01 00:00:' + i.toString(),
+      const directMessage = await this.directMessageRepository.save({
+        userId: this.users[0],
+        friendId: this.users[i],
+        roomId: FriendChatManager.generateRoomId(
+          this.users[0].id.toString(),
+          this.users[i].id.toString(),
+        ),
+        content: 'directMessage' + i.toString(),
+        time: new Date(),
       });
-      this.directMessage.push(dmLog);
+      this.directMessage.push(directMessage);
     }
   }
 
@@ -163,7 +167,7 @@ export class TestService {
 
     for (let i = 0; i < index; i++) {
       const lastMessage = await this.directMessageRepository.findOne({
-        where: { roomId: this.friendDirectMessage[i] },
+        where: { id: this.directMessage[i].id },
         order: { time: 'DESC' },
       });
 
