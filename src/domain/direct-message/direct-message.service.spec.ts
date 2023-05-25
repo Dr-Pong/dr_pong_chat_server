@@ -65,11 +65,76 @@ describe('DmLogService', () => {
 
   describe('Direct Message Service Logic', () => {
     describe('Direct Message 대화 내역 조회', () => {
-      it('[Valid Case] 대화 내역 형식 확인 (닉네임, 사진, 생성일)', async () => {});
+      it('[Valid Case] 대화 내역 형식 확인 (닉네임, 사진, 생성일)', async () => {
+        await testData.createUserFriends(10);
+        await testData.createDirectMessage(10);
 
-      it('[Valid Case] 존재하는 대화 내역 조회', async () => {});
+        const userDirectMessegeDto: GetDirectMessageHistoryDto = {
+          //쿼리 정해지만 만들기
+        };
 
-      it('[Valid Case] 비어있는 대화 내역 조회', async () => {});
+        const directMessagehistory: GetDirectMessageHistoryResponseDto =
+          await service.getDirectMessagesHistory(userDirectMessegeDto);
+
+        expect(directMessagehistory).toHaveProperty('chats');
+        expect(directMessagehistory.chats[0]).toHaveProperty('nickname');
+        expect(directMessagehistory.chats[0]).toHaveProperty('message');
+        expect(directMessagehistory.chats[0]).toHaveProperty('createdAt');
+      });
+
+      it('[Valid Case] 존재하는 대화 내역 조회', async () => {
+        await testData.createUserFriends(10);
+        await testData.createDirectMessage(10);
+
+        const userDirectMessegeDto: GetDirectMessageHistoryDto = {
+          //쿼리 정해지만 만들기
+        };
+
+        const directMessagehistory: GetDirectMessageHistoryResponseDto =
+          await service.getDirectMessagesHistory(userDirectMessegeDto);
+
+        expect(directMessagehistory).toHaveProperty('chats');
+        expect(directMessagehistory.chats[0]).toHaveProperty('nickname');
+        expect(directMessagehistory.chats[0]).toHaveProperty('message');
+        expect(directMessagehistory.chats[0]).toHaveProperty('createdAt');
+
+        expect(directMessagehistory.chats[0].nickname).toBe(
+          testData.users[0].nickname,
+        );
+        expect(directMessagehistory.chats[0].message).toBe(
+          testData.directMessage[0].message,
+        );
+        expect(directMessagehistory.chats[0].createdAt).toBe(
+          testData.directMessage[0].createdAt,
+        );
+
+        expect(directMessagehistory.chats[1].nickname).toBe(
+          testData.users[1].nickname,
+        );
+        expect(directMessagehistory.chats[1].message).toBe(
+          testData.directMessage[1].message,
+        );
+        expect(directMessagehistory.chats[1].createdAt).toBe(
+          testData.directMessage[1].createdAt,
+        );
+
+        expect(directMessagehistory.chats[9].message).toBe(
+          testData.directMessage[9].message,
+        );
+      });
+
+      it('[Valid Case] 비어있는 대화 내역 조회', async () => {
+        await testData.createUserFriends(10);
+
+        const userDirectMessegeDto: GetDirectMessageHistoryDto = {
+          //쿼리 정해지만 만들기
+        };
+
+        const directMessagehistory: GetDirectMessageHistoryResponseDto =
+          await service.getDirectMessagesHistory(userDirectMessegeDto);
+
+        expect(directMessagehistory.chats.length).toBe(0);
+      });
     });
     describe('Direct Message 전송', () => {
       it('[Valid Case] DM 전송', async () => {
