@@ -51,11 +51,11 @@ describe('UserChannelService', () => {
 
         const channelList: ChannelPageDtos =
           service.getChannelPages(getResentPageDto);
-        expect(channelList).toHaveProperty('[].id');
-        expect(channelList).toHaveProperty('[].title');
-        expect(channelList).toHaveProperty('[].access');
-        expect(channelList).toHaveProperty('[].headcount');
-        expect(channelList).toHaveProperty('[].maxcount');
+        expect(channelList).toHaveProperty('channels.id');
+        expect(channelList).toHaveProperty('channels.title');
+        expect(channelList).toHaveProperty('channels.access');
+        expect(channelList).toHaveProperty('channels.headcount');
+        expect(channelList).toHaveProperty('channels.maxcount');
         expect(channelList).toHaveProperty('currentPage');
         expect(channelList).toHaveProperty('totalPage');
         expect(channelList.channels[0].id).toBeGreaterThan(
@@ -76,11 +76,11 @@ describe('UserChannelService', () => {
         };
         const channelList: ChannelPageDtos =
           service.getChannelPages(getPopularPageDto);
-        expect(channelList.channels).toHaveProperty('[].id');
-        expect(channelList.channels).toHaveProperty('[].title');
-        expect(channelList.channels).toHaveProperty('[].access');
-        expect(channelList.channels).toHaveProperty('[].headcount');
-        expect(channelList.channels).toHaveProperty('[].maxcount');
+        expect(channelList).toHaveProperty('channels.id');
+        expect(channelList).toHaveProperty('channels.title');
+        expect(channelList).toHaveProperty('channels.access');
+        expect(channelList).toHaveProperty('channels.headcount');
+        expect(channelList).toHaveProperty('channels.maxcount');
         expect(channelList).toHaveProperty('currentPage');
         expect(channelList).toHaveProperty('totalPage');
         expect(channelList.channels[0].headcount).toBeGreaterThanOrEqual(
@@ -119,11 +119,11 @@ describe('UserChannelService', () => {
         const channelList: ChannelPageDtos = service.getChannelPages(
           getKeywordMatchPageDto,
         );
-        expect(channelList.channels).toHaveProperty('[].id');
-        expect(channelList.channels).toHaveProperty('[].title');
-        expect(channelList.channels).toHaveProperty('[].access');
-        expect(channelList.channels).toHaveProperty('[].headcount');
-        expect(channelList.channels).toHaveProperty('[].maxcount');
+        expect(channelList).toHaveProperty('channels.id');
+        expect(channelList).toHaveProperty('channels.title');
+        expect(channelList).toHaveProperty('channels.access');
+        expect(channelList).toHaveProperty('channels.headcount');
+        expect(channelList).toHaveProperty('channels.maxcount');
         expect(channelList).toHaveProperty('currentPage');
         expect(channelList).toHaveProperty('totalPage');
         expect(channelList.channels[0].id).toBeGreaterThanOrEqual(
@@ -160,7 +160,7 @@ describe('UserChannelService', () => {
     describe('채팅방 참여자 목록 조회', () => {
       it('[Valid Case] 채팅방 참여자 목록 조회', async () => {
         const basicChannel: ChannelModel = await testData.createBasicChannel();
-        const user: UserModel = basicChannel.users.get(1);
+        const user: UserModel = basicChannel.users.values().next().value();
         const getChannelParticipantsRequest: GetChannelParticipantsDto = {
           userId: user.id,
           channelId: basicChannel.id,
