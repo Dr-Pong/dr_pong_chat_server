@@ -600,5 +600,90 @@ describe('UserChannelService', () => {
         expect(savedChannelFt.users.has(user.id)).toBe(false);
       });
     });
+
+    describe('채팅 전송', () => {
+      it('[Valid Case] 채팅 전송', async () => {
+        // expect(service).toBeDefined();
+      });
+      it('[Error Case] 채팅 전송(Mute된 경우)', async () => {
+        // expect(service).toBeDefined();
+      });
+    });
+
+    describe('채팅방 퇴장', () => {
+      it('[Valid Case] 일반 유저가 퇴장하는 경우', async () => {
+        const user: UserModel = await testData.createUserInChannel();
+
+        const deleteUserInChannelRequest: DeleteUserInChannelDto = {
+          userId: user.id,
+          roomId: user.joinedChannel,
+        };
+
+        await service.deleteUserInChannel(deleteUserInChannelRequest);
+
+        const savedChannelFt: ChannelModel = channelFactory.findChannelById(
+          user.joinedChannel,
+        );
+
+        expect(savedChannelFt.users.has(user.id)).toBe(false);
+      });
+      it('[Valid Case] owner가 퇴장하는 경우', async () => {
+        const channel: ChannelModel = await testData.createChannelWithOwner();
+
+        const deleteUserInChannelRequest: DeleteUserInChannelDto = {
+          userId: channel.ownerId,
+          roomId: channel.id,
+        };
+
+        await service.deleteUserInChannel(deleteUserInChannelRequest);
+
+        const savedChannelFt: ChannelModel = channelFactory.findChannelById(
+          channel.id,
+        );
+
+        expect(savedChannelFt.users.has(channel.ownerId)).toBe(false);
+        expect(savedChannelFt.ownerId).toBe(null);
+      });
+      it('[Valid Case] admin이 퇴장하는 경우', async () => {
+        const channel: ChannelModel = await testData.createChannelWithAdmins();
+        const admin: UserModel = userFactory.findUserById(channel.adminList[0]);
+
+        const deleteUserInChannelRequest: DeleteUserInChannelDto = {
+          userId: admin.adminList[0],
+          roomId: channel.id,
+        };
+
+        await service.deleteUserInChannel(deleteUserInChannelRequest);
+
+        const savedChannelFt: ChannelModel = channelFactory.findChannelById(
+          channel.id,
+        );
+
+        expect(savedChannelFt.users.has(admin.id)).toBe(false);
+        expect(savedChannelFt.adminList.length).toBe(
+          channel.adminList.length - 1,
+        );
+      });
+      it('[Valid Case] mute 된 유저가 퇴장하는 경우(mute 상태 유지)', async () => {
+        const channel: ChannelModel = await testData.createChannelWithMuteds();
+        const user: UserModel = userFactory.findUserById(channel.muteList[0]);
+
+        const deleteUserInChannelRequest: DeleteUserInChannelDto = {
+          userId: user.adminList[0],
+          roomId: channel.id,
+        };
+
+        await service.deleteUserInChannel(deleteUserInChannelRequest);
+
+        const savedChannelFt: ChannelModel = channelFactory.findChannelById(
+          channel.id,
+        );
+
+        expect(savedChannelFt.users.has(user.id)).toBe(false);
+        expect(savedChannelFt.muteList.find((id) => id === user.id)).toBe(
+          user.id,
+        );
+      });
+    });
   });
 });
