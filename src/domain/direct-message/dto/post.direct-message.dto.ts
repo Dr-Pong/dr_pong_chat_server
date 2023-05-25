@@ -1,4 +1,4 @@
-export class PostDmLogDto {
+export class PostDirectMessageDto {
   userId: number;
   friendId: number;
 }

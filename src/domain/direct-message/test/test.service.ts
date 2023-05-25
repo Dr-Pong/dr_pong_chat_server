@@ -10,7 +10,8 @@ import {
 } from 'src/global/type/type.friend.status';
 import { FriendChatManager } from 'src/global/utils/generate.room.id';
 import { Friend } from 'src/domain/frined/friend.entity';
-import { DmLog } from '../dm-log.entity';
+import { DirectMessage } from '../direct-message.entity';
+import { FriendDirectMessage } from 'src/domain/friend-direct-message/friend-direct-message.entity';
 
 @Injectable()
 export class TestService {
@@ -23,21 +24,25 @@ export class TestService {
     private friendRepository: Repository<Friend>,
     @InjectRepository(Block)
     private blockRepository: Repository<Block>,
-    @InjectRepository(DmLog)
-    private dmLogRepository: Repository<DmLog>,
+    @InjectRepository(DirectMessage)
+    private directMessageRepository: Repository<DirectMessage>,
+    @InjectRepository(FriendDirectMessage)
+    private friendDirectMessageRepository: Repository<FriendDirectMessage>,
   ) {}
   users: User[] = [];
   profileImages: ProfileImage[] = [];
   friends: Friend[] = [];
   blocks: Block[] = [];
-  dmLogs: DmLog[] = [];
+  directMessage: DirectMessage[] = [];
+  friendDirectMessage: FriendDirectMessage[] = [];
 
   clear() {
     this.users.splice(0);
     this.profileImages.splice(0);
     this.friends.splice(0);
     this.blocks.splice(0);
-    this.dmLogs.splice(0);
+    this.directMessage.splice(0);
+    this.friendDirectMessage.splice(0);
   }
 
   async createProfileImages(): Promise<void> {
@@ -138,19 +143,19 @@ export class TestService {
     }
   }
 
-  async createDmLog(person: number, loglength: number): Promise<void> {
-    const index: number = loglength;
-    for (let i = 1; i < index; i++) {
-      const dmLog = await this.dmLogRepository.save({
-        sender: this.users[0],
-        roomId: FriendChatManager.generateRoomId(
-          this.users[0].id.toString(),
-          this.users[i].id.toString(),
-        ),
-        log: 'log' + i.toString(),
-        time: new Date(),
+  async createDirectMessage(person: number): Promise<void> {
+    const index: number = person;
+    for (let i = 0; i < index; i++) {
+      const dmLog = await this.directMessageRepository.save({
+        id: i,
+        user: this.users[0],
+        friend: this.users[i],
+        message: 'message' + i.toString(),
       });
-      this.dmLogs.push(dmLog);
+      this.directMessage.push(dmLog);
     }
   }
+
+  //dmlist 만들기
+  async createFriendDirectMessage(): Promise<void> {}
 }

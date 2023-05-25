@@ -5,7 +5,7 @@ import { User } from 'src/domain/user/user.entity';
 import { Block } from 'src/domain/block/block.entity';
 import { ProfileImage } from 'src/domain/profile-image/profile-image.entity';
 import { ProfileImageRepository } from 'src/domain/profile-image/profile-image.repository';
-import { DmLog } from '../dm-log.entity';
+import { DirectMessage } from '../direct-message.entity';
 import { Friend } from 'src/domain/frined/friend.entity';
 
 @Module({
@@ -16,7 +16,7 @@ import { Friend } from 'src/domain/frined/friend.entity';
       Block,
       ProfileImageRepository,
       ProfileImage,
-      DmLog,
+      DirectMessage,
     ]),
   ],
   providers: [TestService],
@@ -28,7 +28,7 @@ import { Friend } from 'src/domain/frined/friend.entity';
       Block,
       ProfileImage,
       ProfileImageRepository,
-      DmLog,
+      DirectMessage,
     ]),
   ],
 })
