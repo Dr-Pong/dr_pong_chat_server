@@ -83,7 +83,7 @@ describe('DmLogService', () => {
         const dmLog: DirectMessage[] = await dmlogRepository.find({
           where: {
             sender: { id: testData.users[0].id },
-            roomId:
+            roomId: { id: testData.directMessage[0].roomId.id },
           },
         });
 
@@ -112,7 +112,7 @@ describe('DmLogService', () => {
         const dmLog: DirectMessage[] = await dmlogRepository.find({
           where: {
             sender: { id: testData.users[0].id },
-            roomId: { id: }
+            roomId: { id: testData.directMessage[0].roomId.id },
           },
         });
 
