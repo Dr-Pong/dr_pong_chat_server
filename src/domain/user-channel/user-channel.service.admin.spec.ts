@@ -1,82 +1,80 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UserChannelService } from './user-channel.service';
+import { ChannelFactory } from '../channel/channel.factory';
+import { UserFactory } from '../user/user.factory';
+import { Repository } from 'typeorm';
+import { Channel } from 'diagnostics_channel';
+import { UserChannelModule } from './user-channel.module';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { ChannelModel } from '../channel/channel.model';
+import { UserModel } from '../user/user.model';
+import { BadRequestException } from '@nestjs/common';
+import { CHANNEL_PROTECTED } from 'src/global/type/type.channel';
+import { CHANNEL_PRIVATE } from 'src/global/type/type.channel';
+import { CHANNEL_PUBLIC } from 'src/global/type/type.channel';
 
 describe('UserChannelService', () => {
   let service: UserChannelService;
+  let channelFactory: ChannelFactory;
+  let userFactory: UserFactory;
+  let channelRepository: Repository<Channel>;
+  let testData: ChannelTestService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [UserChannelService],
+      imports: [UserChannelModule],
+      providers: [
+        {
+          provide: getRepositoryToken(Channel),
+          useClass: Repository,
+        },
+      ],
     }).compile();
 
     service = module.get<UserChannelService>(UserChannelService);
+    channelFactory = module.get<ChannelFactory>(ChannelFactory);
+    userFactory = module.get<UserFactory>(UserFactory);
+    channelRepository = module.get<Repository<Channel>>(Repository);
   });
+
   describe('관리자 기능', () => {
     describe('관리자 임명 / 해제', () => {
-      it('[Valid Case] 관리자 임명', async () => {});
-      it('[Valid Case] 관리자 해제', async () => {});
-    });
+      it('[Valid Case] 관리자 임명', async () => {
+        const channel: ChannelModel = await testData.createBasicChannel();
+        const user: UserModel = userFactory.users.get(channel.users[1]);
 
-    describe('KICK TEST', () => {
-      it('[Valid Case] 일반 유저 강퇴', async () => {
-        // expect(service).toBeDefined();
-      });
-      it('[Valid Case] owner가 관리자를 강퇴', async () => {
-        // expect(service).toBeDefined();
-      });
-      it('[Error Case] 관리자가 관리자를 강퇴', async () => {
-        // expect(service).toBeDefined();
-      });
-    });
+        const postAdminRequest: PostChannelAdminDto = {
+          requestUserId: channel.ownerId,
+          channelId: channel.id,
+          targetUserId: user.id,
+        };
 
-    describe('BAN TEST', () => {
-      it('[Valid Case] 일반 유저 BAN', async () => {
-        // expect(service).toBeDefined();
-      });
-      it('[Valid Case] owner가 BAN를 강퇴', async () => {
-        // expect(service).toBeDefined();
-      });
-      it('[Error Case] 관리자가 관리자를 강퇴', async () => {
-        // expect(service).toBeDefined();
-      });
-    });
+        await service.postChannelAdmin(postAdminRequest);
+        const savedChannelFt: ChannelModel = channelFactory.findChannelById(
+          channel.id,
+        );
 
-    describe('MUTE TEST', () => {
-      it('[Valid Case] 일반 유저 MUTE', async () => {
-        // expect(service).toBeDefined();
+        expect(savedChannelFt.adminList).toContain(user.id);
       });
-      it('[Valid Case] owner가 admin을 강퇴', async () => {
-        // expect(service).toBeDefined();
-      });
-      it('[Error Case] 관리자가 관리자를 MUTE', async () => {
-        // expect(service).toBeDefined();
-      });
-    });
 
-    describe('UNMUTE TEST', () => {
-      it('[Valid Case] 일반 유저 UNMUTE', async () => {
-        // expect(service).toBeDefined();
-      });
-      it('[Error Case] 관리자가 관리자를 UNMUTE', async () => {
-        // expect(service).toBeDefined();
-      });
-    });
+      it('[Valid Case] 관리자 해제', async () => {
+        const channel: ChannelModel = await testData.createChannelWithAdmins();
+        const user: UserModel = userFactory.users.get(channel.users[1]);
 
-    describe('채팅방 삭제', () => {
-      it('[Valid Case] 채팅방 삭제(유저가 0명 되는 경우)', async () => {
-        // expect(service).toBeDefined();
+        const deleteAdminRequest: DeleteChannelAdminDto = {
+          requestUserId: channel.ownerId,
+          channelId: channel.id,
+          targetUserId: user.id,
+        };
+
+        await service.deleteChannelAdmin(deleteAdminRequest);
+
+        const savedChannelFt: ChannelModel = channelFactory.findChannelById(
+          channel.id,
+        );
+
+        expect(savedChannelFt.adminList).not.toContain(user.id);
       });
-      it('[Valid Case] 채팅방 삭제(오너가 삭제하는 경우)', async () => {
-        // expect(service).toBeDefined();
-      });
-    });
-    describe('채팅방 수정', () => {
-      it('[Valid Case] public -> private', async () => {});
-      it('[Valid Case] public -> protected', async () => {});
-      it('[Valid Case] private -> public', async () => {});
-      it('[Valid Case] private -> protected', async () => {});
-      it('[Valid Case] protected -> public', async () => {});
-      it('[Valid Case] protected -> private', async () => {});
     });
   });
 });
