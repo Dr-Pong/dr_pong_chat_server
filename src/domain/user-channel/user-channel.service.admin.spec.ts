@@ -76,5 +76,69 @@ describe('UserChannelService', () => {
         expect(savedChannelFt.adminList).not.toContain(user.id);
       });
     });
+
+    describe('KICK TEST', () => {
+      it('[Valid Case] 일반 유저 강퇴', async () => {
+        const channel: ChannelModel = await testData.createBasicChannel();
+        const user: UserModel = userFactory.users.get(channel.users[1]);
+
+        const deleteUserInChannelRequest: DeleteChannelKickDto = {
+          requestUserId: channel.ownerId,
+          channelId: channel.id,
+          targetUserId: user.id,
+        };
+
+        await service.deleteChannelKick(deleteUserInChannelRequest);
+
+        const savedChannelFt: ChannelModel = channelFactory.findChannelById(
+          channel.id,
+        );
+        const savedUserFt: UserModel = userFactory.findUserById(user.id);
+        expect(savedChannelFt.users).not.toContain(user.id);
+        expect(savedUserFt.joinedChannel).toBeNull();
+      });
+      it('[Valid Case] owner가 관리자를 강퇴', async () => {
+        const channel: ChannelModel = await testData.createChannelWithAdmins();
+        const user: UserModel = userFactory.users.get(channel.users[1]);
+
+        const deleteUserInChannelRequest: DeleteChannelKickDto = {
+          requestUserId: channel.ownerId,
+          channelId: channel.id,
+          targetUserId: user.id,
+        };
+
+        await service.deleteChannelKick(deleteUserInChannelRequest);
+        const savedChannelFt: ChannelModel = channelFactory.findChannelById(
+          channel.id,
+        );
+        const savedUserFt: UserModel = userFactory.findUserById(user.id);
+
+        expect(savedChannelFt.users).not.toContain(user.id);
+        expect(savedChannelFt.adminList).not.toContain(user.id);
+        expect(savedUserFt.joinedChannel).toBeNull();
+      });
+      it('[Error Case] 관리자가 관리자를 강퇴', async () => {
+        const channel: ChannelModel = await testData.createChannelWithAdmins();
+        const user: UserModel = userFactory.users.get(channel.users[2]);
+
+        const deleteUserInChannelRequest: DeleteChannelKickDto = {
+          requestUserId: channel.users[1],
+          channelId: channel.id,
+          targetUserId: user.id,
+        };
+
+        await expect(
+          service.deleteChannelKick(deleteUserInChannelRequest),
+        ).rejects.toThrow(new BadRequestException());
+        const savedChannelFt: ChannelModel = channelFactory.findChannelById(
+          channel.id,
+        );
+        const savedUserFt: UserModel = userFactory.findUserById(user.id);
+
+        expect(savedChannelFt.users).toContain(user.id);
+        expect(savedChannelFt.adminList).toContain(user.id);
+        expect(savedUserFt.joinedChannel).toBe(channel.id);
+      });
+    });
   });
 });
