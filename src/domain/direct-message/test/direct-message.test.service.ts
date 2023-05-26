@@ -9,12 +9,12 @@ import {
   FRIENDSTATUS_REQUESTING,
 } from 'src/global/type/type.friend.status';
 import { FriendChatManager } from 'src/global/utils/generate.room.id';
-import { Friend } from 'src/domain/frined/friend.entity';
+import { Friend } from 'src/domain/friend/friend.entity';
 import { DirectMessage } from '../direct-message.entity';
 import { FriendDirectMessage } from 'src/domain/friend-direct-message/friend-direct-message.entity';
 
 @Injectable()
-export class TestService {
+export class DirectMessageTestService {
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,
