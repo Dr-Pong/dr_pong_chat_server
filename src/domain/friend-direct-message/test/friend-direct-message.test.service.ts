@@ -12,6 +12,10 @@ import { FriendChatManager } from 'src/global/utils/generate.room.id';
 import { Friend } from 'src/domain/friend/friend.entity';
 import { FriendDirectMessage } from 'src/domain/friend-direct-message/friend-direct-message.entity';
 import { DirectMessage } from 'src/domain/direct-message/direct-message.entity';
+import {
+  CHATINGTYPE_INCHAT,
+  CHATINGTYPE_OUTCHAT,
+} from 'src/global/type/type.chat';
 
 @Injectable()
 export class FriendDirectMessageTestService {
@@ -180,7 +184,7 @@ export class FriendDirectMessageTestService {
             this.users[i].id.toString(),
           ),
           last_message_id: lastMessage ? lastMessage.id : null,
-          is_chat_on: true,
+          is_chat_on: CHATINGTYPE_INCHAT,
         },
       );
 
@@ -193,5 +197,30 @@ export class FriendDirectMessageTestService {
     for (let i = 0; i < index; i++) {
       await this.friendRepository.delete(this.friends[i].id);
     }
+  }
+
+  async createFriendDirectMessageNotice(): Promise<void> {
+    const index: number = this.users.length;
+    for (let i = 0; i < index; i++) {
+      const friendDirectMessageNotice =
+        await this.friendDirectMessageRepository.save({
+          userId: this.users[0],
+          friendId: this.users[i],
+          roomId: FriendChatManager.generateRoomId(
+            this.users[0].id.toString(),
+            this.users[i].id.toString(),
+          ),
+          last_message_id: this.directMessage[3].id,
+          is_chat_on: CHATINGTYPE_OUTCHAT,
+        });
+      this.friendDirectMessage.push(friendDirectMessageNotice);
+    }
+  }
+
+  async markAllMessagesAsRead(userId: number): Promise<void> {
+    await this.friendDirectMessageRepository.update(
+      { userId: { id: userId } },
+      { lastReadMessageId: null },
+    );
   }
 }
