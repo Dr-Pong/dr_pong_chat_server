@@ -84,16 +84,20 @@ describe('DmLogService', () => {
 
       it('[Valid Case] 존재하는 대화 내역 조회', async () => {
         await testData.createUserFriends(10);
-        await testData.createDirectMessage(10);
+        await testData.createDirectMessage(20);
 
         const userDirectMessegeDto: GetDirectMessageHistoryDto = {
-          //쿼리 정해지만 만들기
+          userId: testData.users[0].id,
+          friendId: testData.users[1].id,
+          offset: testData.directMessage[9].id,
+          count: 10,
         };
 
         const directMessagehistory: GetDirectMessageHistoryResponseDto =
           await service.getDirectMessagesHistory(userDirectMessegeDto);
 
         expect(directMessagehistory).toHaveProperty('chats');
+        expect(directMessagehistory).toHaveProperty('isLastPage');
         expect(directMessagehistory.chats[0]).toHaveProperty('nickname');
         expect(directMessagehistory.chats[0]).toHaveProperty('message');
         expect(directMessagehistory.chats[0]).toHaveProperty('createdAt');
@@ -127,7 +131,10 @@ describe('DmLogService', () => {
         await testData.createUserFriends(10);
 
         const userDirectMessegeDto: GetDirectMessageHistoryDto = {
-          //쿼리 정해지만 만들기
+          userId: testData.users[0].id,
+          friendId: testData.users[1].id,
+          offset: null,
+          count: 10,
         };
 
         const directMessagehistory: GetDirectMessageHistoryResponseDto =
@@ -151,7 +158,7 @@ describe('DmLogService', () => {
         const dmLog: DirectMessage[] = await dmlogRepository.find({
           where: {
             sender: { id: testData.users[0].id },
-            roomId: { id: testData.directMessage[0].roomId.id },
+            roomId: testData.directMessage[0].roomId,
           },
         });
 
@@ -180,7 +187,7 @@ describe('DmLogService', () => {
         const dmLog: DirectMessage[] = await dmlogRepository.find({
           where: {
             sender: { id: testData.users[0].id },
-            roomId: { id: testData.directMessage[0].roomId.id },
+            roomId: testData.directMessage[0].roomId,
           },
         });
 
