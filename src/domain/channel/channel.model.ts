@@ -1,9 +1,9 @@
 import { ChannelType } from 'src/global/type/type.channel';
-import { UserModel } from '../user/user.model';
 
 export class ChannelModel {
+  id: number;
   name: string;
-  users: Map<number, UserModel> = new Map();
+  users: Set<number> = new Set();
   type: ChannelType;
   password: string;
   ownerId: number;
