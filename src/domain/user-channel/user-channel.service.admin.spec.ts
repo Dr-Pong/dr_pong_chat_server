@@ -312,5 +312,115 @@ describe('UserChannelService', () => {
         expect(savedChannelFt.muteList).toContain(user.id);
       });
     });
+    describe('채팅방 수정', () => {
+      it('[Valid Case] public -> private', async () => {
+        const channel: ChannelModel = await testData.createBasicChannel();
+        const user: UserModel = userFactory.users.get(channel.ownerId);
+
+        const patchChannelRequest: patchChannelDto = {
+          userId: user.id,
+          channelId: channel.id,
+          password: null,
+          access: CHANNEL_PRIVATE,
+        };
+
+        await service.patchChannel(patchChannelRequest);
+        const savedChannelFt: ChannelModel = channelFactory.findChannelById(
+          channel.id,
+        );
+
+        expect(savedChannelFt.type).toBe(CHANNEL_PRIVATE);
+      });
+      it('[Valid Case] public -> protected', async () => {
+        const channel: ChannelModel = await testData.createBasicChannel();
+        const user: UserModel = userFactory.users.get(channel.ownerId);
+
+        const patchChannelRequest: patchChannelDto = {
+          userId: user.id,
+          channelId: channel.id,
+          password: '1234',
+          access: CHANNEL_PROTECTED,
+        };
+
+        await service.patchChannel(patchChannelRequest);
+        const savedChannelFt: ChannelModel = channelFactory.findChannelById(
+          channel.id,
+        );
+
+        expect(savedChannelFt.type).toBe(CHANNEL_PROTECTED);
+        expect(savedChannelFt.password).toBe('1234');
+      });
+      it('[Valid Case] private -> public', async () => {
+        const channel: ChannelModel = await testData.createPrivateChannel();
+
+        const patchChannelRequest: patchChannelDto = {
+          userId: channel.ownerId,
+          channelId: channel.id,
+          password: null,
+          access: CHANNEL_PUBLIC,
+        };
+
+        await service.patchChannel(patchChannelRequest);
+        const savedChannelFt: ChannelModel = channelFactory.findChannelById(
+          channel.id,
+        );
+
+        expect(savedChannelFt.type).toBe(CHANNEL_PUBLIC);
+      });
+      it('[Valid Case] private -> protected', async () => {
+        const channel: ChannelModel = await testData.createPrivateChannel();
+
+        const patchChannelRequest: patchChannelDto = {
+          userId: channel.ownerId,
+          channelId: channel.id,
+          password: '1234',
+          access: CHANNEL_PROTECTED,
+        };
+
+        await service.patchChannel(patchChannelRequest);
+        const savedChannelFt: ChannelModel = channelFactory.findChannelById(
+          channel.id,
+        );
+
+        expect(savedChannelFt.type).toBe(CHANNEL_PUBLIC);
+        expect(savedChannelFt.password).toBe('1234');
+      });
+      it('[Valid Case] protected -> public', async () => {
+        const channel: ChannelModel = await testData.createPrivateChannel();
+
+        const patchChannelRequest: patchChannelDto = {
+          userId: channel.ownerId,
+          channelId: channel.id,
+          password: null,
+          access: CHANNEL_PUBLIC,
+        };
+
+        await service.patchChannel(patchChannelRequest);
+        const savedChannelFt: ChannelModel = channelFactory.findChannelById(
+          channel.id,
+        );
+
+        expect(savedChannelFt.type).toBe(CHANNEL_PUBLIC);
+        expect(savedChannelFt.password).toBe(null);
+      });
+      it('[Valid Case] protected -> private', async () => {
+        const channel: ChannelModel = await testData.createPrivateChannel();
+
+        const patchChannelRequest: patchChannelDto = {
+          userId: channel.ownerId,
+          channelId: channel.id,
+          password: null,
+          access: CHANNEL_PRIVATE,
+        };
+
+        await service.patchChannel(patchChannelRequest);
+        const savedChannelFt: ChannelModel = channelFactory.findChannelById(
+          channel.id,
+        );
+
+        expect(savedChannelFt.type).toBe(CHANNEL_PRIVATE);
+        expect(savedChannelFt.password).toBe(null);
+      });
+    });
   });
 });
