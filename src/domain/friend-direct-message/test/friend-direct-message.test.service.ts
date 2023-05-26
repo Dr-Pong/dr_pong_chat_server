@@ -142,7 +142,7 @@ export class FriendDirectMessageTestService {
     }
   }
 
-  //* dm 유저에게 10개씩 생성/
+  //* dm n명의 유저에게 메시지 하나 전송*/
   async createDirectMessage(person: number): Promise<void> {
     const index: number = person;
     for (let i = 0; i < index; i++) {
@@ -160,7 +160,7 @@ export class FriendDirectMessageTestService {
     }
   }
 
-  //FriendDirectMessage만들기 list
+  //*FriendDirectMessage만들기 list*/
   async createFriendDirectMessage(): Promise<void> {
     const index: number = this.users.length;
     const friendDirectMessages: FriendDirectMessage[] = [];
