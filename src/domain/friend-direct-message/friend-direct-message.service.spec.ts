@@ -116,7 +116,38 @@ describe('DmLogService', () => {
 
         expect(friendDirectMessage.chats.length).toBe(0);
       });
+
+      it('[Valid Case]내가 친구 삭제, 차단시 DM이 목록에 없는지 조회', async () => {
+        await testData.createDirectMessage(10);
+        await testData.createFriendDirectMessage();
+        await testData.deleteFriend();
+
+        const friendDirectMessageListDto: GetFriendDirectMessageDto = {
+          userId: testData.users[0].id,
+        };
+
+        const friendDirectMessage: GetFriendDirectMessageResponseDto =
+          await service.getFriendDirectMessage(friendDirectMessageListDto);
+
+        expect(friendDirectMessage.chats.length).toBe(0);
+      });
+
+      it('[Valid Case] 내가 친구 삭제, 차단 당했을때 DM 목록에 있는지 조회', async () => {
+        await testData.createDirectMessage(10);
+        await testData.createFriendDirectMessage();
+        await testData.deleteFriend();
+
+        const friendDirectMessageListDto: GetFriendDirectMessageDto = {
+          userId: testData.users[1].id,
+        };
+
+        const friendDirectMessage: GetFriendDirectMessageResponseDto =
+          await service.getFriendDirectMessage(friendDirectMessageListDto);
+
+        expect(friendDirectMessage.chats.length).toBe(0);
+      });
     });
+
     describe('진행중인 DirectMessage 목록 삭제', () => {
       it('[Valid Case] DM 목록에서 삭제', async () => {
         await testData.createDirectMessage(10);
@@ -160,10 +191,7 @@ describe('DmLogService', () => {
         expect(friendDirectMessage.chats.length).toBe(10);
       });
     });
-    describe('친구 삭제시 DirectMessage 목록유무 체크', () => {
-      it('[Valid Case]내가 친구 삭제시 DM이 목록에 없는지 조회', async () => {});
-      it('[Valid Case] 내가 친구 삭제 당했을때 DM 목록에 있는지 조회', async () => {});
-    });
+
     describe('진행중인 DirectMessage 알람 받기', () => {
       it('[Valid Case] 대화방의 알람수령', async () => {});
       it('[Valid Case] 새로온 DM 의 수 반환', async () => {});
