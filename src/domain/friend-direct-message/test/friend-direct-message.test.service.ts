@@ -187,4 +187,11 @@ export class FriendDirectMessageTestService {
       friendDirectMessages.push(friendDirectMessage);
     }
   }
+
+  async deleteFriend(): Promise<void> {
+    const index: number = this.friends.length;
+    for (let i = 0; i < index; i++) {
+      await this.friendRepository.delete(this.friends[i].id);
+    }
+  }
 }
