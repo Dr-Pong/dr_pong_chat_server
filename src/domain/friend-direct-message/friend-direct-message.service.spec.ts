@@ -10,6 +10,7 @@ import { FriendDirectMessageTestService } from './test/friend-direct-message.tes
 import { TestModule } from './test/friend-direct-message.test.module';
 import { GetFriendDirectMessageDto } from './dto/get.friend-direct-message.dto';
 import { GetFriendDirectMessageResponseDto } from './dto/get.friend-direct-message.response.dto';
+import { DeleteFriendDirectMessageDto } from './dto/delete.friend-direct-message.dto';
 
 describe('DmLogService', () => {
   let service: FriendDirectMessageService;
@@ -117,8 +118,47 @@ describe('DmLogService', () => {
       });
     });
     describe('진행중인 DirectMessage 목록 삭제', () => {
-      it('[Valid Case] DM 목록에서 삭제', async () => {});
-      it('[Valid Case] DM 목록에서 삭제후 다시 DM 입력해서 목록 반환해보기', async () => {});
+      it('[Valid Case] DM 목록에서 삭제', async () => {
+        await testData.createDirectMessage(10);
+        await testData.createFriendDirectMessage();
+
+        const friendDirectMessageListDto: DeleteFriendDirectMessageDto = {
+          userId: testData.users[0].id,
+        };
+
+        await service.deleteFriendDirectMessage(friendDirectMessageListDto);
+
+        expect(
+          await FriendDirectMessageRepository.find({
+            where: { userId: { id: testData.users[0].id } },
+          }),
+        ).toEqual([]);
+      });
+      it('[유효한 경우] DM 목록에서 삭제 후 다시 DM 입력하여 목록 반환해보기', async () => {
+        const friendDirectMessageListDto: DeleteFriendDirectMessageDto = {
+          userId: testData.users[0].id,
+        };
+
+        await service.deleteFriendDirectMessage(friendDirectMessageListDto);
+
+        expect(
+          await FriendDirectMessageRepository.find({
+            where: { userId: { id: testData.users[0].id } },
+          }),
+        ).toEqual([]);
+
+        await testData.createDirectMessage(10);
+        await testData.createFriendDirectMessage();
+
+        const newFriendDirectMessageListDto: GetFriendDirectMessageDto = {
+          userId: testData.users[0].id,
+        };
+
+        const friendDirectMessage: GetFriendDirectMessageResponseDto =
+          await service.getFriendDirectMessage(newFriendDirectMessageListDto);
+
+        expect(friendDirectMessage.chats.length).toBe(10);
+      });
     });
     describe('친구 삭제시 DirectMessage 목록유무 체크', () => {
       it('[Valid Case]내가 친구 삭제시 DM이 목록에 없는지 조회', async () => {});
