@@ -25,9 +25,9 @@ export class FriendDirectMessage extends BaseTimeEntity {
   @Column({ name: 'room_id', nullable: false })
   roomId: string;
 
-  @Column({ name: 'last_message_id', nullable: false })
-  lastMessageId: ChatingType;
+  @Column({ name: 'last_message_id', nullable: true })
+  lastMessageId: number;
 
   @Column({ name: 'is_chat_on', nullable: false })
-  isChatOn: boolean;
+  isChatOn: ChatingType;
 }
