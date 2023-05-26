@@ -9,7 +9,7 @@ import {
   FRIENDSTATUS_REQUESTING,
 } from 'src/global/type/type.friend.status';
 import { FriendChatManager } from 'src/global/utils/generate.room.id';
-import { Friend } from 'src/domain/frined/friend.entity';
+import { Friend } from 'src/domain/friend/friend.entity';
 import { FriendDirectMessage } from 'src/domain/friend-direct-message/friend-direct-message.entity';
 import { DirectMessage } from 'src/domain/direct-message/direct-message.entity';
 
