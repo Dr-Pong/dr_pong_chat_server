@@ -8,6 +8,8 @@ import { addTransactionalDataSource } from 'typeorm-transactional';
 import { FriendDirectMessageModule } from './friend-direct-message.module';
 import { FriendDirectMessageTestService } from './test/friend-direct-message.test.service';
 import { TestModule } from './test/friend-direct-message.test.module';
+import { GetFriendDirectMessageDto } from './dto/get.friend-direct-message.dto';
+import { GetFriendDirectMessageResponseDto } from './dto/get.friend-direct-message.response.dto';
 
 describe('DmLogService', () => {
   let service: FriendDirectMessageService;
@@ -65,11 +67,54 @@ describe('DmLogService', () => {
   });
   describe('Friend Direct Message Service Logic', () => {
     describe('진행중인 DirectMessage 목록 조회', () => {
-      it('[Valid Case] 대화방의 형식 확인 (이미지, 이름)', async () => {
-        await testData.createFriendDirectMessages(1);
+      it('[Valid Case] 대화방의 형식 확인 (이미지, 닉네임, 새채팅의 수)', async () => {
+        await testData.createDirectMessage(10);
+        await testData.createFriendDirectMessage();
+
+        const friendDirectMessageListDto: GetFriendDirectMessageDto = {
+          userId: testData.users[0].id,
+        };
+
+        const friendDirectMessage: GetFriendDirectMessageResponseDto =
+          await service.getFriendDirectMessage(friendDirectMessageListDto);
+
+        expect(friendDirectMessage).toHaveProperty('chats');
+        expect(friendDirectMessage.chats[0]).toHaveProperty('nickname');
+        expect(friendDirectMessage.chats[0]).toHaveProperty('imgUrl');
+        expect(friendDirectMessage.chats[0]).toHaveProperty('newChat');
       });
-      it('[Valid Case] 현재 진행중인 DM목록 반환', async () => {});
-      it('[Valid Case] 진행중인 DM목록이 없을때 확인', async () => {});
+      it('[Valid Case] 현재 진행중인 DM목록 반환', async () => {
+        await testData.createDirectMessage(10);
+        await testData.createFriendDirectMessage();
+
+        const friendDirectMessageListDto: GetFriendDirectMessageDto = {
+          userId: testData.users[0].id,
+        };
+
+        const friendDirectMessage: GetFriendDirectMessageResponseDto =
+          await service.getFriendDirectMessage(friendDirectMessageListDto);
+
+        expect(friendDirectMessage.chats.length).toBe(10);
+
+        expect(friendDirectMessage.chats[0].nickname).toBe(
+          testData.users[1].nickname,
+        );
+        expect(friendDirectMessage.chats[0].imgUrl).toBe(
+          testData.users[1].image,
+        );
+        expect(friendDirectMessage.chats[0].newChat).toBe(0);
+      });
+
+      it('[Valid Case] 진행중인 DM목록이 없을때 확인', async () => {
+        const friendDirectMessageListDto: GetFriendDirectMessageDto = {
+          userId: testData.users[0].id,
+        };
+
+        const friendDirectMessage: GetFriendDirectMessageResponseDto =
+          await service.getFriendDirectMessage(friendDirectMessageListDto);
+
+        expect(friendDirectMessage.chats.length).toBe(0);
+      });
     });
     describe('진행중인 DirectMessage 목록 삭제', () => {
       it('[Valid Case] DM 목록에서 삭제', async () => {});
