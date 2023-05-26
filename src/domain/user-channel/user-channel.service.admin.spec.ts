@@ -140,5 +140,72 @@ describe('UserChannelService', () => {
         expect(savedUserFt.joinedChannel).toBe(channel.id);
       });
     });
+
+    describe('BAN TEST', () => {
+      it('[Valid Case] 일반 유저 BAN', async () => {
+        const channel: ChannelModel = await testData.createBasicChannel();
+        const user: UserModel = userFactory.users.get(channel.users[1]);
+
+        const postChannelBanRequest: PostChannelBanDto = {
+          requestUserId: channel.ownerId,
+          channelId: channel.id,
+          targetUserId: user.id,
+        };
+
+        await service.postChannelBan(postChannelBanRequest);
+        const savedChannelFt: ChannelModel = channelFactory.findChannelById(
+          channel.id,
+        );
+        const savedUserFt: UserModel = userFactory.findUserById(user.id);
+
+        expect(savedChannelFt.users).not.toContain(user.id);
+        expect(savedChannelFt.adminList).not.toContain(user.id);
+        expect(savedChannelFt.banList).toContain(user.id);
+        expect(savedUserFt.joinedChannel).toBeNull();
+      });
+      it('[Valid Case] owner가 admin을 BAN', async () => {
+        const channel: ChannelModel = await testData.createChannelWithAdmins();
+        const user: UserModel = userFactory.users.get(channel.users[1]);
+
+        const postChannelBanRequest: PostChannelBanDto = {
+          requestUserId: channel.ownerId,
+          channelId: channel.id,
+          targetUserId: user.id,
+        };
+
+        await service.postChannelBan(postChannelBanRequest);
+
+        const savedChannelFt: ChannelModel = channelFactory.findChannelById(
+          channel.id,
+        );
+        const savedUserFt: UserModel = userFactory.findUserById(user.id);
+        expect(savedChannelFt.users).not.toContain(user.id);
+        expect(savedChannelFt.adminList).not.toContain(user.id);
+        expect(savedChannelFt.banList).toContain(user.id);
+        expect(savedUserFt.joinedChannel).toBeNull();
+      });
+      it('[Error Case] 관리자가 관리자를 강퇴', async () => {
+        const channel: ChannelModel = await testData.createChannelWithAdmins();
+        const admin: UserModel = userFactory.users.get(channel.users[1]);
+        const user: UserModel = userFactory.users.get(channel.users[2]);
+
+        const postChannelBanRequest: PostChannelBanDto = {
+          requestUserId: admin.id,
+          channelId: channel.id,
+          targetUserId: user.id,
+        };
+
+        await service.postChannelBan(postChannelBanRequest);
+
+        const savedChannelFt: ChannelModel = channelFactory.findChannelById(
+          channel.id,
+        );
+        const savedUserFt: UserModel = userFactory.findUserById(user.id);
+        expect(savedChannelFt.users).not.toContain(user.id);
+        expect(savedChannelFt.adminList).not.toContain(user.id);
+        expect(savedChannelFt.banList).toContain(user.id);
+        expect(savedUserFt.joinedChannel).toBeNull();
+      });
+    });
   });
 });
