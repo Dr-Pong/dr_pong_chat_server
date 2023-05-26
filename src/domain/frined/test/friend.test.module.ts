@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { TestService } from './test.service';
+import { FriendTestService } from './friend.test.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from 'src/domain/user/user.entity';
 import { Friend } from '../friend.entity';
@@ -17,9 +17,9 @@ import { ProfileImageRepository } from 'src/domain/profile-image/profile-image.r
       ProfileImage,
     ]),
   ],
-  providers: [TestService],
+  providers: [FriendTestService],
   exports: [
-    TestService,
+    FriendTestService,
     TypeOrmModule.forFeature([
       User,
       Friend,

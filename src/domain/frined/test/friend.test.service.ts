@@ -12,7 +12,7 @@ import {
 import { FriendChatManager } from 'src/global/utils/generate.room.id';
 
 @Injectable()
-export class TestService {
+export class FriendTestService {
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,
