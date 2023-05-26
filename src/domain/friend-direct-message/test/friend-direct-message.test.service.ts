@@ -14,7 +14,7 @@ import { FriendDirectMessage } from 'src/domain/friend-direct-message/friend-dir
 import { DirectMessage } from 'src/domain/direct-message/direct-message.entity';
 
 @Injectable()
-export class TestService {
+export class FriendDirectMessageTestService {
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,

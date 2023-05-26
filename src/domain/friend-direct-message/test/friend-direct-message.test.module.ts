@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { TestService } from './test.service';
+import { FriendDirectMessageTestService } from './friend-direct-message.test.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from 'src/domain/user/user.entity';
 import { Block } from 'src/domain/block/block.entity';
@@ -21,9 +21,9 @@ import { FriendDirectMessage } from '../friend-direct-message.entity';
       FriendDirectMessage,
     ]),
   ],
-  providers: [TestService],
+  providers: [FriendDirectMessageTestService],
   exports: [
-    TestService,
+    FriendDirectMessageTestService,
     TypeOrmModule.forFeature([
       User,
       Friend,
