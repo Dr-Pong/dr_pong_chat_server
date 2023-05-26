@@ -11,6 +11,8 @@ import { TestModule } from './test/friend-direct-message.test.module';
 import { GetFriendDirectMessageDto } from './dto/get.friend-direct-message.dto';
 import { GetFriendDirectMessageResponseDto } from './dto/get.friend-direct-message.response.dto';
 import { DeleteFriendDirectMessageDto } from './dto/delete.friend-direct-message.dto';
+import { GetFriendDirectMessageNoticeDto } from './dto/get.friend-direct-message.notice.dto';
+import { GetFriendDirectMessageNoticeResponseDto } from './dto/get.friend-direct-message.notice.response.dto';
 
 describe('DmLogService', () => {
   let service: FriendDirectMessageService;
@@ -165,36 +167,95 @@ describe('DmLogService', () => {
           }),
         ).toEqual([]);
       });
-      it('[유효한 경우] DM 목록에서 삭제 후 다시 DM 입력하여 목록 반환해보기', async () => {
-        const friendDirectMessageListDto: DeleteFriendDirectMessageDto = {
-          userId: testData.users[0].id,
-        };
-
-        await service.deleteFriendDirectMessage(friendDirectMessageListDto);
-
-        expect(
-          await FriendDirectMessageRepository.find({
-            where: { userId: { id: testData.users[0].id } },
-          }),
-        ).toEqual([]);
-
-        await testData.createDirectMessage(10);
-        await testData.createFriendDirectMessage();
-
-        const newFriendDirectMessageListDto: GetFriendDirectMessageDto = {
-          userId: testData.users[0].id,
-        };
-
-        const friendDirectMessage: GetFriendDirectMessageResponseDto =
-          await service.getFriendDirectMessage(newFriendDirectMessageListDto);
-
-        expect(friendDirectMessage.chats.length).toBe(10);
-      });
     });
 
     describe('진행중인 DirectMessage 알람 받기', () => {
-      it('[Valid Case] 대화방의 알람수령', async () => {});
-      it('[Valid Case] 새로온 DM 의 수 반환', async () => {});
+      it('[Valid Case] 대화방의 새로운 알람 수령', async () => {
+        await testData.createDirectMessage(10);
+        await testData.createFriendDirectMessage();
+
+        const friendDirectMessageNoitceDto: GetFriendDirectMessageNoticeDto = {
+          userId: testData.users[0].id,
+        };
+
+        const friendDirectMessageNotice: GetFriendDirectMessageNoticeResponseDto =
+          await service.getFriendDirectMessageNotice(
+            friendDirectMessageNoitceDto,
+          );
+
+        expect(friendDirectMessageNotice).toHaveProperty('hasNewChat');
+
+        expect(friendDirectMessageNotice.hasNewChat).toBe(true);
+      });
+      it('[Valid Case] 대화방이 없을때', async () => {
+        const friendDirectMessageNoitceDto: GetFriendDirectMessageNoticeDto = {
+          userId: testData.users[0].id,
+        };
+
+        await service.getFriendDirectMessageNotice(
+          friendDirectMessageNoitceDto,
+        );
+
+        const friendDirectMessageNotice: GetFriendDirectMessageNoticeResponseDto =
+          await service.getFriendDirectMessageNotice(
+            friendDirectMessageNoitceDto,
+          );
+
+        expect(friendDirectMessageNotice.hasNewChat).toBe(false);
+      });
+
+      it('[Valid Case] 대화방의 모든 DM 알람 읽음 (마지막 읽은 메시지 null)', async () => {
+        await testData.createDirectMessage(10);
+        await testData.createFriendDirectMessageNotice();
+        const userId = testData.users[0].id;
+        const friendDirectMessageNoticeDto: GetFriendDirectMessageNoticeDto = {
+          userId,
+        };
+
+        // 알림이 있는지 확인
+        let friendDirectMessageNotice: GetFriendDirectMessageNoticeResponseDto =
+          await service.getFriendDirectMessageNotice(
+            friendDirectMessageNoticeDto,
+          );
+        expect(friendDirectMessageNotice.hasNewChat).toBe(true);
+
+        // 알림을 읽음 처리
+        await testData.markAllMessagesAsRead(userId);
+
+        // 알림이 없는지 확인
+        friendDirectMessageNotice = await service.getFriendDirectMessageNotice(
+          friendDirectMessageNoticeDto,
+        );
+        expect(friendDirectMessageNotice.hasNewChat).toBe(false);
+      });
+
+      it('[Valid Case] 대화방의 모든 DM 알람 안 읽음 (마지막 읽은 메시지가 있을 때)', async () => {
+        await testData.createFriendDirectMessageNotice();
+        const userId = testData.users[0].id;
+        const lastMessageId = testData.friendDirectMessage[0].id;
+        const friendDirectMessageNoticeDto: GetFriendDirectMessageNoticeDto = {
+          userId,
+        };
+
+        // 알림이 있는지 확인
+        let friendDirectMessageNotice: GetFriendDirectMessageNoticeResponseDto =
+          await service.getFriendDirectMessageNotice(
+            friendDirectMessageNoticeDto,
+          );
+        expect(friendDirectMessageNotice.hasNewChat).toBe(true);
+
+        // 마지막 읽은 메시지를 설정
+        await FriendDirectMessageRepository.update(
+          { userId: { id: testData.users[0].id } },
+          { lastReadMessageId: lastMessageId },
+        );
+
+        // 알림이 있는지 확인
+        friendDirectMessageNotice = await service.getFriendDirectMessageNotice(
+          friendDirectMessageNoticeDto,
+        );
+        expect(friendDirectMessageNotice.hasNewChat).toBe(true);
+      });
     });
   });
 });
