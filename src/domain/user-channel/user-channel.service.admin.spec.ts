@@ -249,5 +249,48 @@ describe('UserChannelService', () => {
         expect(savedChannelFt.muteList).not.toContain(user.id);
       });
     });
+
+    describe('UNMUTE TEST', () => {
+      it('[Valid Case] 일반 유저 UNMUTE', async () => {
+        const channel: ChannelModel = await testData.createChannelWithMuteds();
+        const user: UserModel = userFactory.users.get(channel.users[1]);
+
+        const deleteChannelMuteRequest: DeleteChannelMuteDto = {
+          requestUserId: channel.ownerId,
+          channelId: channel.id,
+          targetUserId: user.id,
+        };
+
+        await service.deleteChannelMute(deleteChannelMuteRequest);
+        const savedChannelFt: ChannelModel = channelFactory.findChannelById(
+          channel.id,
+        );
+
+        expect(savedChannelFt.users).toContain(user.id);
+        expect(savedChannelFt.muteList).not.toContain(user.id);
+      });
+      it('[Error Case] 관리자가 관리자를 UNMUTE', async () => {
+        const channel: ChannelModel =
+          await testData.createChannelWithMutedAdmins();
+        const admin: UserModel = userFactory.users.get(channel.users[1]);
+        const user: UserModel = userFactory.users.get(channel.users[2]);
+
+        const deleteChannelMuteRequest: DeleteChannelMuteDto = {
+          requestUserId: admin.id,
+          channelId: channel.id,
+          targetUserId: user.id,
+        };
+
+        await expect(
+          service.deleteChannelMute(deleteChannelMuteRequest),
+        ).rejects.toThrow(new BadRequestException());
+        const savedChannelFt: ChannelModel = channelFactory.findChannelById(
+          channel.id,
+        );
+
+        expect(savedChannelFt.users).toContain(user.id);
+        expect(savedChannelFt.muteList).toContain(user.id);
+      });
+    });
   });
 });
