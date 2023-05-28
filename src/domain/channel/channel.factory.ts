@@ -3,23 +3,31 @@ import { ChannelModel } from './channel.model';
 import { UserModel } from '../user/user.model';
 import { ChannelType } from 'src/global/type/type.channel';
 import { UserFactory } from '../user/user.factory';
-import { map } from 'rxjs';
 
 @Injectable()
 export class ChannelFactory {
   constructor(private readonly userFactory: UserFactory) {}
   channels: Map<string, ChannelModel> = new Map();
 
+  findChannelById(id: string): ChannelModel {
+    return this.channels.get(id);
+  }
+
   findChannelByChannelName(name: string): ChannelModel {
-    return this.channels.get(name);
+    this.channels.forEach((channel) => {
+      if (channel.name === name) {
+        return channel;
+      }
+    });
+    return null;
   }
 
   create(user: UserModel, channel: ChannelModel): boolean {
-    if (!this.channels.get(channel.name)) {
+    if (!this.channels.get(channel.id)) {
       channel.ownerId = user.id;
       this.join(user, channel);
       this.userFactory.joinChannel(user, channel);
-      this.channels.set(channel.name, channel);
+      this.channels.set(channel.id, channel);
       return true;
     }
     return false;
@@ -28,55 +36,57 @@ export class ChannelFactory {
   join(user: UserModel, channel: ChannelModel): boolean {
     if (
       channel.maxHeadCount !== channel.users.size &&
-      !channel.users.get(user.id)
+      !channel.users.has(user.id)
     ) {
-      channel.users.set(user.id, user);
+      channel.users.set(user.id, user.id);
       this.userFactory.joinChannel(user, channel);
+      this.channels.set(channel.id, channel);
       return true;
     }
     return false;
   }
 
   leave(user: UserModel, channel: ChannelModel): boolean {
-    if (channel.users.get(user.id)) {
+    if (channel.users.has(user.id)) {
       channel.users.delete(user.id);
       this.userFactory.leaveChannel(user);
+      this.channels.set(channel.id, channel);
       return true;
     }
     return false;
   }
 
   setMute(user: UserModel, channel: ChannelModel): boolean {
-    if (channel.users.get(user.id)) {
-      channel.muteList.push(user.id);
+    if (channel.users.has(user.id)) {
+      channel.muteList.set(user.id, user.id);
+      this.channels.set(channel.id, channel);
       return true;
     }
     return false;
   }
 
   unsetMute(user: UserModel, channel: ChannelModel): boolean {
-    if (channel.users.get(user.id)) {
-      channel.muteList = channel.muteList.filter((id) => {
-        user.id !== id;
-      });
+    if (channel.users.has(user.id)) {
+      channel.muteList.delete(user.id);
+      this.channels.set(channel.id, channel);
       return true;
     }
     return false;
   }
 
   setBan(user: UserModel, channel: ChannelModel): boolean {
-    if (channel.users.get(user.id)) {
-      channel.banList.push(user.id);
+    if (channel.users.has(user.id)) {
+      channel.banList.set(user.id, user.id);
+      this.channels.set(channel.id, channel);
       return true;
     }
     return false;
   }
 
-  unsetBan(user: UserModel, channel: ChannelModel) {
-    if (channel.users.get(user.id)) {
-      channel.banList = channel.banList.filter((id) => {
-        user.id !== id;
-      });
+  unsetBan(user: UserModel, channel: ChannelModel): boolean {
+    if (channel.users.has(user.id)) {
+      channel.banList.delete(user.id);
+      this.channels.set(channel.id, channel);
       return true;
     }
     return false;
@@ -84,30 +94,36 @@ export class ChannelFactory {
 
   updateType(type: ChannelType, channel: ChannelModel): void {
     channel.type = type;
+    this.channels.set(channel.id, channel);
   }
 
   updatePassword(password: string, channel: ChannelModel): void {
     channel.password = password;
+    this.channels.set(channel.id, channel);
   }
 
   setAdmin(user: UserModel, channel: ChannelModel): boolean {
-    if (channel.users.get(user.id)) {
-      channel.adminList.push(user.id);
+    if (channel.users.has(user.id)) {
+      channel.adminList.set(user.id, user.id);
+      this.channels.set(channel.id, channel);
       return true;
     }
     return false;
   }
 
   unsetAdmin(user: UserModel, channel: ChannelModel): boolean {
-    if (channel.users.get(user.id)) {
-      channel.adminList.push(user.id);
+    if (channel.users.has(user.id)) {
+      channel.adminList.set(user.id, user.id);
+      this.channels.set(channel.id, channel);
       return true;
     }
     return false;
   }
 
   delete(channel: ChannelModel): boolean {
-    channel.users.forEach((user) => this.userFactory.leaveChannel(user));
-    return this.channels.delete(channel.name);
+    channel.users.forEach((user) =>
+      this.userFactory.leaveChannel(this.userFactory.users.get(user)),
+    );
+    return this.channels.delete(channel.id);
   }
 }
