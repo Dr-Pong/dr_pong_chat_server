@@ -11,7 +11,8 @@ import { TestModule } from './test/direct-message-room.test.module';
 import { GetDirectMessageRoomsDto } from './dto/get.direct-message-rooms.dto';
 import { DeleteDirectMessageRoomDto } from './dto/delete.direct-message-room.dto';
 import { GetDirectMessageRoomsNotificationDto } from './dto/get.direct-message-rooms.notification.dto';
-import exp from 'constants';
+import { DirectMessageRoomsDto } from './dto/direct-message-rooms.dto';
+import { DirectMessageRoomsNotificationDto } from './dto/direct-message-rooms.notification.dto';
 
 describe('DmLogService', () => {
   let service: DirectMessageRoomService;
@@ -75,9 +76,8 @@ describe('DmLogService', () => {
           userId: testData.users[0].id,
         };
 
-        const directMessageRooms = await service.getDirectMessageRooms(
-          directMessageRoomsDto,
-        );
+        const directMessageRooms: DirectMessageRoomsDto =
+          await service.getDirectMessageRooms(directMessageRoomsDto);
 
         expect(directMessageRooms).toHaveProperty('chats');
         expect(directMessageRooms.chats[0]).toHaveProperty('nickname');
@@ -93,9 +93,8 @@ describe('DmLogService', () => {
           userId: testData.users[0].id,
         };
 
-        const directMessageRooms = await service.getDirectMessageRooms(
-          directMessageRoomsDto,
-        );
+        const directMessageRooms: DirectMessageRoomsDto =
+          await service.getDirectMessageRooms(directMessageRoomsDto);
 
         expect(directMessageRooms.chats.length).toBe(10);
 
@@ -113,9 +112,8 @@ describe('DmLogService', () => {
           userId: testData.users[0].id,
         };
 
-        const directMessageRooms = await service.getDirectMessageRooms(
-          directMessageRoomsDto,
-        );
+        const directMessageRooms: DirectMessageRoomsDto =
+          await service.getDirectMessageRooms(directMessageRoomsDto);
 
         expect(directMessageRooms.chats.length).toBe(0);
       });
@@ -154,7 +152,7 @@ describe('DmLogService', () => {
             userId: testData.users[0].id,
           };
 
-        const getDirectMessageRoomsNotificationResponse =
+        const getDirectMessageRoomsNotificationResponse: DirectMessageRoomsNotificationDto =
           await service.getDirectMessageRoomsNotification(
             getDirectMessageRoomsNotificationDto,
           );
@@ -173,7 +171,7 @@ describe('DmLogService', () => {
             userId: testData.users[0].id,
           };
 
-        const getDirectMessageRoomsNotificationResponse =
+        const getDirectMessageRoomsNotificationResponse: DirectMessageRoomsNotificationDto =
           await service.getDirectMessageRoomsNotification(
             getDirectMessageRoomsNotificationDto,
           );
@@ -195,7 +193,7 @@ describe('DmLogService', () => {
             userId: testData.users[0].id,
           };
 
-        const getDirectMessageRoomsNotificationResponse =
+        const getDirectMessageRoomsNotificationResponse: DirectMessageRoomsNotificationDto =
           await service.getDirectMessageRoomsNotification(
             getDirectMessageRoomsNotificationDto,
           );
@@ -217,7 +215,7 @@ describe('DmLogService', () => {
             userId: testData.users[0].id,
           };
 
-        const getDirectMessageRoomsNotificationResponse =
+        const getDirectMessageRoomsNotificationResponse: DirectMessageRoomsNotificationDto =
           await service.getDirectMessageRoomsNotification(
             getDirectMessageRoomsNotificationDto,
           );
