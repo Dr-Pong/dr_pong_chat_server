@@ -108,26 +108,12 @@ export class FriendDirectMessageTestService {
   async createUserFriends(person: number): Promise<void> {
     const index: number = person;
     for (let i = 1; i < index; i++) {
-      const roomId = FriendChatManager.generateRoomId(
-        this.users[0].id.toString(),
-        this.users[i].id.toString(),
-      );
-      const friend1 = await this.friendRepository.save({
-        roomId: roomId,
+      const friend = await this.friendRepository.save({
         user: this.users[0],
         friend: this.users[i],
         status: FRIENDSTATUS_FRIEND,
-        chatOn: false,
       });
-      this.friends.push(friend1);
-      const friend2 = await this.friendRepository.save({
-        roomId: roomId,
-        user: this.users[i],
-        friend: this.users[0],
-        status: FRIENDSTATUS_FRIEND,
-        chatOn: false,
-      });
-      this.friends.push(friend2);
+      this.friends.push(friend);
     }
   }
 
@@ -203,8 +189,8 @@ export class FriendDirectMessageTestService {
           this.users[0].id.toString(),
           this.users[i].id.toString(),
         ),
-        lastReadMessageId: lastMessage ? lastMessage.id : null,
-        isDisplay: i % 2 == 0 ? true : false,
+        lastReadMessageId: i % 2 === 0 ? lastMessage.id : null,
+        isDisplay: true,
       });
 
       friendDirectMessages.push(friendDirectMessage);
