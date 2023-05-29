@@ -185,3 +185,4 @@ export class FriendDirectMessageTestService {
       friendDirectMessages.push(friendDirectMessage);
     }
   }
+}
