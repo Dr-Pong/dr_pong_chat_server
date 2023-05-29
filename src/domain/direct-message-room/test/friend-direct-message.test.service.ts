@@ -31,14 +31,14 @@ export class FriendDirectMessageTestService {
     @InjectRepository(DirectMessage)
     private directMessageRepository: Repository<DirectMessage>,
     @InjectRepository(DirectMessageRoom)
-    private friendDirectMessageRepository: Repository<DirectMessageRoom>,
+    private directMessageRoomRepository: Repository<DirectMessageRoom>,
   ) {}
   users: User[] = [];
   profileImages: ProfileImage[] = [];
   friends: Friend[] = [];
   blocks: Block[] = [];
   directMessage: DirectMessage[] = [];
-  friendDirectMessage: DirectMessageRoom[] = [];
+  directMessageRooom: DirectMessageRoom[] = [];
 
   clear() {
     this.users.splice(0);
@@ -46,7 +46,7 @@ export class FriendDirectMessageTestService {
     this.friends.splice(0);
     this.blocks.splice(0);
     this.directMessage.splice(0);
-    this.friendDirectMessage.splice(0);
+    this.directMessageRooom.splice(0);
   }
 
   async createProfileImages(): Promise<void> {
@@ -175,18 +175,16 @@ export class FriendDirectMessageTestService {
         order: { time: 'DESC' },
       });
 
-      const friendDirectMessage = await this.friendDirectMessageRepository.save(
-        {
-          userId: this.users[0],
-          friendId: this.users[i],
-          roomId: FriendChatManager.generateRoomId(
-            this.users[0].id.toString(),
-            this.users[i].id.toString(),
-          ),
-          last_message_id: lastMessage ? lastMessage.id : null,
-          is_chat_on: CHATINGTYPE_INCHAT,
-        },
-      );
+      const friendDirectMessage = await this.directMessageRoomRepository.save({
+        userId: this.users[0],
+        friendId: this.users[i],
+        roomId: FriendChatManager.generateRoomId(
+          this.users[0].id.toString(),
+          this.users[i].id.toString(),
+        ),
+        last_message_id: lastMessage ? lastMessage.id : null,
+        is_chat_on: CHATINGTYPE_INCHAT,
+      });
 
       friendDirectMessages.push(friendDirectMessage);
     }
@@ -196,7 +194,7 @@ export class FriendDirectMessageTestService {
     const index: number = this.users.length;
     for (let i = 0; i < index; i++) {
       const friendDirectMessageNotice =
-        await this.friendDirectMessageRepository.save({
+        await this.directMessageRoomRepository.save({
           userId: this.users[0],
           friendId: this.users[i],
           roomId: FriendChatManager.generateRoomId(
@@ -206,12 +204,12 @@ export class FriendDirectMessageTestService {
           last_message_id: this.directMessage[3].id,
           is_chat_on: CHATINGTYPE_OUTCHAT,
         });
-      this.friendDirectMessage.push(friendDirectMessageNotice);
+      this.directMessageRooom.push(friendDirectMessageNotice);
     }
   }
 
   async markAllMessagesAsRead(userId: number): Promise<void> {
-    await this.friendDirectMessageRepository.update(
+    await this.directMessageRoomRepository.update(
       { userId: { id: userId } },
       { lastReadMessageId: null },
     );
