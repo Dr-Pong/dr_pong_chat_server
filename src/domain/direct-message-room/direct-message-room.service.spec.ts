@@ -6,8 +6,8 @@ import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
 import { typeORMConfig } from 'src/configs/typeorm.config';
 import { addTransactionalDataSource } from 'typeorm-transactional';
 import { DirectMessageRoomModule } from './direct-message-room.module';
-import { FriendDirectMessageTestService } from './test/friend-direct-message.test.service';
-import { TestModule } from './test/friend-direct-message.test.module';
+import { FriendDirectMessageTestService } from './test/direct-message-room.test.service';
+import { TestModule } from './test/direct-message-room.test.module';
 import { GetDirectMessageRoomsDto } from './dto/get.direct-message-rooms.dto';
 import { GetDirectMessageRoomsResponseDto } from './dto/get.direct-message-rooms.response.dto';
 import { DeleteDirectMessageRoomDto } from './dto/delete.direct-message-room.dto';
@@ -70,7 +70,7 @@ describe('DmLogService', () => {
     describe('진행중인 DirectMessageRoom 목록 조회', () => {
       it('[Valid Case] 대화방의 형식 확인 (이미지, 닉네임, 새채팅의 수)', async () => {
         await testData.createDirectMessage(10);
-        await testData.createFriendDirectMessage();
+        await testData.createDirectMessageRooms();
 
         const directMessageRoomsDto: GetDirectMessageRoomsDto = {
           userId: testData.users[0].id,
@@ -86,7 +86,7 @@ describe('DmLogService', () => {
       });
       it('[Valid Case] 현재 진행중인 DM목록 반환', async () => {
         await testData.createDirectMessage(10);
-        await testData.createFriendDirectMessage();
+        await testData.createDirectMessageRooms();
 
         const directMessageRoomsDto: GetDirectMessageRoomsDto = {
           userId: testData.users[0].id,
@@ -121,7 +121,7 @@ describe('DmLogService', () => {
     describe('진행중인 DirectMessage 목록 삭제', () => {
       it('[Valid Case] DM 목록에서 삭제', async () => {
         await testData.createDirectMessage(10);
-        await testData.createFriendDirectMessage();
+        await testData.createDirectMessageRooms();
 
         const deleteDirectMessageRoomDto: DeleteDirectMessageRoomDto = {
           userId: testData.users[0].id,
@@ -136,6 +136,93 @@ describe('DmLogService', () => {
           }),
         ).toEqual([]);
         expect(testData.directMessageRooom[0].isDisplay).toBe(false);
+      });
+    });
+
+    describe('진행중인 DirectMessage 알람 받기', () => {
+      it('[Valid Case] 대화방의 새로운 알람 수령', async () => {
+        await testData.createDirectMessage(10);
+        await testData.createDirectMessageRooms();
+
+        const getDirectMessageRoomsNotificationDto: GetDirectMessageRoomsNotificationDto =
+          {
+            userId: testData.users[0].id,
+          };
+
+        const getDirectMessageRoomsNotificationResponse: GetDirectMessageRoomsNotificationResponseDto =
+          await service.getDirectMessageRoomsNotification(
+            getDirectMessageRoomsNotificationDto,
+          );
+
+        expect(getDirectMessageRoomsNotificationResponse).toHaveProperty(
+          'hasNewChat',
+        );
+        expect(getDirectMessageRoomsNotificationResponse.hasNewChat).toBe(
+          'true',
+        );
+      });
+
+      it('[Valid Case] 대화방이 없을때', async () => {
+        const getDirectMessageRoomsNotificationDto: GetDirectMessageRoomsNotificationDto =
+          {
+            userId: testData.users[0].id,
+          };
+
+        const getDirectMessageRoomsNotificationResponse: GetDirectMessageRoomsNotificationResponseDto =
+          await service.getDirectMessageRoomsNotification(
+            getDirectMessageRoomsNotificationDto,
+          );
+
+        expect(getDirectMessageRoomsNotificationResponse).toHaveProperty(
+          'hasNewChat',
+        );
+        expect(getDirectMessageRoomsNotificationResponse.hasNewChat).toBe(
+          'false',
+        );
+      });
+
+      it('[Valid Case] 대화방의 모든 DM 알람 읽음 ', async () => {
+        await testData.createDirectMessage(10);
+        await testData.createDirectMessageRooms();
+
+        const getDirectMessageRoomsNotificationDto: GetDirectMessageRoomsNotificationDto =
+          {
+            userId: testData.users[0].id,
+          };
+
+        const getDirectMessageRoomsNotificationResponse: GetDirectMessageRoomsNotificationResponseDto =
+          await service.getDirectMessageRoomsNotification(
+            getDirectMessageRoomsNotificationDto,
+          );
+
+        expect(getDirectMessageRoomsNotificationResponse).toHaveProperty(
+          'hasNewChat',
+        );
+        expect(getDirectMessageRoomsNotificationResponse.hasNewChat).toBe(
+          'true',
+        );
+      });
+
+      it('[Valid Case] 대화방의 모든 DM 알람 안 읽음 ', async () => {
+        await testData.createDirectMessage(10);
+        await testData.createHalfReadDirectMessageRooms();
+
+        const getDirectMessageRoomsNotificationDto: GetDirectMessageRoomsNotificationDto =
+          {
+            userId: testData.users[0].id,
+          };
+
+        const getDirectMessageRoomsNotificationResponse: GetDirectMessageRoomsNotificationResponseDto =
+          await service.getDirectMessageRoomsNotification(
+            getDirectMessageRoomsNotificationDto,
+          );
+
+        expect(getDirectMessageRoomsNotificationResponse).toHaveProperty(
+          'hasNewChat',
+        );
+        expect(getDirectMessageRoomsNotificationResponse.hasNewChat).toBe(
+          'false',
+        );
       });
     });
   });
