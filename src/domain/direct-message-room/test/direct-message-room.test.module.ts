@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { FriendDirectMessageTestService } from './friend-direct-message.test.service';
+import { FriendDirectMessageTestService } from './direct-message-room.test.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from 'src/domain/user/user.entity';
 import { Block } from 'src/domain/block/block.entity';
