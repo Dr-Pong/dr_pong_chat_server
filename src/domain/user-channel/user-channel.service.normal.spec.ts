@@ -378,13 +378,13 @@ describe('UserChannelService', () => {
         await testData.createBasicChannels();
         const user: UserModel = await testData.createBasicUser();
         const basicChannel: ChannelModel = await testData.createBasicChannel();
-        const postUserInChannelRequest: PostUserInChannelDto = {
+        const joinChannelRequest: PostChannelJoinDto = {
           userId: user.id,
           roomId: basicChannel.id,
           password: null,
         };
 
-        await service.postUserInChannel(postUserInChannelRequest);
+        await service.postChannelJoin(joinChannelRequest);
 
         const savedChannelFt: ChannelModel =
           channelFactory.findChannelByChannelName(basicChannel.name);
@@ -396,13 +396,13 @@ describe('UserChannelService', () => {
         const user: UserModel = await testData.createBasicUser();
         const basicChannel: ChannelModel =
           await testData.createProtectedChannel();
-        const postUserInChannelRequest: PostUserInChannelDto = {
+        const joinChannelRequest: PostChannelJoinDto = {
           userId: user.id,
           roomId: basicChannel.id,
           password: 'password',
         };
 
-        await service.postUserInChannel(postUserInChannelRequest);
+        await service.postChannelJoin(joinChannelRequest);
 
         const savedChannelFt: ChannelModel =
           channelFactory.findChannelByChannelName(basicChannel.name);
@@ -414,13 +414,13 @@ describe('UserChannelService', () => {
         const user: UserModel = await testData.createInvitePendingUser();
         const basicChannel: ChannelModel =
           await testData.createProtectedChannel();
-        const postUserInChannelRequest: PostUserInChannelDto = {
+        const joinChannelRequest: PostChannelJoinDto = {
           userId: user.id,
           roomId: basicChannel.id,
           password: 'password',
         };
 
-        await service.postUserInChannel(postUserInChannelRequest);
+        await service.postChannelJoin(joinChannelRequest);
 
         const savedChannelFt: ChannelModel =
           channelFactory.findChannelByChannelName(basicChannel.name);
@@ -434,14 +434,14 @@ describe('UserChannelService', () => {
         const user: UserModel = await testData.createInvitePendingUser();
         const basicChannel: ChannelModel =
           await testData.createProtectedChannel();
-        const postUserInChannelRequest: PostUserInChannelDto = {
+        const joinChannelRequest: PostChannelJoinDto = {
           userId: user.id,
           roomId: basicChannel.id,
           password: 'wrongPassword',
         };
 
         await expect(
-          service.postUserInChannel(postUserInChannelRequest),
+          service.postChannelJoin(joinChannelRequest),
         ).rejects.toThrow(new BadRequestException());
       });
       it('[Error Case] private 채팅방 입장', async () => {
@@ -449,14 +449,14 @@ describe('UserChannelService', () => {
         const user: UserModel = await testData.createInvitePendingUser();
         const basicChannel: ChannelModel =
           await testData.createPrivateChannel();
-        const postUserInChannelRequest: PostUserInChannelDto = {
+        const joinChannelRequest: PostChannelJoinDto = {
           userId: user.id,
           roomId: basicChannel.id,
           password: null,
         };
 
         await expect(
-          service.postUserInChannel(postUserInChannelRequest),
+          service.postChannelJoin(joinChannelRequest),
         ).rejects.toThrow(new BadRequestException());
       });
       it('[Error Case] Ban되어 있는 경우', async () => {
@@ -464,14 +464,14 @@ describe('UserChannelService', () => {
         const user: UserModel = await testData.createInvitePendingUser();
         const basicChannel: ChannelModel = await testData.createBasicChannel();
         basicChannel.banList.push(user.id);
-        const postUserInChannelRequest: PostUserInChannelDto = {
+        const joinChannelRequest: PostChannelJoinDto = {
           userId: user.id,
           roomId: basicChannel.id,
           password: null,
         };
 
         await expect(
-          service.postUserInChannel(postUserInChannelRequest),
+          service.postChannelJoin(joinChannelRequest),
         ).rejects.toThrow(new BadRequestException());
       });
     });
@@ -481,12 +481,12 @@ describe('UserChannelService', () => {
         const basicChannel: ChannelModel = await testData.createBasicChannel();
         const user: UserModel = await testData.createBasicUser();
 
-        const postInviteRequest: PostInviteDto = {
+        const inviteRequest: ChannelInviteDto = {
           userId: user.id,
           roomId: basicChannel.id,
         };
 
-        await service.postInvite(postInviteRequest);
+        await service.postInvite(inviteRequest);
 
         const savedUserFt: UserModel = userFactory.findUserById(user.id);
 
@@ -497,12 +497,12 @@ describe('UserChannelService', () => {
         const user: UserModel = await testData.createBasicUser();
         user.inviteList.push(basicChannel.id);
 
-        const postAcceptInviteRequest: PostInviteAcceptDto = {
+        const InviteAcceptRequest: PostChannelInviteAcceptDto = {
           userId: user.id,
           roomId: basicChannel.id,
         };
 
-        await service.postAcceptInvite(postAcceptInviteRequest);
+        await service.postChannelAcceptInvite(InviteAcceptRequest);
         const savedUserFt: UserModel = userFactory.findUserById(user.id);
 
         const savedChannelFt: ChannelModel = channelFactory.findChannelById(
@@ -519,12 +519,12 @@ describe('UserChannelService', () => {
         const user: UserModel = await testData.createBasicUser();
         user.inviteList.push(basicChannel.id);
 
-        const postAcceptInviteRequest: PostInviteAcceptDto = {
+        const InviteAcceptRequest: PostChannelInviteAcceptDto = {
           userId: user.id,
           roomId: basicChannel.id,
         };
 
-        await service.postAcceptInvite(postAcceptInviteRequest);
+        await service.postChannelAcceptInvite(InviteAcceptRequest);
         const savedUserFt: UserModel = userFactory.findUserById(user.id);
 
         const savedChannelFt: ChannelModel = channelFactory.findChannelById(
@@ -541,12 +541,12 @@ describe('UserChannelService', () => {
         const user: UserModel = await testData.createBasicUser();
         user.inviteList.push(basicChannel.id);
 
-        const postAcceptInviteRequest: PostInviteAcceptDto = {
+        const InviteAcceptRequest: PostChannelInviteAcceptDto = {
           userId: user.id,
           roomId: basicChannel.id,
         };
 
-        await service.postAcceptInvite(postAcceptInviteRequest);
+        await service.postChannelAcceptInvite(InviteAcceptRequest);
         const savedUserFt: UserModel = userFactory.findUserById(user.id);
 
         const savedChannelFt: ChannelModel = channelFactory.findChannelById(
@@ -562,12 +562,12 @@ describe('UserChannelService', () => {
         const user: UserModel = await testData.createBasicUser();
         user.inviteList.push(basicChannel.id);
 
-        const deleteInviteRequest: DeleteInviteDto = {
+        const deleteInviteRequest: DeleteChannelInviteDto = {
           userId: user.id,
           roomId: basicChannel.id,
         };
 
-        await service.deleteInvite(deleteInviteRequest);
+        await service.deleteChannelInvite(deleteInviteRequest);
         const savedUserFt: UserModel = userFactory.findUserById(user.id);
 
         const savedChannelFt: ChannelModel = channelFactory.findChannelById(
@@ -582,13 +582,13 @@ describe('UserChannelService', () => {
         const user: UserModel = await testData.createBasicUser();
         basicChannel.banList.push(user.id);
 
-        const postAcceptInviteRequest: PostInviteAcceptDto = {
+        const InviteAcceptRequest: PostChannelInviteAcceptDto = {
           userId: user.id,
           roomId: basicChannel.id,
         };
 
         await expect(
-          service.postAcceptInvite(postAcceptInviteRequest),
+          service.postChannelAcceptInvite(InviteAcceptRequest),
         ).rejects.toThrow(new BadRequestException());
         const savedUserFt: UserModel = userFactory.findUserById(user.id);
 
@@ -605,13 +605,13 @@ describe('UserChannelService', () => {
         const user: UserModel = await testData.createBasicUser();
         basicChannel.banList.push(user.id);
 
-        const postAcceptInviteRequest: PostInviteAcceptDto = {
+        const InviteAcceptRequest: PostChannelInviteAcceptDto = {
           userId: user.id,
           roomId: basicChannel.id,
         };
 
         await expect(
-          service.postAcceptInvite(postAcceptInviteRequest),
+          service.postChannelAcceptInvite(InviteAcceptRequest),
         ).rejects.toThrow(new BadRequestException());
         const savedUserFt: UserModel = userFactory.findUserById(user.id);
 
@@ -638,12 +638,12 @@ describe('UserChannelService', () => {
       it('[Valid Case] 일반 유저가 퇴장하는 경우', async () => {
         const user: UserModel = await testData.createUserInChannel();
 
-        const deleteUserInChannelRequest: DeleteUserInChannelDto = {
+        const deleteChannelUserRequest: DeleteChannelUserDto = {
           userId: user.id,
           roomId: user.joinedChannel,
         };
 
-        await service.deleteUserInChannel(deleteUserInChannelRequest);
+        await service.deleteChannelUser(deleteChannelUserRequest);
 
         const savedChannelFt: ChannelModel = channelFactory.findChannelById(
           user.joinedChannel,
@@ -654,12 +654,12 @@ describe('UserChannelService', () => {
       it('[Valid Case] owner가 퇴장하는 경우', async () => {
         const channel: ChannelModel = await testData.createChannelWithOwner();
 
-        const deleteUserInChannelRequest: DeleteUserInChannelDto = {
+        const deleteChannelUserRequest: DeleteChannelUserDto = {
           userId: channel.ownerId,
           roomId: channel.id,
         };
 
-        await service.deleteUserInChannel(deleteUserInChannelRequest);
+        await service.deleteChannelUser(deleteChannelUserRequest);
 
         const savedChannelFt: ChannelModel = channelFactory.findChannelById(
           channel.id,
@@ -672,12 +672,12 @@ describe('UserChannelService', () => {
         const channel: ChannelModel = await testData.createChannelWithAdmins();
         const admin: UserModel = userFactory.findUserById(channel.adminList[0]);
 
-        const deleteUserInChannelRequest: DeleteUserInChannelDto = {
+        const deleteChannelUserRequest: DeleteChannelUserDto = {
           userId: admin.adminList[0],
           roomId: channel.id,
         };
 
-        await service.deleteUserInChannel(deleteUserInChannelRequest);
+        await service.deleteChannelUser(deleteChannelUserRequest);
 
         const savedChannelFt: ChannelModel = channelFactory.findChannelById(
           channel.id,
@@ -692,12 +692,12 @@ describe('UserChannelService', () => {
         const channel: ChannelModel = await testData.createChannelWithMuteds();
         const user: UserModel = userFactory.findUserById(channel.muteList[0]);
 
-        const deleteUserInChannelRequest: DeleteUserInChannelDto = {
+        const deleteChannelUserRequest: DeleteChannelUserDto = {
           userId: user.adminList[0],
           roomId: channel.id,
         };
 
-        await service.deleteUserInChannel(deleteUserInChannelRequest);
+        await service.deleteChannelUser(deleteChannelUserRequest);
 
         const savedChannelFt: ChannelModel = channelFactory.findChannelById(
           channel.id,
