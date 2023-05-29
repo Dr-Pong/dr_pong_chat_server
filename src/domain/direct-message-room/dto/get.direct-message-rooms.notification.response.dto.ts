@@ -1,3 +1,3 @@
-export class GetDirectMessageRoomsNotificationResponseDto {
+export class DirectMessageRoomsNotificationResponseDto {
   hasNewChat: boolean;
 }
