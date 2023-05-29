@@ -1,10 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { UserChannelService } from './user-channel.service';
+import { ChannelUserService } from './channel-user.service';
 import { ChannelFactory } from '../channel/channel.factory';
 import { UserFactory } from '../user/user.factory';
 import { Repository } from 'typeorm';
 import { Channel } from 'diagnostics_channel';
-import { UserChannelModule } from './user-channel.module';
+import { ChannelUserModule } from './channel-user.module';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { ChannelModel } from '../channel/channel.model';
 import { UserModel } from '../user/user.model';
@@ -13,8 +13,8 @@ import { CHANNEL_PROTECTED } from 'src/global/type/type.channel';
 import { CHANNEL_PRIVATE } from 'src/global/type/type.channel';
 import { CHANNEL_PUBLIC } from 'src/global/type/type.channel';
 
-describe('UserChannelService', () => {
-  let service: UserChannelService;
+describe('ChannelUserService', () => {
+  let service: ChannelUserService;
   let channelFactory: ChannelFactory;
   let userFactory: UserFactory;
   let channelRepository: Repository<Channel>;
@@ -22,7 +22,7 @@ describe('UserChannelService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      imports: [UserChannelModule],
+      imports: [ChannelUserModule],
       providers: [
         {
           provide: getRepositoryToken(Channel),
@@ -31,7 +31,7 @@ describe('UserChannelService', () => {
       ],
     }).compile();
 
-    service = module.get<UserChannelService>(UserChannelService);
+    service = module.get<ChannelUserService>(ChannelUserService);
     channelFactory = module.get<ChannelFactory>(ChannelFactory);
     userFactory = module.get<UserFactory>(UserFactory);
     channelRepository = module.get<Repository<Channel>>(Repository);
