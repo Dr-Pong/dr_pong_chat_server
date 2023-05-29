@@ -14,9 +14,6 @@ export class Friend extends BaseTimeEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ name: 'room_id', nullable: false })
-  roomId: string;
-
   @ManyToOne(() => User, { eager: true })
   @JoinColumn({ name: 'user_id' })
   user: User;
