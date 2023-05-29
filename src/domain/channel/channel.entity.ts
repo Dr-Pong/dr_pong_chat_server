@@ -8,11 +8,12 @@ import {
   Unique,
 } from 'typeorm';
 import { User } from '../user/user.entity';
+import { ChannelType } from 'src/global/type/type.channel';
 
 @Entity()
 export class Channel extends BaseTimeEntity {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
   @ManyToOne(() => User, { eager: true })
   @JoinColumn({ name: 'operator' })
@@ -29,5 +30,5 @@ export class Channel extends BaseTimeEntity {
   password: string;
 
   @Column({ name: 'type', nullable: false })
-  type: string;
+  type: ChannelType;
 }
