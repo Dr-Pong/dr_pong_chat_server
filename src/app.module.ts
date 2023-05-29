@@ -11,7 +11,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { typeORMConfig } from './configs/typeorm.config';
 import { addTransactionalDataSource } from 'typeorm-transactional';
 import { DataSource } from 'typeorm';
-import { FriendDirectMessageModule } from './domain/friend-direct-message/friend-direct-message.module';
+import { DirectMessageRoomModule } from './domain/direct-message-room/direct-message-room.module';
 import { DirectMessageModule } from './domain/direct-message/direct-message.module';
 import { DirectMessageService } from './domain/direct-message/direct-message.service';
 
@@ -37,7 +37,7 @@ import { DirectMessageService } from './domain/direct-message/direct-message.ser
     ChannelModule,
     ChannelLogModule,
     DirectMessageModule,
-    FriendDirectMessageModule,
+    DirectMessageRoomModule,
   ],
   controllers: [AppController],
   providers: [AppService, DirectMessageService],
