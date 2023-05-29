@@ -11,7 +11,7 @@ import {
 import { FriendChatManager } from 'src/global/utils/generate.room.id';
 import { Friend } from 'src/domain/friend/friend.entity';
 import { DirectMessage } from '../direct-message.entity';
-import { FriendDirectMessage } from 'src/domain/friend-direct-message/friend-direct-message.entity';
+import { DirectMessageRoom } from 'src/domain/direct-message-room/direct-message-room.entity';
 
 @Injectable()
 export class DirectMessageTestService {
@@ -26,15 +26,15 @@ export class DirectMessageTestService {
     private blockRepository: Repository<Block>,
     @InjectRepository(DirectMessage)
     private directMessageRepository: Repository<DirectMessage>,
-    @InjectRepository(FriendDirectMessage)
-    private friendDirectMessageRepository: Repository<FriendDirectMessage>,
+    @InjectRepository(DirectMessageRoom)
+    private friendDirectMessageRepository: Repository<DirectMessageRoom>,
   ) {}
   users: User[] = [];
   profileImages: ProfileImage[] = [];
   friends: Friend[] = [];
   blocks: Block[] = [];
   directMessage: DirectMessage[] = [];
-  friendDirectMessage: FriendDirectMessage[] = [];
+  friendDirectMessage: DirectMessageRoom[] = [];
 
   clear() {
     this.users.splice(0);
@@ -163,7 +163,7 @@ export class DirectMessageTestService {
   //FriendDirectMessage만들기 list
   async createFriendDirectMessage(): Promise<void> {
     const index: number = this.users.length;
-    const friendDirectMessages: FriendDirectMessage[] = [];
+    const friendDirectMessages: DirectMessageRoom[] = [];
 
     for (let i = 0; i < index; i++) {
       const lastMessage = await this.directMessageRepository.findOne({
