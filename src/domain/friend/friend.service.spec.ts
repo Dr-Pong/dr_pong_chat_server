@@ -81,7 +81,7 @@ describe('FriendService', () => {
           userId: testData.users[0].id,
         };
         const FriendsList: UserFriendsDto =
-          service.getUserFriendsByNickname(userFriendsDto);
+          service.getUserFriends(userFriendsDto);
         const friendRequest: Friend[] = await friendRepository.find({
           where: {
             user: { id: testData.users[0].id },
@@ -106,7 +106,7 @@ describe('FriendService', () => {
           userId: testData.users[0].id,
         };
         const friendsList: UserFriendsDto =
-          service.getUserFriendsByNickname(userFriendsDto);
+          service.getUserFriends(userFriendsDto);
         expect(friendsList).toHaveProperty('users');
         expect(friendsList.friends.length).toBe(0);
         expect(friendsList.friends).toBe([]);
@@ -118,7 +118,7 @@ describe('FriendService', () => {
           userId: testData.users[0].id,
         };
         const friendsList: UserFriendsDto =
-          service.getUserFriendsByNickname(userFriendsDto);
+          service.getUserFriends(userFriendsDto);
         expect(friendsList).toBeNull();
         expect(friendsList.friends.length).toBe(9);
         expect(friendsList.friends[0]).toBe(testData.users[1]);
