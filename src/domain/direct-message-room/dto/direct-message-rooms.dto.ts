@@ -4,6 +4,6 @@ export class DirectMessageRoomInfoDto {
   newChat: number;
 }
 
-export class DirectMessageRoomsResponseDto {
+export class DirectMessageRoomsDto {
   chats: DirectMessageRoomInfoDto[];
 }
