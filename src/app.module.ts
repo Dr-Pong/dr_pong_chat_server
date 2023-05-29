@@ -40,6 +40,6 @@ import { DirectMessageService } from './domain/direct-message/direct-message.ser
     DirectMessageRoomModule,
   ],
   controllers: [AppController],
-  providers: [AppService, DirectMessageService],
+  providers: [AppService],
 })
 export class AppModule {}
