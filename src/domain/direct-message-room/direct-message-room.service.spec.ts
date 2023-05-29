@@ -18,7 +18,7 @@ describe('DmLogService', () => {
   let service: DirectMessageRoomService;
   let testData: FriendDirectMessageTestService;
   let dataSources: DataSource;
-  let FriendDirectMessageRepository: Repository<DirectMessageRoom>;
+  let directMessageRoomRepository: Repository<DirectMessageRoom>;
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -46,7 +46,7 @@ describe('DmLogService', () => {
       FriendDirectMessageTestService,
     );
     dataSources = module.get<DataSource>(DataSource);
-    FriendDirectMessageRepository = module.get<Repository<DirectMessageRoom>>(
+    directMessageRoomRepository = module.get<Repository<DirectMessageRoom>>(
       getRepositoryToken(DirectMessageRoom),
     );
   });
@@ -72,49 +72,49 @@ describe('DmLogService', () => {
         await testData.createDirectMessage(10);
         await testData.createFriendDirectMessage();
 
-        const friendDirectMessageListDto: GetDirectMessageRoomsDto = {
+        const directMessageRoomsDto: GetDirectMessageRoomsDto = {
           userId: testData.users[0].id,
         };
 
-        const friendDirectMessage: GetDirectMessageRoomsResponseDto =
-          await service.getDirectMessageRooms(friendDirectMessageListDto);
+        const directMessageRooms: GetDirectMessageRoomsResponseDto =
+          await service.getDirectMessageRooms(directMessageRoomsDto);
 
-        expect(friendDirectMessage).toHaveProperty('chats');
-        expect(friendDirectMessage.chats[0]).toHaveProperty('nickname');
-        expect(friendDirectMessage.chats[0]).toHaveProperty('imgUrl');
-        expect(friendDirectMessage.chats[0]).toHaveProperty('newChat');
+        expect(directMessageRooms).toHaveProperty('chats');
+        expect(directMessageRooms.chats[0]).toHaveProperty('nickname');
+        expect(directMessageRooms.chats[0]).toHaveProperty('imgUrl');
+        expect(directMessageRooms.chats[0]).toHaveProperty('newChat');
       });
       it('[Valid Case] 현재 진행중인 DM목록 반환', async () => {
         await testData.createDirectMessage(10);
         await testData.createFriendDirectMessage();
 
-        const friendDirectMessageListDto: GetDirectMessageRoomsDto = {
+        const directMessageRoomsDto: GetDirectMessageRoomsDto = {
           userId: testData.users[0].id,
         };
 
-        const friendDirectMessage: GetDirectMessageRoomsResponseDto =
-          await service.getDirectMessageRooms(friendDirectMessageListDto);
+        const directMessageRooms: GetDirectMessageRoomsResponseDto =
+          await service.getDirectMessageRooms(directMessageRoomsDto);
 
-        expect(friendDirectMessage.chats.length).toBe(10);
+        expect(directMessageRooms.chats.length).toBe(10);
 
-        expect(friendDirectMessage.chats[0].nickname).toBe(
+        expect(directMessageRooms.chats[0].nickname).toBe(
           testData.users[1].nickname,
         );
-        expect(friendDirectMessage.chats[0].imgUrl).toBe(
+        expect(directMessageRooms.chats[0].imgUrl).toBe(
           testData.users[1].image,
         );
-        expect(friendDirectMessage.chats[0].newChat).toBe(0);
+        expect(directMessageRooms.chats[0].newChat).toBe(0);
       });
 
       it('[Valid Case] 진행중인 DM목록이 없을때 확인', async () => {
-        const friendDirectMessageListDto: GetDirectMessageRoomsDto = {
+        const directMessageRoomsDto: GetDirectMessageRoomsDto = {
           userId: testData.users[0].id,
         };
 
-        const friendDirectMessage: GetDirectMessageRoomsResponseDto =
-          await service.getDirectMessageRooms(friendDirectMessageListDto);
+        const directMessageRooms: GetDirectMessageRoomsResponseDto =
+          await service.getDirectMessageRooms(directMessageRoomsDto);
 
-        expect(friendDirectMessage.chats.length).toBe(0);
+        expect(directMessageRooms.chats.length).toBe(0);
       });
     });
 
@@ -123,18 +123,19 @@ describe('DmLogService', () => {
         await testData.createDirectMessage(10);
         await testData.createFriendDirectMessage();
 
-        const friendDirectMessageListDto: DeleteDirectMessageRoomDto = {
+        const deleteDirectMessageRoomDto: DeleteDirectMessageRoomDto = {
           userId: testData.users[0].id,
           friendId: testData.users[1].id,
         };
 
-        await service.deleteDirectMessageRoom(friendDirectMessageListDto);
+        await service.deleteDirectMessageRoom(deleteDirectMessageRoomDto);
 
         expect(
-          await FriendDirectMessageRepository.find({
+          await directMessageRoomRepository.find({
             where: { userId: { id: testData.users[0].id } },
           }),
         ).toEqual([]);
+        expect(testData.directMessageRooom[0].isDisplay).toBe(false);
       });
     });
 
@@ -143,92 +144,94 @@ describe('DmLogService', () => {
         await testData.createDirectMessage(10);
         await testData.createFriendDirectMessage();
 
-        const friendDirectMessageNoitceDto: GetFriendDirectMessageNoticeDto = {
-          userId: testData.users[0].id,
-        };
+        const directMessageRoomsNotificationDto: GetDirectMessageRoomsNotificationDto =
+          {
+            userId: testData.users[0].id,
+          };
 
-        const friendDirectMessageNotice: GetDirectMessageRoomsNotificationResponseDto =
+        const directMessageRoomsNotification: GetDirectMessageRoomsNotificationResponseDto =
           await service.getFriendDirectMessageNotice(
-            friendDirectMessageNoitceDto,
+            directMessageRoomsNotificationDto,
           );
 
-        expect(friendDirectMessageNotice).toHaveProperty('hasNewChat');
+        expect(directMessageRoomsNotification).toHaveProperty('hasNewChat');
 
-        expect(friendDirectMessageNotice.hasNewChat).toBe(true);
+        expect(directMessageRoomsNotification.hasNewChat).toBe(true);
       });
 
       it('[Valid Case] 대화방이 없을때', async () => {
-        const friendDirectMessageNoitceDto: GetFriendDirectMessageNoticeDto = {
-          userId: testData.users[0].id,
-        };
+        const directMessageRoomsNotificationDto: GetDirectMessageRoomsNotificationDto =
+          {
+            userId: testData.users[0].id,
+          };
 
         await service.getFriendDirectMessageNotice(
-          friendDirectMessageNoitceDto,
+          directMessageRoomsNotificationDto,
         );
 
-        const friendDirectMessageNotice: GetDirectMessageRoomsNotificationResponseDto =
+        const directMessageRoomsNotification: GetDirectMessageRoomsNotificationResponseDto =
           await service.getFriendDirectMessageNotice(
-            friendDirectMessageNoitceDto,
+            directMessageRoomsNotificationDto,
           );
 
-        expect(friendDirectMessageNotice.hasNewChat).toBe(false);
+        expect(directMessageRoomsNotification.hasNewChat).toBe(false);
       });
 
       it('[Valid Case] 대화방의 모든 DM 알람 읽음 (마지막 읽은 메시지 null)', async () => {
         await testData.createDirectMessage(10);
         await testData.createFriendDirectMessageNotice();
         const userId = testData.users[0].id;
-        const friendDirectMessageNoticeDto: GetDirectMessageRoomsNotificationDto =
+        const directMessageRoomsNotificationDto: GetDirectMessageRoomsNotificationDto =
           {
             userId,
           };
 
         // 알림이 있는지 확인
-        let friendDirectMessageNotice: GetDirectMessageRoomsNotificationResponseDto =
+        let directMessageRoomsNotification: GetDirectMessageRoomsNotificationResponseDto =
           await service.getDirectMessageRoomsNotification(
-            friendDirectMessageNoticeDto,
+            directMessageRoomsNotificationDto,
           );
-        expect(friendDirectMessageNotice.hasNewChat).toBe(true);
+        expect(directMessageRoomsNotification.hasNewChat).toBe(true);
 
         // 알림을 읽음 처리
         await testData.markAllMessagesAsRead(userId);
 
         // 알림이 없는지 확인
-        friendDirectMessageNotice =
+        directMessageRoomsNotification =
           await service.getDirectMessageRoomsNotification(
-            friendDirectMessageNoticeDto,
+            directMessageRoomsNotificationDto,
           );
-        expect(friendDirectMessageNotice.hasNewChat).toBe(false);
+        expect(directMessageRoomsNotification.hasNewChat).toBe(false);
       });
 
       it('[Valid Case] 대화방의 모든 DM 알람 안 읽음 (마지막 읽은 메시지가 있을 때)', async () => {
         await testData.createFriendDirectMessageNotice();
         const userId = testData.users[0].id;
-        const lastMessageId = testData.friendDirectMessage[0].id;
-        const friendDirectMessageNoticeDto: GetDirectMessageRoomsNotificationDto =
+        const lastMessageId = testData.directMessageRooom[0].id;
+        const directMessageRoomsNotificationDto: GetDirectMessageRoomsNotificationDto =
           {
             userId,
           };
 
         // 알림이 있는지 확인
-        let friendDirectMessageNotice: GetDirectMessageRoomsNotificationResponseDto =
+        let directMessageRoomsNotification: GetDirectMessageRoomsNotificationResponseDto =
           await service.getDirectMessageRoomsNotification(
-            friendDirectMessageNoticeDto,
+            directMessageRoomsNotificationDto,
           );
-        expect(friendDirectMessageNotice.hasNewChat).toBe(true);
+        expect(directMessageRoomsNotification.hasNewChat).toBe(true);
 
         // 마지막 읽은 메시지를 설정
-        await FriendDirectMessageRepository.update(
+        await directMessageRoomRepository.update(
           { userId: { id: testData.users[0].id } },
           { lastReadMessageId: lastMessageId },
         );
 
         // 알림이 있는지 확인
-        friendDirectMessageNotice =
+        directMessageRoomsNotification =
           await service.getDirectMessageRoomsNotification(
-            friendDirectMessageNoticeDto,
+            directMessageRoomsNotificationDto,
           );
-        expect(friendDirectMessageNotice.hasNewChat).toBe(true);
+        expect(directMessageRoomsNotification.hasNewChat).toBe(true);
       });
     });
   });
