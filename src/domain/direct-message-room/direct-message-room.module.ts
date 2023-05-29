@@ -10,4 +10,4 @@ import { DirectMessageRoomRepository } from './direct-message-room.repository';
   exports: [DirectMessageRoomService],
   controllers: [],
 })
-export class FriendDirectMessageModule {}
+export class DirectMessageRoomModule {}

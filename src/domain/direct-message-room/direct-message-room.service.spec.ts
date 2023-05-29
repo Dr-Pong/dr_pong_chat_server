@@ -5,7 +5,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
 import { typeORMConfig } from 'src/configs/typeorm.config';
 import { addTransactionalDataSource } from 'typeorm-transactional';
-import { FriendDirectMessageModule } from './direct-message-room.module';
+import { DirectMessageRoomModule } from './direct-message-room.module';
 import { FriendDirectMessageTestService } from './test/friend-direct-message.test.service';
 import { TestModule } from './test/friend-direct-message.test.module';
 import { GetDirectMessageRoomsDto } from './dto/get.direct-message-rooms.dto';
@@ -36,7 +36,7 @@ describe('DmLogService', () => {
             });
           },
         }),
-        FriendDirectMessageModule,
+        DirectMessageRoomModule,
         TestModule,
       ],
     }).compile();
