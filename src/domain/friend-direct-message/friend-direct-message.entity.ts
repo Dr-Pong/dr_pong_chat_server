@@ -7,7 +7,6 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { User } from '../user/user.entity';
-import { ChatingType } from 'src/global/type/type.chat';
 
 @Entity()
 export class FriendDirectMessage extends BaseTimeEntity {
@@ -28,6 +27,6 @@ export class FriendDirectMessage extends BaseTimeEntity {
   @Column({ name: 'last_message_id', nullable: true })
   lastReadMessageId: number;
 
-  @Column({ name: 'is_chat_on', nullable: false })
-  isChatOn: ChatingType;
+  @Column({ name: 'is_display', nullable: false })
+  isDisplay: boolean;
 }
