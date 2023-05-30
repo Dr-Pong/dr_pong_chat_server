@@ -497,7 +497,7 @@ describe('ChannelUserService', () => {
         const user: UserModel = await testData.createBasicUser();
         user.inviteList.push(basicChannel.id);
 
-        const InviteAcceptRequest: PostChannelInviteAcceptDto = {
+        const InviteAcceptRequest: PostChannelAcceptInviteDto = {
           userId: user.id,
           roomId: basicChannel.id,
         };
@@ -519,7 +519,7 @@ describe('ChannelUserService', () => {
         const user: UserModel = await testData.createBasicUser();
         user.inviteList.push(basicChannel.id);
 
-        const InviteAcceptRequest: PostChannelInviteAcceptDto = {
+        const InviteAcceptRequest: PostChannelAcceptInviteDto = {
           userId: user.id,
           roomId: basicChannel.id,
         };
@@ -541,7 +541,7 @@ describe('ChannelUserService', () => {
         const user: UserModel = await testData.createBasicUser();
         user.inviteList.push(basicChannel.id);
 
-        const InviteAcceptRequest: PostChannelInviteAcceptDto = {
+        const InviteAcceptRequest: PostChannelAcceptInviteDto = {
           userId: user.id,
           roomId: basicChannel.id,
         };
@@ -582,7 +582,7 @@ describe('ChannelUserService', () => {
         const user: UserModel = await testData.createBasicUser();
         basicChannel.banList.push(user.id);
 
-        const InviteAcceptRequest: PostChannelInviteAcceptDto = {
+        const InviteAcceptRequest: PostChannelAcceptInviteDto = {
           userId: user.id,
           roomId: basicChannel.id,
         };
@@ -605,7 +605,7 @@ describe('ChannelUserService', () => {
         const user: UserModel = await testData.createBasicUser();
         basicChannel.banList.push(user.id);
 
-        const InviteAcceptRequest: PostChannelInviteAcceptDto = {
+        const InviteAcceptRequest: PostChannelAcceptInviteDto = {
           userId: user.id,
           roomId: basicChannel.id,
         };
