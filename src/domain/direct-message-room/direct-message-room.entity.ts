@@ -7,27 +7,26 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { User } from '../user/user.entity';
-import { FriendType } from 'src/global/type/type.friend.status';
 
 @Entity()
-export class Friend extends BaseTimeEntity {
+export class DirectMessageRoom extends BaseTimeEntity {
   @PrimaryGeneratedColumn()
   id: number;
+
+  @ManyToOne(() => User, { eager: true })
+  @JoinColumn({ name: 'user_id' })
+  userId: User;
+
+  @ManyToOne(() => User, { eager: true })
+  @JoinColumn({ name: 'friend_id' })
+  friendId: User;
 
   @Column({ name: 'room_id', nullable: false })
   roomId: string;
 
-  @ManyToOne(() => User, { eager: true })
-  @JoinColumn({ name: 'user_id' })
-  user: User;
+  @Column({ name: 'last_message_id', nullable: true })
+  lastReadMessageId: number;
 
-  @ManyToOne(() => User, { eager: true })
-  @JoinColumn({ name: 'friend_id' })
-  friend: User;
-
-  @Column({ name: 'status', nullable: false })
-  status: FriendType;
-
-  @Column({ name: 'is_chat_on', nullable: false })
-  isChatOn: boolean;
+  @Column({ name: 'is_display', nullable: false })
+  isDisplay: boolean;
 }

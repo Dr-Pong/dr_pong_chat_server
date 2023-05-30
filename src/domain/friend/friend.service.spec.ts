@@ -1,11 +1,11 @@
 import { DataSource, Not, Repository } from 'typeorm';
 import { FriendService } from './friend.service';
-import { TestService } from './test/test.service';
+import { FriendTestService } from './test/friend.test.service';
 import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
 import { typeORMConfig } from 'src/configs/typeorm.config';
 import { addTransactionalDataSource } from 'typeorm-transactional';
 import { FrinedModule } from './frined.module';
-import { TestModule } from './test/test.module';
+import { TestModule } from './test/friend.test.module';
 import { Test, TestingModule } from '@nestjs/testing';
 import { GetUserFriendDto as GetUserFriendDto } from './dto/get.user.friend.dto';
 import { UserFriendsDto } from './dto/user.friends.dto';
@@ -24,7 +24,7 @@ import { DeleteUserFriendRejectDto } from './dto/delete.user.friend.reject.dto';
 
 describe('FriendService', () => {
   let service: FriendService;
-  let testData: TestService;
+  let testData: FriendTestService;
   let dataSources: DataSource;
   let friendRepository: Repository<Friend>;
 
@@ -50,7 +50,7 @@ describe('FriendService', () => {
     }).compile();
 
     service = module.get<FriendService>(FriendService);
-    testData = module.get<TestService>(TestService);
+    testData = module.get<FriendTestService>(FriendTestService);
     dataSources = module.get<DataSource>(DataSource);
     friendRepository = module.get<Repository<Friend>>(
       getRepositoryToken(Friend),
@@ -81,7 +81,7 @@ describe('FriendService', () => {
           userId: testData.users[0].id,
         };
         const FriendsList: UserFriendsDto =
-          service.getUserFriendsByNickname(userFriendsDto);
+          service.getUserFriends(userFriendsDto);
         const friendRequest: Friend[] = await friendRepository.find({
           where: {
             user: { id: testData.users[0].id },
@@ -106,7 +106,7 @@ describe('FriendService', () => {
           userId: testData.users[0].id,
         };
         const friendsList: UserFriendsDto =
-          service.getUserFriendsByNickname(userFriendsDto);
+          service.getUserFriends(userFriendsDto);
         expect(friendsList).toHaveProperty('users');
         expect(friendsList.friends.length).toBe(0);
         expect(friendsList.friends).toBe([]);
@@ -118,7 +118,7 @@ describe('FriendService', () => {
           userId: testData.users[0].id,
         };
         const friendsList: UserFriendsDto =
-          service.getUserFriendsByNickname(userFriendsDto);
+          service.getUserFriends(userFriendsDto);
         expect(friendsList).toBeNull();
         expect(friendsList.friends.length).toBe(9);
         expect(friendsList.friends[0]).toBe(testData.users[1]);
