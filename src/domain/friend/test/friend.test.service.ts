@@ -107,6 +107,21 @@ export class FriendTestService {
     }
   }
 
+  async createUser0ToFriends(person: number): Promise<void> {
+    const index: number = person;
+    const roomId = FriendChatManager.generateRoomId(
+      this.users[index].id.toString(),
+      this.users[0].id.toString(),
+    );
+    const friend = await this.friendRepository.save({
+      user: this.users[index],
+      friend: this.users[0],
+      status: FRIENDSTATUS_FRIEND,
+      roomId: roomId,
+    });
+    this.friends.push(friend);
+  }
+
   async createReverseUserFriends(): Promise<void> {
     for (let i = 9; i > 0; i--) {
       const roomId = FriendChatManager.generateRoomId(
