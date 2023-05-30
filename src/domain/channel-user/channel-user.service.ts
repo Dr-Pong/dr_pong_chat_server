@@ -31,6 +31,10 @@ import {
 } from './dto/channel-participant.dto';
 import { ChannelMeDto } from './dto/channel.me.dto';
 import { GetChannelMyDto } from './dto/get.channel.my.dto';
+import { GetChannelPageDto } from './dto/get.channel.page.dto';
+import { ChannelPageDto, ChannelPageDtos } from './dto/channel.page.dto';
+import { Page } from 'src/global/utils/page';
+import { FindChannelPageDto } from './dto/find.channel.page.dto';
 
 @Injectable()
 export class ChannelUserService {
@@ -72,5 +76,24 @@ export class ChannelUserService {
     );
 
     return ChannelMeDto.fromModel(channel);
+  }
+
+  async getChannelPages(getDto: GetChannelPageDto): Promise<ChannelPageDtos> {
+    let channels: Page<Channel[]>;
+    if (getDto.orderBy === 'createAt') {
+      channels = await this.channelRepository.findChannelByPagesOrderByCreateAt(
+        FindChannelPageDto.fromGetDto(getDto),
+      );
+    }
+    if (getDto.orderBy === 'popular') {
+      channels =
+        await this.channelRepository.findChannelByPagesOrderByHeadCount(
+          FindChannelPageDto.fromGetDto(getDto),
+        );
+    }
+
+    const responseDto: ChannelPageDtos = ChannelPageDtos.fromPage(channels);
+
+    return responseDto;
   }
 }
