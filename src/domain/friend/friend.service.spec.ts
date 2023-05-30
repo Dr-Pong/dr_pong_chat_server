@@ -65,7 +65,7 @@ describe('FriendService', () => {
 
   beforeEach(async () => {
     await testData.createProfileImages();
-    await testData.createBasicUsers(10);
+    await testData.createBasicUsers(20);
   });
 
   afterEach(async () => {
@@ -81,8 +81,11 @@ describe('FriendService', () => {
 
   describe('친구관련 Service Logic', () => {
     describe('친구목록 조회', () => {
-      it('[Valid Case]친구목록 조회', async () => {
+      it('[Valid Case]친구목록 조회(친구추가 하거나 받은경우)', async () => {
         await testData.createUserFriends(10);
+        await testData.createUser0ToFriends(11);
+        await testData.createUser0ToFriends(12);
+
         const userFriendsDto: GetUserFriendDto = {
           userId: testData.users[0].id,
         };
@@ -93,6 +96,7 @@ describe('FriendService', () => {
             status: Not(FRIENDSTATUS_DELETED),
           },
         });
+
         expect(FriendsList.friends[0]).toHaveProperty('nickname');
         expect(FriendsList.friends[0]).toHaveProperty('imgUrl');
         expect(friendRequest[0].status).toBe(FRIENDSTATUS_FRIEND);
@@ -101,7 +105,7 @@ describe('FriendService', () => {
         expect(friendRequest[3].status).toBe(FRIENDSTATUS_FRIEND);
         expect(friendRequest[4].status).toBe(FRIENDSTATUS_FRIEND);
         expect(friendRequest[8].status).toBe(FRIENDSTATUS_FRIEND);
-        expect(FriendsList.friends.length).toBe(9);
+        expect(FriendsList.friends.length).toBe(11);
         expect(FriendsList.friends[0].nickname).toBe(
           testData.users[1].nickname,
         );
