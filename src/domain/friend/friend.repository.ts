@@ -13,7 +13,6 @@ export class FriendRepository {
   async findFriendsById(userId: number): Promise<Friend[]> {
     const friends: Friend[] = await this.repository.find({
       where: [{ user: { id: userId } }, { friend: { id: userId } }],
-      order: { friend: { nickname: 'ASC' } },
     });
     return friends;
   }
