@@ -48,6 +48,9 @@ export class ChannelUserService {
       getDto.channelId,
     );
     const users: UserModel[] = this.channelFactory.getUsers(channel);
+    if (!channel.users.has(getDto.userId)) {
+      throw new BadRequestException('You are not in this channel');
+    }
 
     const responseDto: ChannelParticipantDtos = new ChannelParticipantDtos();
     users.map((user) => {
