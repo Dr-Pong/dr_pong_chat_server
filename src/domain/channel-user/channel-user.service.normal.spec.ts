@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { UserChannelService } from './user-channel.service';
+import { ChannelUserService } from './channel-user.service';
 import { ChannelModel } from '../channel/channel.model';
 import { UserModel } from '../user/user.model';
 import {
@@ -9,13 +9,13 @@ import {
 import { Channel } from '../channel/channel.entity';
 import { BadRequestException } from '@nestjs/common';
 import { ChannelFactory } from '../channel/channel.factory';
-import { UserChannelModule } from './user-channel.module';
+import { ChannelUserModule } from './channel-user.module';
 import { UserFactory } from '../user/user.factory';
 import { Repository } from 'typeorm';
 import { getRepositoryToken } from '@nestjs/typeorm';
 
-describe('UserChannelService', () => {
-  let service: UserChannelService;
+describe('ChannelUserService', () => {
+  let service: ChannelUserService;
   let channelFactory: ChannelFactory;
   let userFactory: UserFactory;
   let channelRepository: Repository<Channel>;
@@ -23,7 +23,7 @@ describe('UserChannelService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      imports: [UserChannelModule],
+      imports: [ChannelUserModule],
       providers: [
         {
           provide: getRepositoryToken(Channel),
@@ -32,7 +32,7 @@ describe('UserChannelService', () => {
       ],
     }).compile();
 
-    service = module.get<UserChannelService>(UserChannelService);
+    service = module.get<ChannelUserService>(ChannelUserService);
     channelFactory = module.get<ChannelFactory>(ChannelFactory);
     userFactory = module.get<UserFactory>(UserFactory);
     channelRepository = module.get<Repository<Channel>>(Repository);
@@ -497,7 +497,7 @@ describe('UserChannelService', () => {
         const user: UserModel = await testData.createBasicUser();
         user.inviteList.push(basicChannel.id);
 
-        const InviteAcceptRequest: PostChannelInviteAcceptDto = {
+        const InviteAcceptRequest: PostChannelAcceptInviteDto = {
           userId: user.id,
           roomId: basicChannel.id,
         };
@@ -519,7 +519,7 @@ describe('UserChannelService', () => {
         const user: UserModel = await testData.createBasicUser();
         user.inviteList.push(basicChannel.id);
 
-        const InviteAcceptRequest: PostChannelInviteAcceptDto = {
+        const InviteAcceptRequest: PostChannelAcceptInviteDto = {
           userId: user.id,
           roomId: basicChannel.id,
         };
@@ -541,7 +541,7 @@ describe('UserChannelService', () => {
         const user: UserModel = await testData.createBasicUser();
         user.inviteList.push(basicChannel.id);
 
-        const InviteAcceptRequest: PostChannelInviteAcceptDto = {
+        const InviteAcceptRequest: PostChannelAcceptInviteDto = {
           userId: user.id,
           roomId: basicChannel.id,
         };
@@ -582,7 +582,7 @@ describe('UserChannelService', () => {
         const user: UserModel = await testData.createBasicUser();
         basicChannel.banList.push(user.id);
 
-        const InviteAcceptRequest: PostChannelInviteAcceptDto = {
+        const InviteAcceptRequest: PostChannelAcceptInviteDto = {
           userId: user.id,
           roomId: basicChannel.id,
         };
@@ -605,7 +605,7 @@ describe('UserChannelService', () => {
         const user: UserModel = await testData.createBasicUser();
         basicChannel.banList.push(user.id);
 
-        const InviteAcceptRequest: PostChannelInviteAcceptDto = {
+        const InviteAcceptRequest: PostChannelAcceptInviteDto = {
           userId: user.id,
           roomId: basicChannel.id,
         };

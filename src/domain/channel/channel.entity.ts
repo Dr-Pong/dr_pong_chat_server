@@ -26,9 +26,15 @@ export class Channel extends BaseTimeEntity {
   @Column({ name: 'max_headcount', nullable: false })
   maxHeadCount: number;
 
+  @Column({ name: 'headcount', nullable: false })
+  headCount: number;
+
   @Column({ name: 'password', nullable: true })
   password: string;
 
   @Column({ name: 'type', nullable: false })
   type: ChannelType;
+
+  @Column({ name: 'is_deleted', default: false })
+  isDeleted: boolean;
 }

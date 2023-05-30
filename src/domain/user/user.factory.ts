@@ -14,11 +14,42 @@ export class UserFactory {
 
   joinChannel(user: UserModel, channel: ChannelModel): void {
     user.joinedChannel = channel.id;
+    if (channel.muteList.has(user.id)) {
+      user.isMuted = true;
+    }
+    user.roleType = 'normal';
     this.users.set(user.id, user);
   }
 
   leaveChannel(user: UserModel): void {
     user.joinedChannel = null;
+    user.isMuted = false;
+    user.roleType = null;
+    this.users.set(user.id, user);
+  }
+
+  setOwner(user: UserModel): void {
+    user.roleType = 'owner';
+    this.users.set(user.id, user);
+  }
+
+  mute(user: UserModel) {
+    user.isMuted = true;
+    this.users.set(user.id, user);
+  }
+
+  unMute(user: UserModel) {
+    user.isMuted = false;
+    this.users.set(user.id, user);
+  }
+
+  setAdmin(user: UserModel): void {
+    user.roleType = 'admin';
+    this.users.set(user.id, user);
+  }
+
+  unSetAdmin(user: UserModel): void {
+    user.roleType = 'normal';
     this.users.set(user.id, user);
   }
 

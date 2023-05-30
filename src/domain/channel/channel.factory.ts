@@ -3,6 +3,12 @@ import { ChannelModel } from './channel.model';
 import { UserModel } from '../user/user.model';
 import { ChannelType } from 'src/global/type/type.channel';
 import { UserFactory } from '../user/user.factory';
+import {
+  ChannelParticipantType,
+  CHANNELPARTICIPANT_ADMIN,
+  CHANNELPARTICIPANT_NORMAL,
+  CHANNELPARTICIPANT_OWNER,
+} from 'src/global/type/type.channel-participant';
 
 @Injectable()
 export class ChannelFactory {
@@ -22,11 +28,36 @@ export class ChannelFactory {
     return null;
   }
 
+  getUsers(channel: ChannelModel): UserModel[] {
+    const users: UserModel[] = [];
+    channel.users.forEach((user) => {
+      users.push(this.userFactory.users.get(user));
+    });
+    return users;
+  }
+
+  getUserStatus(
+    user: UserModel,
+    channel: ChannelModel,
+  ): ChannelParticipantType {
+    if (!channel.users.has(user.id)) {
+      return null;
+    }
+    if (channel.ownerId === user.id) {
+      return CHANNELPARTICIPANT_OWNER;
+    }
+    if (channel.adminList.has(user.id)) {
+      return CHANNELPARTICIPANT_ADMIN;
+    }
+    return CHANNELPARTICIPANT_NORMAL;
+  }
+
   create(user: UserModel, channel: ChannelModel): boolean {
     if (!this.channels.get(channel.id)) {
       channel.ownerId = user.id;
       this.join(user, channel);
       this.userFactory.joinChannel(user, channel);
+      this.userFactory.setOwner(user);
       this.channels.set(channel.id, channel);
       return true;
     }
@@ -51,6 +82,9 @@ export class ChannelFactory {
       channel.users.delete(user.id);
       this.userFactory.leaveChannel(user);
       this.channels.set(channel.id, channel);
+      if (channel.users.size === 0) {
+        this.channels.delete(channel.id);
+      }
       return true;
     }
     return false;
@@ -60,6 +94,7 @@ export class ChannelFactory {
     if (channel.users.has(user.id)) {
       channel.muteList.set(user.id, user.id);
       this.channels.set(channel.id, channel);
+      this.userFactory.mute(user);
       return true;
     }
     return false;
