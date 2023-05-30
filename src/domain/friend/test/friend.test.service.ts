@@ -36,8 +36,7 @@ export class FriendTestService {
   }
 
   async createProfileImages(): Promise<void> {
-    const index: number = this.users.length;
-    for (let i = 0; i < index; i++) {
+    for (let i = 0; i < 2; i++) {
       const profileImage = await this.profileImageRepository.save({
         url: 'profileImage' + i.toString(),
       });
@@ -49,9 +48,8 @@ export class FriendTestService {
     const index: number = person;
     for (let i = 0; i < index; i++) {
       const user = await this.userRepository.save({
-        id: i,
         nickname: 'user' + i.toString(),
-        image: this.profileImages[i],
+        image: this.profileImages[i % 2 == 0 ? 0 : 1],
       });
       this.users.push(user);
     }
@@ -60,7 +58,6 @@ export class FriendTestService {
   async createBasicUser() {
     const index: number = this.users.length;
     const user = await this.userRepository.save({
-      id: index,
       nickname: 'user' + index.toString(),
       image: this.profileImages[0],
     });
@@ -71,7 +68,6 @@ export class FriendTestService {
     const index: number = this.users.length;
     for (let i = 1; i < index; i++) {
       const friend = await this.friendRepository.save({
-        id: index + i,
         user: this.users[0],
         friend: this.users[i],
         status: FRIENDSTATUS_REQUESTING,
@@ -85,7 +81,6 @@ export class FriendTestService {
     const index: number = this.users.length;
     for (let i = 1; i < index; i++) {
       const friend = await this.friendRepository.save({
-        id: index + i,
         user: this.users[i],
         friend: this.users[0],
         status: FRIENDSTATUS_REQUESTING,
@@ -102,22 +97,29 @@ export class FriendTestService {
         this.users[0].id.toString(),
         this.users[i].id.toString(),
       );
-      const friend1 = await this.friendRepository.save({
-        roomId: roomId,
+      const friend = await this.friendRepository.save({
         user: this.users[0],
         friend: this.users[i],
         status: FRIENDSTATUS_FRIEND,
-        chatOn: false,
-      });
-      this.friends.push(friend1);
-      const friend2 = await this.friendRepository.save({
         roomId: roomId,
-        user: this.users[i],
-        friend: this.users[0],
-        status: FRIENDSTATUS_FRIEND,
-        chatOn: false,
       });
-      this.friends.push(friend2);
+      this.friends.push(friend);
+    }
+  }
+
+  async createReverseUserFriends(): Promise<void> {
+    for (let i = 9; i > 0; i--) {
+      const roomId = FriendChatManager.generateRoomId(
+        this.users[0].id.toString(),
+        this.users[i].id.toString(),
+      );
+      const friend = await this.friendRepository.save({
+        user: this.users[0],
+        friend: this.users[i],
+        status: FRIENDSTATUS_FRIEND,
+        roomId: roomId,
+      });
+      this.friends.push(friend);
     }
   }
 
@@ -125,7 +127,6 @@ export class FriendTestService {
     const index: number = this.blocks.length;
     for (let i = 1; i < index; i++) {
       const block = await this.blockRepository.save({
-        id: index + i,
         user: this.users[0],
         block: this.users[i],
       });
