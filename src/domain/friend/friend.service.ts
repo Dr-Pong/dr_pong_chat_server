@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { FriendRepository } from './friend.repository';
 import { UserFactory } from '../user/user.factory';
 import { GetUserFriendDto } from './dto/get.user.friend.dto';
-import { UserFriendsDto } from './dto/user.friends.dto';
+import { FriendDto, UserFriendsDto } from './dto/user.friends.dto';
 import { Friend } from './friend.entity';
 
 @Injectable()
@@ -16,7 +16,7 @@ export class FriendService {
     const userFriends: Friend[] = await this.friendRepository.findFriendsById(
       getDto.userId,
     );
-    const friends = userFriends.map((friend) => {
+    const friends: FriendDto[] = userFriends.map((friend) => {
       if (friend.friend.id === getDto.userId) {
         return {
           nickname: friend.user.nickname,

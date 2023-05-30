@@ -89,7 +89,9 @@ describe('FriendService', () => {
         const userFriendsDto: GetUserFriendDto = {
           userId: testData.users[0].id,
         };
-        const FriendsList = await service.getUserFriends(userFriendsDto);
+        const FriendsList: UserFriendsDto = await service.getUserFriends(
+          userFriendsDto,
+        );
         const friendRequest = await friendRepository.find({
           where: {
             user: { id: testData.users[0].id },
