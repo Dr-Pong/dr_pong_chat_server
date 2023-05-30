@@ -17,12 +17,26 @@ export class FriendService {
       getDto.userId,
     );
     const friends = userFriends.map((friend) => {
+      if (friend.friend.id === getDto.userId) {
+        return {
+          nickname: friend.user.nickname,
+          imgUrl: friend.user.image.url,
+        };
+      }
       return {
         nickname: friend.friend.nickname,
         imgUrl: friend.friend.image.url,
       };
     });
-
+    friends.sort((a, b) => {
+      if (a.nickname > b.nickname) {
+        return 1;
+      }
+      if (a.nickname < b.nickname) {
+        return -1;
+      }
+      return 0;
+    });
     const responseDto: UserFriendsDto = {
       friends: friends,
     };
