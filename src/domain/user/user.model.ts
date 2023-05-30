@@ -4,6 +4,7 @@ import {
   UserStatusType,
 } from 'src/global/type/type.user.status';
 import { User } from './user.entity';
+import { ChannelParticipantType } from 'src/global/type/type.channel-participant';
 
 export class UserModel {
   id: number;
@@ -11,6 +12,8 @@ export class UserModel {
   joinedChannel: string;
   blockedList: Map<number, number>;
   inviteList: Map<string, string>;
+  roleType: ChannelParticipantType;
+  isMuted: boolean;
   socket: Socket;
   profileImage: string;
   status: UserStatusType;
