@@ -29,6 +29,8 @@ import {
   ChannelParticipantDto,
   ChannelParticipantDtos,
 } from './dto/channel-participant.dto';
+import { ChannelMeDto } from './dto/channel.me.dto';
+import { GetChannelMyDto } from './dto/get.channel.my.dto';
 
 @Injectable()
 export class ChannelUserService {
@@ -61,5 +63,14 @@ export class ChannelUserService {
       }
     });
     return responseDto;
+  }
+
+  getChannelMy(getDto: GetChannelMyDto): ChannelMeDto {
+    const user: UserModel = this.userFactory.findById(getDto.userId);
+    const channel: ChannelModel = this.channelFactory.findChannelById(
+      user.joinedChannel,
+    );
+
+    return ChannelMeDto.fromModel(channel);
   }
 }
