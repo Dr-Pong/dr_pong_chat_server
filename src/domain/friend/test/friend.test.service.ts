@@ -64,30 +64,36 @@ export class FriendTestService {
     this.users.push(user);
   }
 
-  async createUserRequesting(): Promise<Friend[]> {
-    const index: number = this.users.length;
+  async createUserRequesting(person: number): Promise<void> {
+    const index: number = person;
     for (let i = 1; i < index; i++) {
+      const roomId = FriendChatManager.generateRoomId(
+        this.users[0].id.toString(),
+        this.users[i].id.toString(),
+      );
       const friend = await this.friendRepository.save({
         user: this.users[0],
         friend: this.users[i],
         status: FRIENDSTATUS_REQUESTING,
+        roomId: roomId,
       });
       this.friends.push(friend);
-      return this.friends;
     }
   }
 
-  async createAnotherUsersRequesting(): Promise<Friend[]> {
-    const index: number = this.users.length;
-    for (let i = 1; i < index; i++) {
-      const friend = await this.friendRepository.save({
-        user: this.users[i],
-        friend: this.users[0],
-        status: FRIENDSTATUS_REQUESTING,
-      });
-      this.friends.push(friend);
-      return this.friends;
-    }
+  async createUser0ToRequesting(person: number): Promise<void> {
+    const index: number = person;
+    const roomId = FriendChatManager.generateRoomId(
+      this.users[index].id.toString(),
+      this.users[0].id.toString(),
+    );
+    const friend = await this.friendRepository.save({
+      user: this.users[index],
+      friend: this.users[0],
+      status: FRIENDSTATUS_REQUESTING,
+      roomId: roomId,
+    });
+    this.friends.push(friend);
   }
 
   async createUserFriends(person: number): Promise<void> {
