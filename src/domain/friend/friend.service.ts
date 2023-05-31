@@ -5,9 +5,13 @@ import { GetUserFriendDto } from './dto/get.user.friend.dto';
 import { FriendDto, UserFriendsDto } from './dto/user.friends.dto';
 import { Friend } from './friend.entity';
 import { PostUserFriendRequestDto } from './dto/post.user.friend.request.dto';
-import { FRIENDSTATUS_DELETED } from 'src/global/type/type.friend.status';
+import {
+  FRIENDSTATUS_DELETED,
+  FRIENDSTATUS_REQUESTING,
+} from 'src/global/type/type.friend.status';
 import { GetUserPendingFriendDto } from './dto/get.user.peding.friend.dto';
 import { UserPendingFriendsDto } from './dto/user.pending.friends.dto';
+import { PostUserFriendAcceptDto } from './dto/post.user.friend.accept.dto';
 
 @Injectable()
 export class FriendService {
@@ -74,6 +78,7 @@ export class FriendService {
     }
   }
 
+  //**친구 요청 목록*/
   async getUserPendingFriendRequests(
     getDto: GetUserPendingFriendDto,
   ): Promise<UserPendingFriendsDto> {
@@ -106,5 +111,28 @@ export class FriendService {
     };
 
     return responseDto;
+  }
+
+  //**친구 요청 수락 */
+  async postUserFriendAccept(postDto: PostUserFriendAcceptDto): Promise<void> {
+    const friendTables: Friend[] = await this.friendRepository.findFriendTables(
+      postDto.userId,
+      postDto.friendId,
+    );
+    let isRequesting = false;
+
+    for (const friend of friendTables) {
+      if (friend.status === FRIENDSTATUS_REQUESTING) {
+        isRequesting = true;
+        break;
+      }
+    }
+
+    if (isRequesting) {
+      await this.friendRepository.updateFriendStatus(
+        postDto.userId,
+        postDto.friendId,
+      );
+    }
   }
 }

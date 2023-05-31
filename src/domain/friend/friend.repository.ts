@@ -42,4 +42,11 @@ export class FriendRepository {
     });
     return pendingFriends;
   }
+
+  async updateFriendStatus(userId: number, friendId: number): Promise<void> {
+    await this.repository.update(
+      { user: { id: userId }, friend: { id: friendId } },
+      { status: FRIENDSTATUS_FRIEND },
+    );
+  }
 }
