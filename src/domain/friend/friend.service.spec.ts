@@ -187,21 +187,22 @@ describe('FriendService', () => {
           userId: testData.users[0].id,
         };
 
-        const FriendsList: UserPendingFriendsDto =
-          service.getUserPendingFriendRequests(userFriendsRequestDto);
+        const FriendsList = await service.getUserPendingFriendRequests(
+          userFriendsRequestDto,
+        );
 
-        expect(FriendsList).toBeNull();
+        expect(FriendsList.friends).toHaveLength(0);
       });
 
       it('[Valid Case] 친구요청 목록이 정상적으로 반환 되는지 확인', async () => {
-        await testData.createUserRequesting();
+        await testData.createUserRequesting(10);
 
         const userFriendsRequestDto: GetUserPendingFriendDto = {
           userId: testData.users[0].id,
         };
 
         const FriendsList: UserPendingFriendsDto =
-          service.getUserPendingFriendRequests(userFriendsRequestDto);
+          await service.getUserPendingFriendRequests(userFriendsRequestDto);
 
         const friendRequest: Friend = await friendRepository.findOne({
           where: {
@@ -211,9 +212,8 @@ describe('FriendService', () => {
           },
         });
 
-        expect(FriendsList).toHaveProperty('users');
-        expect(FriendsList.friends).toHaveProperty('nickname');
-        expect(FriendsList.friends).toHaveProperty('imgUrl');
+        expect(FriendsList.friends[0]).toHaveProperty('nickname');
+        expect(FriendsList.friends[0]).toHaveProperty('imgUrl');
 
         expect(friendRequest.status).toBe(FRIENDSTATUS_REQUESTING);
 
@@ -221,43 +221,43 @@ describe('FriendService', () => {
         expect(FriendsList.friends[0].nickname).toBe(
           testData.users[1].nickname,
         );
-        expect(FriendsList.friends[0].imgUrl).toBe(testData.users[1].image);
+        expect(FriendsList.friends[0].imgUrl).toBe(testData.users[1].image.url);
+
         expect(FriendsList.friends[1].nickname).toBe(
           testData.users[2].nickname,
         );
-        expect(FriendsList.friends[1].imgUrl).toBe(testData.users[2].image);
+        expect(FriendsList.friends[1].imgUrl).toBe(testData.users[2].image.url);
       });
 
       it('[Valid Case] 친구요청 목록이 알파벳순서로 정렬되는지 확인', async () => {
-        await testData.createUserRequesting();
+        await testData.createUserRequesting(10);
+        await testData.createUser0ToRequesting(14); // 친구 테이블 1에 있어야해요
+        await testData.createUser0ToRequesting(15); //친구 테이블 2에 있어야해요
 
         const userFriendsRequestDto: GetUserPendingFriendDto = {
           userId: testData.users[0].id,
         };
 
         const FriendsList: UserPendingFriendsDto =
-          service.getUserPendingFriendRequests(userFriendsRequestDto);
+          await service.getUserPendingFriendRequests(userFriendsRequestDto);
 
-        expect(FriendsList).toHaveProperty('users');
-        expect(FriendsList.friends).toHaveProperty('nickname');
-        expect(FriendsList.friends).toHaveProperty('imgUrl');
-
-        expect(Number(FriendsList.friends[0].nickname)).toBeGreaterThan(
-          Number(FriendsList.friends[1].nickname),
-        );
-        expect(Number(FriendsList.friends[1].nickname)).toBeGreaterThan(
-          Number(FriendsList.friends[2].nickname),
-        );
-
-        // 리스트 반환시 친구요청 상태인지 확인
+        expect(FriendsList.friends.length).toBe(11);
         expect(FriendsList.friends[0].nickname).toBe(
           testData.users[1].nickname,
         );
-        expect(FriendsList.friends[0].imgUrl).toBe(testData.users[1].image);
+        expect(FriendsList.friends[0].imgUrl).toBe(testData.users[1].image.url);
         expect(FriendsList.friends[1].nickname).toBe(
-          testData.users[2].nickname,
+          testData.users[14].nickname,
         );
-        expect(FriendsList.friends[1].imgUrl).toBe(testData.users[2].image);
+        expect(FriendsList.friends[1].imgUrl).toBe(
+          testData.users[14].image.url,
+        );
+        expect(FriendsList.friends[2].nickname).toBe(
+          testData.users[15].nickname,
+        );
+        expect(FriendsList.friends[2].imgUrl).toBe(
+          testData.users[15].image.url,
+        );
       });
     });
     // describe('친구요청 수락', () => {
