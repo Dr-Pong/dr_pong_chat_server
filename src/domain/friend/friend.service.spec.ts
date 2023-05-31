@@ -9,7 +9,6 @@ import { TestModule } from './test/friend.test.module';
 import { Test, TestingModule } from '@nestjs/testing';
 import { GetUserFriendDto as GetUserFriendDto } from './dto/get.user.friend.dto';
 import { UserFriendsDto } from './dto/user.friends.dto';
-import { PostUserFriendRequestDto as PostUserFriendsRequestDto } from './dto/post.user.friend.request.dto';
 import { Friend } from './friend.entity';
 import {
   FRIENDSTATUS_DELETED,
@@ -21,6 +20,7 @@ import { UserPendingFriendsDto } from './dto/user.pending.friends.dto';
 import { PostUserFriendAcceptDto } from './dto/post.user.friend.accept.dto';
 import { DeleteUserFriendDto } from './dto/delete.user.friend.dto';
 import { DeleteUserFriendRejectDto } from './dto/delete.user.friend.reject.dto';
+import { PostUserFriendRequestDto } from './dto/post.user.friend.request.dto';
 
 describe('FriendService', () => {
   let service: FriendService;
@@ -143,7 +143,7 @@ describe('FriendService', () => {
     });
     describe('친구요청', () => {
       it('[Valid Case]유효한 닉네임 친구요청', async () => {
-        const userFriendsRequestDto: PostUserFriendsRequestDto = {
+        const userFriendsRequestDto: PostUserFriendRequestDto = {
           userId: testData.users[0].id,
           friendId: testData.users[1].id,
         };
@@ -163,7 +163,7 @@ describe('FriendService', () => {
 
       it('[Valid Case]이미 친구인 유저에게 친구요청(백에서 씹기)', async () => {
         await testData.createUserFriends(10);
-        const userFriendsRequestDto: PostUserFriendsRequestDto = {
+        const userFriendsRequestDto: PostUserFriendRequestDto = {
           userId: testData.users[0].id,
           friendId: testData.users[1].id,
         };
