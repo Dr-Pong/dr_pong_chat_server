@@ -181,85 +181,85 @@ describe('FriendService', () => {
         expect(friendRequest.status).toBe(FRIENDSTATUS_FRIEND);
       });
     });
-    // describe('친구요청 목록', () => {
-    //   it('[Valid Case] 친구요청이 없는경우 빈목록', async () => {
-    //     const userFriendsRequestDto: GetUserPendingFriendDto = {
-    //       userId: testData.users[0].id,
-    //     };
+    describe('친구요청 목록', () => {
+      it('[Valid Case] 친구요청이 없는경우 빈목록', async () => {
+        const userFriendsRequestDto: GetUserPendingFriendDto = {
+          userId: testData.users[0].id,
+        };
 
-    //     const FriendsList: UserPendingFriendsDto =
-    //       service.getUserPendingFriendsRequestByNickname(userFriendsRequestDto);
+        const FriendsList: UserPendingFriendsDto =
+          service.getUserPendingFriendRequests(userFriendsRequestDto);
 
-    //     expect(FriendsList).toBeNull();
-    //   });
+        expect(FriendsList).toBeNull();
+      });
 
-    //   it('[Valid Case] 친구요청 목록이 정상적으로 반환 되는지 확인', async () => {
-    //     await testData.createUserRequesting();
+      it('[Valid Case] 친구요청 목록이 정상적으로 반환 되는지 확인', async () => {
+        await testData.createUserRequesting();
 
-    //     const userFriendsRequestDto: GetUserPendingFriendDto = {
-    //       userId: testData.users[0].id,
-    //     };
+        const userFriendsRequestDto: GetUserPendingFriendDto = {
+          userId: testData.users[0].id,
+        };
 
-    //     const FriendsList: UserPendingFriendsDto =
-    //       service.getUserPendingFriendsRequestByNickname(userFriendsRequestDto);
+        const FriendsList: UserPendingFriendsDto =
+          service.getUserPendingFriendRequests(userFriendsRequestDto);
 
-    //     const friendRequest: Friend = await friendRepository.findOne({
-    //       where: {
-    //         user: { id: testData.users[0].id },
-    //         friend: { id: testData.users[1].id },
-    //         status: Not(FRIENDSTATUS_DELETED),
-    //       },
-    //     });
+        const friendRequest: Friend = await friendRepository.findOne({
+          where: {
+            user: { id: testData.users[0].id },
+            friend: { id: testData.users[1].id },
+            status: Not(FRIENDSTATUS_DELETED),
+          },
+        });
 
-    //     expect(FriendsList).toHaveProperty('users');
-    //     expect(FriendsList.friends).toHaveProperty('nickname');
-    //     expect(FriendsList.friends).toHaveProperty('imgUrl');
+        expect(FriendsList).toHaveProperty('users');
+        expect(FriendsList.friends).toHaveProperty('nickname');
+        expect(FriendsList.friends).toHaveProperty('imgUrl');
 
-    //     expect(friendRequest.status).toBe(FRIENDSTATUS_REQUESTING);
+        expect(friendRequest.status).toBe(FRIENDSTATUS_REQUESTING);
 
-    //     // 리스트 반환시 친구요청 상태인지 확인
-    //     expect(FriendsList.friends[0].nickname).toBe(
-    //       testData.users[1].nickname,
-    //     );
-    //     expect(FriendsList.friends[0].imgUrl).toBe(testData.users[1].image);
-    //     expect(FriendsList.friends[1].nickname).toBe(
-    //       testData.users[2].nickname,
-    //     );
-    //     expect(FriendsList.friends[1].imgUrl).toBe(testData.users[2].image);
-    //   });
+        // 리스트 반환시 친구요청 상태인지 확인
+        expect(FriendsList.friends[0].nickname).toBe(
+          testData.users[1].nickname,
+        );
+        expect(FriendsList.friends[0].imgUrl).toBe(testData.users[1].image);
+        expect(FriendsList.friends[1].nickname).toBe(
+          testData.users[2].nickname,
+        );
+        expect(FriendsList.friends[1].imgUrl).toBe(testData.users[2].image);
+      });
 
-    //   it('[Valid Case] 친구요청 목록이 알파벳순서로 정렬되는지 확인', async () => {
-    //     await testData.createUserRequesting();
+      it('[Valid Case] 친구요청 목록이 알파벳순서로 정렬되는지 확인', async () => {
+        await testData.createUserRequesting();
 
-    //     const userFriendsRequestDto: GetUserPendingFriendDto = {
-    //       userId: testData.users[0].id,
-    //     };
+        const userFriendsRequestDto: GetUserPendingFriendDto = {
+          userId: testData.users[0].id,
+        };
 
-    //     const FriendsList: UserPendingFriendsDto =
-    //       service.getUserPendingFriendsRequestByNickname(userFriendsRequestDto);
+        const FriendsList: UserPendingFriendsDto =
+          service.getUserPendingFriendRequests(userFriendsRequestDto);
 
-    //     expect(FriendsList).toHaveProperty('users');
-    //     expect(FriendsList.friends).toHaveProperty('nickname');
-    //     expect(FriendsList.friends).toHaveProperty('imgUrl');
+        expect(FriendsList).toHaveProperty('users');
+        expect(FriendsList.friends).toHaveProperty('nickname');
+        expect(FriendsList.friends).toHaveProperty('imgUrl');
 
-    //     expect(Number(FriendsList.friends[0].nickname)).toBeGreaterThan(
-    //       Number(FriendsList.friends[1].nickname),
-    //     );
-    //     expect(Number(FriendsList.friends[1].nickname)).toBeGreaterThan(
-    //       Number(FriendsList.friends[2].nickname),
-    //     );
+        expect(Number(FriendsList.friends[0].nickname)).toBeGreaterThan(
+          Number(FriendsList.friends[1].nickname),
+        );
+        expect(Number(FriendsList.friends[1].nickname)).toBeGreaterThan(
+          Number(FriendsList.friends[2].nickname),
+        );
 
-    //     // 리스트 반환시 친구요청 상태인지 확인
-    //     expect(FriendsList.friends[0].nickname).toBe(
-    //       testData.users[1].nickname,
-    //     );
-    //     expect(FriendsList.friends[0].imgUrl).toBe(testData.users[1].image);
-    //     expect(FriendsList.friends[1].nickname).toBe(
-    //       testData.users[2].nickname,
-    //     );
-    //     expect(FriendsList.friends[1].imgUrl).toBe(testData.users[2].image);
-    //   });
-    // });
+        // 리스트 반환시 친구요청 상태인지 확인
+        expect(FriendsList.friends[0].nickname).toBe(
+          testData.users[1].nickname,
+        );
+        expect(FriendsList.friends[0].imgUrl).toBe(testData.users[1].image);
+        expect(FriendsList.friends[1].nickname).toBe(
+          testData.users[2].nickname,
+        );
+        expect(FriendsList.friends[1].imgUrl).toBe(testData.users[2].image);
+      });
+    });
     // describe('친구요청 수락', () => {
     //   it('[Valid Case]유효한 친구요청 수락', async () => {
     //     await testData.createUserRequesting();
