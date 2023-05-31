@@ -35,4 +35,11 @@ export class FriendRepository {
       status: FRIENDSTATUS_REQUESTING,
     });
   }
+
+  async findPendingFriendsById(userId: number): Promise<Friend[]> {
+    const pendingFriends: Friend[] = await this.repository.find({
+      where: [{ user: { id: userId } }, { friend: { id: userId } }],
+    });
+    return pendingFriends;
+  }
 }

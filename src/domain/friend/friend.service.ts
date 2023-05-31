@@ -6,6 +6,8 @@ import { FriendDto, UserFriendsDto } from './dto/user.friends.dto';
 import { Friend } from './friend.entity';
 import { PostUserFriendRequestDto } from './dto/post.user.friend.request.dto';
 import { FRIENDSTATUS_DELETED } from 'src/global/type/type.friend.status';
+import { GetUserPendingFriendDto } from './dto/get.user.peding.friend.dto';
+import { UserPendingFriendsDto } from './dto/user.pending.friends.dto';
 
 @Injectable()
 export class FriendService {
@@ -70,5 +72,39 @@ export class FriendService {
         postDto.friendId,
       );
     }
+  }
+
+  async getUserPendingFriendRequests(
+    getDto: GetUserPendingFriendDto,
+  ): Promise<UserPendingFriendsDto> {
+    const userFriends: Friend[] =
+      await this.friendRepository.findPendingFriendsById(getDto.userId);
+
+    const friends: FriendDto[] = userFriends.map((friend) => {
+      if (friend.friend.id === getDto.userId) {
+        return {
+          nickname: friend.user.nickname,
+          imgUrl: friend.user.image.url,
+        };
+      }
+      return {
+        nickname: friend.friend.nickname,
+        imgUrl: friend.friend.image.url,
+      };
+    });
+    friends.sort((a, b) => {
+      if (a.nickname > b.nickname) {
+        return 1;
+      }
+      if (a.nickname < b.nickname) {
+        return -1;
+      }
+      return 0;
+    });
+    const responseDto: UserPendingFriendsDto = {
+      friends: friends,
+    };
+
+    return responseDto;
   }
 }
