@@ -141,46 +141,46 @@ describe('FriendService', () => {
         expect(friendsList.friends[1].imgUrl).toBe(testData.users[2].image.url);
       });
     });
-    // describe('친구요청', () => {
-    //   it('[Valid Case]유효한 닉네임 친구요청', async () => {
-    //     const userFriendsRequestDto: PostUserFriendsRequestDto = {
-    //       userId: testData.users[0].id,
-    //       friendId: testData.users[1].id,
-    //     };
+    describe('친구요청', () => {
+      it('[Valid Case]유효한 닉네임 친구요청', async () => {
+        const userFriendsRequestDto: PostUserFriendsRequestDto = {
+          userId: testData.users[0].id,
+          friendId: testData.users[1].id,
+        };
 
-    //     await service.postUserFriendsRequestByNickname(userFriendsRequestDto);
+        await service.postUserFriendRequest(userFriendsRequestDto);
 
-    //     const friendRequest: Friend = await friendRepository.findOne({
-    //       where: {
-    //         user: { id: testData.users[0].id },
-    //         friend: { id: testData.users[1].id },
-    //         status: Not(FRIENDSTATUS_DELETED),
-    //       },
-    //     });
+        const friendRequest: Friend = await friendRepository.findOne({
+          where: {
+            user: { id: testData.users[0].id },
+            friend: { id: testData.users[1].id },
+            status: Not(FRIENDSTATUS_DELETED),
+          },
+        });
 
-    //     expect(friendRequest.status).toBe(FRIENDSTATUS_REQUESTING);
-    //   });
+        expect(friendRequest.status).toBe(FRIENDSTATUS_REQUESTING);
+      });
 
-    //   it('[Valid Case]이미 친구인 유저에게 친구요청(백에서 씹기)', async () => {
-    //     await testData.createUserFriends(10);
-    //     const userFriendsRequestDto: PostUserFriendsRequestDto = {
-    //       userId: testData.users[0].id,
-    //       friendId: testData.users[1].id,
-    //     };
+      it('[Valid Case]이미 친구인 유저에게 친구요청(백에서 씹기)', async () => {
+        await testData.createUserFriends(10);
+        const userFriendsRequestDto: PostUserFriendsRequestDto = {
+          userId: testData.users[0].id,
+          friendId: testData.users[1].id,
+        };
 
-    //     await service.postUserFriendsRequestByNickname(userFriendsRequestDto);
+        await service.postUserFriendRequest(userFriendsRequestDto);
 
-    //     const friendRequest: Friend = await friendRepository.findOne({
-    //       where: {
-    //         user: { id: testData.users[0].id },
-    //         friend: { id: testData.users[1].id },
-    //         status: Not(FRIENDSTATUS_DELETED),
-    //       },
-    //     });
+        const friendRequest: Friend = await friendRepository.findOne({
+          where: {
+            user: { id: testData.users[0].id },
+            friend: { id: testData.users[1].id },
+            status: Not(FRIENDSTATUS_DELETED),
+          },
+        });
 
-    //     expect(friendRequest.status).toBe(FRIENDSTATUS_FRIEND);
-    //   });
-    // });
+        expect(friendRequest.status).toBe(FRIENDSTATUS_FRIEND);
+      });
+    });
     // describe('친구요청 목록', () => {
     //   it('[Valid Case] 친구요청이 없는경우 빈목록', async () => {
     //     const userFriendsRequestDto: GetUserPendingFriendDto = {
