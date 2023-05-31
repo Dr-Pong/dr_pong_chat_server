@@ -4,7 +4,6 @@ import { FriendTestService } from './test/friend.test.service';
 import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
 import { typeORMConfig } from 'src/configs/typeorm.config';
 import { addTransactionalDataSource } from 'typeorm-transactional';
-import { FrinedModule } from './frined.module';
 import { TestModule } from './test/friend.test.module';
 import { Test, TestingModule } from '@nestjs/testing';
 import { GetUserFriendDto as GetUserFriendDto } from './dto/get.user.friend.dto';
@@ -21,6 +20,7 @@ import { PostUserFriendAcceptDto } from './dto/post.user.friend.accept.dto';
 import { DeleteUserFriendDto } from './dto/delete.user.friend.dto';
 import { DeleteUserFriendRejectDto } from './dto/delete.user.friend.reject.dto';
 import { PostUserFriendRequestDto } from './dto/post.user.friend.request.dto';
+import { FriendModule } from './frined.module';
 
 describe('FriendService', () => {
   let service: FriendService;
@@ -44,7 +44,7 @@ describe('FriendService', () => {
             });
           },
         }),
-        FrinedModule,
+        FriendModule,
         TestModule,
       ],
       providers: [

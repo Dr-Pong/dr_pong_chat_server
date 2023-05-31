@@ -11,4 +11,4 @@ import { UserFactory } from '../user/user.factory';
   exports: [FriendService],
   controllers: [],
 })
-export class FrinedModule {}
+export class FriendModule {}
