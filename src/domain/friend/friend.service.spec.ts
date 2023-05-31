@@ -260,78 +260,78 @@ describe('FriendService', () => {
         );
       });
     });
-    // describe('친구요청 수락', () => {
-    //   it('[Valid Case]유효한 친구요청 수락', async () => {
-    //     await testData.createUserRequesting();
+    describe('친구요청 수락', () => {
+      it('[Valid Case]유효한 친구요청 수락', async () => {
+        await testData.createUserRequesting(10);
 
-    //     const userFriendsAcceptDto: PostUserFriendAcceptDto = {
-    //       userId: testData.users[0].id,
-    //       friendId: testData.users[1].id,
-    //     };
+        const userFriendsAcceptDto: PostUserFriendAcceptDto = {
+          userId: testData.users[0].id,
+          friendId: testData.users[1].id,
+        };
 
-    //     await service.postUserFriendsAcceptByNickname(userFriendsAcceptDto);
+        await await service.postUserFriendAccept(userFriendsAcceptDto);
 
-    //     const friendRequest: Friend = await friendRepository.findOne({
-    //       where: {
-    //         user: { id: testData.users[0].id },
-    //         friend: { id: testData.users[1].id },
-    //         status: Not(FRIENDSTATUS_DELETED),
-    //       },
-    //     });
+        const friendRequest: Friend = await friendRepository.findOne({
+          where: {
+            user: { id: testData.users[0].id },
+            friend: { id: testData.users[1].id },
+            status: Not(FRIENDSTATUS_DELETED),
+          },
+        });
 
-    //     expect(friendRequest.status).toBe(FRIENDSTATUS_FRIEND);
-    //   });
+        expect(friendRequest.status).toBe(FRIENDSTATUS_FRIEND);
+      });
 
-    //   it('[Valid Case] 양쪽에서 친구 요청 보낸경우', async () => {
-    //     await testData.createUserRequesting();
-    //     await testData.createAnotherUsersRequesting();
+      it('[Valid Case] 양쪽에서 친구 요청 보낸경우', async () => {
+        await testData.createUserRequesting(10);
+        await testData.createUser0ToRequesting(1);
 
-    //     const userFriendsAcceptDto: PostUserFriendAcceptDto = {
-    //       userId: testData.users[0].id,
-    //       friendId: testData.users[1].id,
-    //     };
+        const userFriendsAcceptDto: PostUserFriendAcceptDto = {
+          userId: testData.users[0].id,
+          friendId: testData.users[1].id,
+        };
 
-    //     await service.postUserFriendsAcceptByNickname(userFriendsAcceptDto);
+        await await service.postUserFriendAccept(userFriendsAcceptDto);
 
-    //     const friendRequest: Friend = await friendRepository.findOne({
-    //       where: {
-    //         user: { id: testData.users[0].id },
-    //         friend: { id: testData.users[1].id },
-    //         status: Not(FRIENDSTATUS_DELETED),
-    //       },
-    //     });
-    //     const anotherFriendRequest: Friend = await friendRepository.findOne({
-    //       where: {
-    //         user: { id: testData.users[1].id },
-    //         friend: { id: testData.users[0].id },
-    //         status: Not(FRIENDSTATUS_DELETED),
-    //       },
-    //     });
+        const friendRequest: Friend = await friendRepository.findOne({
+          where: {
+            user: { id: testData.users[0].id },
+            friend: { id: testData.users[1].id },
+            status: Not(FRIENDSTATUS_DELETED),
+          },
+        });
+        const anotherFriendRequest: Friend = await friendRepository.findOne({
+          where: {
+            user: { id: testData.users[1].id },
+            friend: { id: testData.users[0].id },
+            status: Not(FRIENDSTATUS_DELETED),
+          },
+        });
 
-    //     expect(friendRequest.status).toBe(FRIENDSTATUS_FRIEND);
-    //     expect(anotherFriendRequest.status).toBe(FRIENDSTATUS_FRIEND);
-    //   });
+        expect(friendRequest.status).toBe(FRIENDSTATUS_FRIEND);
+        expect(anotherFriendRequest.status).toBe(FRIENDSTATUS_FRIEND);
+      });
 
-    //   it('[Valid Case]이미 친구인 유저에게 친구요청 수락(백에서 씹기)', async () => {
-    //     await testData.createUserFriends(10);
-    //     const userFriendsAcceptDto: PostUserFriendAcceptDto = {
-    //       userId: testData.users[0].id,
-    //       friendId: testData.users[1].id,
-    //     };
+      it('[Valid Case]이미 친구인 유저에게 친구요청 수락(백에서 씹기)', async () => {
+        await testData.createUserFriends(10);
+        const userFriendsAcceptDto: PostUserFriendAcceptDto = {
+          userId: testData.users[0].id,
+          friendId: testData.users[1].id,
+        };
 
-    //     await service.postUserFriendsAcceptByNickname(userFriendsAcceptDto);
+        await await service.postUserFriendAccept(userFriendsAcceptDto);
 
-    //     const friendRequest: Friend = await friendRepository.findOne({
-    //       where: {
-    //         user: { id: testData.users[0].id },
-    //         friend: { id: testData.users[1].id },
-    //         status: Not(FRIENDSTATUS_DELETED),
-    //       },
-    //     });
+        const friendRequest: Friend = await friendRepository.findOne({
+          where: {
+            user: { id: testData.users[0].id },
+            friend: { id: testData.users[1].id },
+            status: Not(FRIENDSTATUS_DELETED),
+          },
+        });
 
-    //     expect(friendRequest.status).toBe(FRIENDSTATUS_FRIEND);
-    //   });
-    // });
+        expect(friendRequest.status).toBe(FRIENDSTATUS_FRIEND);
+      });
+    });
     // describe('친구요청 거절', () => {
     //   it('[Valid Case]친구요청 거절', async () => {
     //     await testData.createUserRequesting();
