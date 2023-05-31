@@ -2,7 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { Friend } from './friend.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FRIENDSTATUS_REQUESTING } from 'src/global/type/type.friend.status';
+import {
+  FRIENDSTATUS_FRIEND,
+  FRIENDSTATUS_REQUESTING,
+} from 'src/global/type/type.friend.status';
 
 @Injectable()
 export class FriendRepository {
@@ -20,10 +23,7 @@ export class FriendRepository {
 
   async findFriendTables(userId: number, friendId: number): Promise<Friend[]> {
     const deletedFriends: Friend[] = await this.repository.find({
-      where: [
-        { user: { id: userId }, friend: { id: friendId } },
-        { user: { id: friendId }, friend: { id: userId } },
-      ],
+      where: [{ user: { id: userId }, friend: { id: friendId } }],
     });
     return deletedFriends;
   }
