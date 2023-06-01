@@ -4,6 +4,8 @@ import { Like, Repository } from 'typeorm';
 import { Injectable } from '@nestjs/common';
 import { Page } from 'src/global/utils/page';
 import { FindChannelPageDto } from '../channel-user/dto/find.channel.page.dto';
+import { CHANNEL_PROTECTED } from 'src/global/type/type.channel';
+import { SaveChannelDto } from './dto/save.channel.dto';
 
 @Injectable()
 export class ChannelRepository {
@@ -83,12 +85,26 @@ export class ChannelRepository {
     return page;
   }
 
-  async saveChannel(channel: Channel): Promise<Channel> {
-    return await this.repository.save(channel);
+  async saveChannel(saveDto: SaveChannelDto): Promise<Channel> {
+    return await this.repository.save({
+      operator: { id: saveDto.userId },
+      name: saveDto.name,
+      isDeleted: false,
+      access: saveDto.access,
+      password: saveDto.access === CHANNEL_PROTECTED ? saveDto.password : null,
+      headCount: 0,
+      maxCount: saveDto.maxCount,
+    });
   }
 
-  async deleteChannel(channel: Channel): Promise<void> {
-    channel.isDeleted = true;
-    await this.repository.save(channel);
+  async deleteChannel(deleteDto: DeleteChannelDto): Promise<void> {
+    await this.repository.update(
+      {
+        id: deleteDto.channelId,
+      },
+      {
+        isDeleted: true,
+      },
+    );
   }
 }
