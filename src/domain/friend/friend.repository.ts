@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { Friend } from './friend.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
@@ -45,7 +45,10 @@ export class FriendRepository {
 
   async updateFriendStatus(userId: number, friendId: number): Promise<void> {
     await this.repository.update(
-      { user: { id: userId }, friend: { id: friendId } },
+      {
+        user: { id: In([userId, friendId]) },
+        friend: { id: In([userId, friendId]) },
+      },
       { status: FRIENDSTATUS_FRIEND },
     );
   }

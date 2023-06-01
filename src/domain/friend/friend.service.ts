@@ -133,6 +133,10 @@ export class FriendService {
         postDto.userId,
         postDto.friendId,
       );
+      await this.friendRepository.updateFriendStatus(
+        postDto.friendId,
+        postDto.userId,
+      );
     }
   }
 }
