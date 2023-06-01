@@ -1,4 +1,5 @@
 import { BaseTimeEntity } from 'src/global/base-entity/base-time.entity';
+import { ChatType } from 'src/global/type/type.chat';
 import { Column, JoinColumn, PrimaryGeneratedColumn } from 'typeorm';
 
 export class ChannelMessage extends BaseTimeEntity {
