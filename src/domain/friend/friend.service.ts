@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { FriendRepository } from './friend.repository';
-import { UserFactory } from '../user/user.factory';
 import { GetUserFriendDto } from './dto/get.user.friend.dto';
 import { FriendDto, UserFriendsDto } from './dto/user.friends.dto';
 import { Friend } from './friend.entity';
@@ -16,26 +15,22 @@ import { DeleteUserFriendRejectDto } from './dto/delete.user.friend.reject.dto';
 
 @Injectable()
 export class FriendService {
-  constructor(
-    private friendRepository: FriendRepository,
-    private userFactory: UserFactory,
-  ) {}
+  constructor(private friendRepository: FriendRepository) {}
 
   //**친구 목록 GET 반환 */
   async getUserFriends(getDto: GetUserFriendDto): Promise<UserFriendsDto> {
-    const userFriends: Friend[] = await this.friendRepository.findFriendsById(
-      getDto.userId,
-    );
+    const userFriends: Friend[] =
+      await this.friendRepository.findFriendsByUserId(getDto.userId);
     const friends: FriendDto[] = userFriends.map((friend) => {
-      if (friend.friend.id === getDto.userId) {
+      if (friend.reciever.id === getDto.userId) {
         return {
-          nickname: friend.user.nickname,
-          imgUrl: friend.user.image.url,
+          nickname: friend.sender.nickname,
+          imgUrl: friend.sender.image.url,
         };
       }
       return {
-        nickname: friend.friend.nickname,
-        imgUrl: friend.friend.image.url,
+        nickname: friend.reciever.nickname,
+        imgUrl: friend.reciever.image.url,
       };
     });
     friends.sort((a, b) => {
@@ -58,10 +53,11 @@ export class FriendService {
   async postUserFriendRequest(
     postDto: PostUserFriendRequestDto,
   ): Promise<void> {
-    const friendTables: Friend[] = await this.friendRepository.findFriendTables(
-      postDto.userId,
-      postDto.friendId,
-    );
+    const friendTables: Friend[] =
+      await this.friendRepository.findAllFriendsByUserIdAndFrinedId(
+        postDto.userId,
+        postDto.friendId,
+      );
 
     let allDeleted = true;
 
@@ -72,7 +68,7 @@ export class FriendService {
       }
     }
     if (friendTables.length === 0 || allDeleted) {
-      await this.friendRepository.saveFriendRequest(
+      await this.friendRepository.saveFriendStatusRequestingByUserIdAndFriendId(
         postDto.userId,
         postDto.friendId,
       );
@@ -84,18 +80,20 @@ export class FriendService {
     getDto: GetUserPendingFriendDto,
   ): Promise<UserPendingFriendsDto> {
     const userFriends: Friend[] =
-      await this.friendRepository.findPendingFriendsById(getDto.userId);
+      await this.friendRepository.findAllFriendsStatusPendingByUserId(
+        getDto.userId,
+      );
 
     const friends: FriendDto[] = userFriends.map((friend) => {
-      if (friend.friend.id === getDto.userId) {
+      if (friend.reciever.id === getDto.userId) {
         return {
-          nickname: friend.user.nickname,
-          imgUrl: friend.user.image.url,
+          nickname: friend.sender.nickname,
+          imgUrl: friend.sender.image.url,
         };
       }
       return {
-        nickname: friend.friend.nickname,
-        imgUrl: friend.friend.image.url,
+        nickname: friend.reciever.nickname,
+        imgUrl: friend.reciever.image.url,
       };
     });
     friends.sort((a, b) => {
@@ -116,10 +114,11 @@ export class FriendService {
 
   //**친구 요청 수락 */
   async postUserFriendAccept(postDto: PostUserFriendAcceptDto): Promise<void> {
-    const friendTables: Friend[] = await this.friendRepository.findFriendTables(
-      postDto.userId,
-      postDto.friendId,
-    );
+    const friendTables: Friend[] =
+      await this.friendRepository.findAllFriendsByUserIdAndFrinedId(
+        postDto.userId,
+        postDto.friendId,
+      );
     let isRequesting = false;
 
     for (const friend of friendTables) {
@@ -130,11 +129,11 @@ export class FriendService {
     }
 
     if (isRequesting) {
-      await this.friendRepository.updateFriendStatus(
+      await this.friendRepository.updateFriendRequestStatusFriendByUserIdAndFriendId(
         postDto.userId,
         postDto.friendId,
       );
-      await this.friendRepository.updateFriendStatus(
+      await this.friendRepository.updateFriendRequestStatusFriendByUserIdAndFriendId(
         postDto.friendId,
         postDto.userId,
       );
@@ -145,10 +144,11 @@ export class FriendService {
   async deleteUserFriendReject(
     deleteDto: DeleteUserFriendRejectDto,
   ): Promise<void> {
-    const friendTables: Friend[] = await this.friendRepository.findFriendTables(
-      deleteDto.userId,
-      deleteDto.friendId,
-    );
+    const friendTables: Friend[] =
+      await this.friendRepository.findAllFriendsByUserIdAndFrinedId(
+        deleteDto.userId,
+        deleteDto.friendId,
+      );
     let isRequesting = false;
 
     for (const friend of friendTables) {
@@ -159,7 +159,7 @@ export class FriendService {
     }
 
     if (isRequesting) {
-      await this.friendRepository.rejectFriendRequest(
+      await this.friendRepository.updateFriendRequestStatusDeletedByUserIdAndFriendId(
         deleteDto.userId,
         deleteDto.friendId,
       );

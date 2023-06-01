@@ -15,50 +15,62 @@ export class FriendRepository {
     private readonly repository: Repository<Friend>,
   ) {}
 
-  async findFriendsById(userId: number): Promise<Friend[]> {
+  async findFriendsByUserId(userId: number): Promise<Friend[]> {
     const friends: Friend[] = await this.repository.find({
-      where: [{ user: { id: userId } }, { friend: { id: userId } }],
+      where: [{ sender: { id: userId } }, { reciever: { id: userId } }],
     });
     return friends;
   }
 
-  async findFriendTables(userId: number, friendId: number): Promise<Friend[]> {
+  async findAllFriendsByUserIdAndFrinedId(
+    userId: number,
+    friendId: number,
+  ): Promise<Friend[]> {
     const deletedFriends: Friend[] = await this.repository.find({
-      where: [{ user: { id: userId }, friend: { id: friendId } }],
+      where: [{ sender: { id: userId }, reciever: { id: friendId } }],
     });
     return deletedFriends;
   }
 
-  async saveFriendRequest(userId: number, friendId: number): Promise<void> {
+  async saveFriendStatusRequestingByUserIdAndFriendId(
+    userId: number,
+    friendId: number,
+  ): Promise<void> {
     await this.repository.save({
-      user: { id: userId },
-      friend: { id: friendId },
+      sender: { id: userId },
+      reciever: { id: friendId },
       status: FRIENDSTATUS_REQUESTING,
     });
   }
 
-  async findPendingFriendsById(userId: number): Promise<Friend[]> {
+  async findAllFriendsStatusPendingByUserId(userId: number): Promise<Friend[]> {
     const pendingFriends: Friend[] = await this.repository.find({
-      where: [{ user: { id: userId } }, { friend: { id: userId } }],
+      where: [{ sender: { id: userId } }, { reciever: { id: userId } }],
     });
     return pendingFriends;
   }
 
-  async updateFriendStatus(userId: number, friendId: number): Promise<void> {
+  async updateFriendRequestStatusFriendByUserIdAndFriendId(
+    userId: number,
+    friendId: number,
+  ): Promise<void> {
     await this.repository.update(
       {
-        user: { id: In([userId, friendId]) },
-        friend: { id: In([userId, friendId]) },
+        sender: { id: In([userId, friendId]) },
+        reciever: { id: In([userId, friendId]) },
       },
       { status: FRIENDSTATUS_FRIEND },
     );
   }
 
-  async rejectFriendRequest(userId: number, friendId: number): Promise<void> {
+  async updateFriendRequestStatusDeletedByUserIdAndFriendId(
+    userId: number,
+    friendId: number,
+  ): Promise<void> {
     await this.repository.update(
       {
-        user: { id: In([userId, friendId]) },
-        friend: { id: In([userId, friendId]) },
+        sender: { id: In([userId, friendId]) },
+        reciever: { id: In([userId, friendId]) },
       },
       { status: FRIENDSTATUS_DELETED },
     );
