@@ -35,6 +35,9 @@ import { GetChannelPageDto } from './dto/get.channel.page.dto';
 import { ChannelPageDto, ChannelPageDtos } from './dto/channel.page.dto';
 import { Page } from 'src/global/utils/page';
 import { FindChannelPageDto } from './dto/find.channel.page.dto';
+import { PostChannelDto } from './dto/post.channel.dto';
+import { SaveChannelDto } from '../channel/dto/save.channel.dto';
+import { SaveChannelUserDto } from './dto/save.channel-user.dto';
 
 @Injectable()
 export class ChannelUserService {
@@ -95,5 +98,44 @@ export class ChannelUserService {
     const responseDto: ChannelPageDtos = ChannelPageDtos.fromPage(channels);
 
     return responseDto;
+  }
+
+  @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
+  async postChannel(postDto: PostChannelDto): Promise<void> {
+    const existChannel: Channel =
+      await this.channelRepository.findByChannelName(postDto.name);
+    if (existChannel) {
+      throw new BadRequestException('Channel name already exists');
+    }
+
+    const existChannelUser: ChannelUser =
+      await this.channelUserRepository.findByUserIdAndNotDeleted(
+        postDto.userId,
+      );
+    if (existChannelUser) {
+      await this.exitChannel(existChannelUser);
+    }
+
+    const user: User = await this.userRepository.findById(postDto.userId);
+    const newChannel: Channel = await this.channelRepository.saveChannel(
+      SaveChannelDto.from(postDto),
+    );
+    await this.channelUserRepository.saveChannelUser(
+      new SaveChannelUserDto(user.id, newChannel.id),
+    );
+
+    runOnTransactionComplete(() => {
+      const userModel: UserModel = this.userFactory.findById(postDto.userId);
+      if (userModel.joinedChannel) {
+        this.channelFactory.leave(
+          userModel,
+          this.channelFactory.channels.get(userModel.joinedChannel),
+        );
+      }
+      this.channelFactory.create(
+        userModel,
+        ChannelModel.fromEntity(newChannel),
+      );
+    });
   }
 }
