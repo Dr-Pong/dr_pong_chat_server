@@ -3,6 +3,12 @@ import { UserModel } from './user.model';
 import { ChannelModel } from '../channel/channel.model';
 import { Socket } from 'socket.io';
 import { UserStatusType } from 'src/global/type/type.user.status';
+import { InviteModel } from './invite.model';
+import {
+  CHANNEL_PARTICIPANT_ADMIN,
+  CHANNEL_PARTICIPANT_NORMAL,
+  CHANNEL_PARTICIPANT_OWNER,
+} from 'src/global/type/type.channel-participant';
 
 @Injectable()
 export class UserFactory {
@@ -17,7 +23,7 @@ export class UserFactory {
     if (channel.muteList.has(user.id)) {
       user.isMuted = true;
     }
-    user.roleType = 'normal';
+    user.roleType = CHANNEL_PARTICIPANT_NORMAL;
     this.users.set(user.id, user);
   }
 
@@ -29,7 +35,7 @@ export class UserFactory {
   }
 
   setOwner(user: UserModel): void {
-    user.roleType = 'owner';
+    user.roleType = CHANNEL_PARTICIPANT_OWNER;
     this.users.set(user.id, user);
   }
 
@@ -44,12 +50,12 @@ export class UserFactory {
   }
 
   setAdmin(user: UserModel): void {
-    user.roleType = 'admin';
+    user.roleType = CHANNEL_PARTICIPANT_ADMIN;
     this.users.set(user.id, user);
   }
 
   unSetAdmin(user: UserModel): void {
-    user.roleType = 'normal';
+    user.roleType = CHANNEL_PARTICIPANT_NORMAL;
     this.users.set(user.id, user);
   }
 
@@ -83,6 +89,11 @@ export class UserFactory {
 
   setStatus(user: UserModel, status: UserStatusType): void {
     user.status = status;
+    this.users.set(user.id, user);
+  }
+
+  invite(user: UserModel, invite: InviteModel): void {
+    user.inviteList.set(invite.id, invite);
     this.users.set(user.id, user);
   }
 }
