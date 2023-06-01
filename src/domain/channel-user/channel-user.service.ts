@@ -48,13 +48,14 @@ import {
   JOIN_CHANNEL_INVITE,
   JOIN_CHANNEL_JOIN,
 } from 'src/global/type/type.join.channel';
+import { ChannelExitDto } from './dto/channel.exit.dto';
+import { DeleteChannelUserDto } from './dto/delete.channel.user.dto';
 
 @Injectable()
 export class ChannelUserService {
   constructor(
     private readonly channelUserRepository: ChannelUserRepository,
     private readonly channelRepository: ChannelRepository,
-    private readonly userRepository: UserRepository,
     private readonly messageRepository: ChannelMessageRepository,
     private readonly channelFactory: ChannelFactory,
     private readonly userFactory: UserFactory,
@@ -121,7 +122,9 @@ export class ChannelUserService {
         postDto.userId,
       );
     if (existChannelUser) {
-      await this.exitChannel(existChannelUser);
+      await this.exitChannel(
+        new ChannelExitDto(postDto.userId, existChannelUser.channel.id),
+      );
     }
 
     const user: User = await this.userRepository.findById(postDto.userId);
@@ -154,7 +157,9 @@ export class ChannelUserService {
         postDto.userId,
       );
     if (existChannelUser) {
-      await this.exitChannel(existChannelUser);
+      await this.exitChannel(
+        new ChannelExitDto(postDto.userId, existChannelUser.channel.id),
+      );
     }
 
     await this.joinChannel(
@@ -213,7 +218,9 @@ export class ChannelUserService {
         postDto.userId,
       );
     if (existChannelUser) {
-      await this.exitChannel(existChannelUser);
+      await this.exitChannel(
+        new ChannelExitDto(postDto.userId, existChannelUser.channel.id),
+      );
     }
 
     this.joinChannel(
@@ -243,6 +250,30 @@ export class ChannelUserService {
     });
   }
 
+  @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
+  async deleteChannelUser(deleteDto: DeleteChannelUserDto): Promise<void> {
+    const channelUser: ChannelUser =
+      await this.channelUserRepository.findByUserIdAndChannelId(
+        deleteDto.userId,
+        deleteDto.channelId,
+      );
+    if (!channelUser) {
+      throw new BadRequestException('User is not joined channel');
+    }
+
+    await this.exitChannel(
+      new ChannelExitDto(deleteDto.userId, channelUser.channel.id),
+    );
+
+    runOnTransactionComplete(() => {
+      const userModel: UserModel = this.userFactory.findById(deleteDto.userId);
+      this.channelFactory.leave(
+        userModel,
+        this.channelFactory.findChannelById(deleteDto.channelId),
+      );
+    });
+  }
+
   private async joinChannel(dto: ChannelJoinDto): Promise<void> {
     await validateChannelJoin(
       dto,
@@ -255,6 +286,16 @@ export class ChannelUserService {
     );
     await this.channelRepository.updateHeadCount(
       new UpdateChannelHeadCountDto(dto.channelId, 1),
+    );
+  }
+
+  private async exitChannel(dto: ChannelExitDto): Promise<void> {
+    await this.channelUserRepository.deleteChannelUser(
+      dto.userId,
+      dto.channelId,
+    );
+    await this.channelRepository.updateHeadCount(
+      new UpdateChannelHeadCountDto(dto.channelId, -1),
     );
   }
 }

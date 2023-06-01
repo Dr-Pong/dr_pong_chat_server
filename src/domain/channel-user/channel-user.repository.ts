@@ -39,4 +39,11 @@ export class ChannelUserRepository {
       channel: { id: saveDto.channelId },
     });
   }
+
+  async deleteChannelUser(userId: number, channelId: string): Promise<void> {
+    await this.repository.update(
+      { user: { id: userId }, channel: { id: channelId }, isDeleted: false },
+      { isDeleted: true },
+    );
+  }
 }
