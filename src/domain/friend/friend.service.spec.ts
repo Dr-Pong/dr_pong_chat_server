@@ -350,12 +350,11 @@ describe('FriendService', () => {
           },
         });
 
-        expect(friendRequest).toBeNull();
+        expect(friendRequest.status).toBe(FRIENDSTATUS_DELETED);
       });
 
       it('[Valid Case] 이미 친구인 사용자에게 친구요청 거절(백에서 씹기)', async () => {
         await testData.createUserFriends(10);
-        await testData.createUserRequesting(10);
 
         const userFriendsAcceptDto: DeleteUserFriendRejectDto = {
           userId: testData.users[0].id,
@@ -371,7 +370,7 @@ describe('FriendService', () => {
           },
         });
 
-        expect(friendRequest).toBeNull();
+        expect(friendRequest.status).toBe(FRIENDSTATUS_FRIEND);
       });
     });
     // describe('친구 삭제', () => {
