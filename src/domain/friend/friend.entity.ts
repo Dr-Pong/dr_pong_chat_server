@@ -16,11 +16,11 @@ export class Friend extends BaseTimeEntity {
 
   @ManyToOne(() => User, { eager: true })
   @JoinColumn({ name: 'user_id' })
-  user: User;
+  sender: User;
 
   @ManyToOne(() => User, { eager: true })
   @JoinColumn({ name: 'friend_id' })
-  friend: User;
+  reciever: User;
 
   @Column({ name: 'status', nullable: false })
   status: FriendType;

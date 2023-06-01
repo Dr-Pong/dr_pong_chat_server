@@ -17,7 +17,6 @@ import {
 import { GetUserPendingFriendDto } from './dto/get.user.peding.friend.dto';
 import { UserPendingFriendsDto } from './dto/user.pending.friends.dto';
 import { PostUserFriendAcceptDto } from './dto/post.user.friend.accept.dto';
-import { DeleteUserFriendDto } from './dto/delete.user.friend.dto';
 import { DeleteUserFriendRejectDto } from './dto/delete.user.friend.reject.dto';
 import { PostUserFriendRequestDto } from './dto/post.user.friend.request.dto';
 import { FriendModule } from './frined.module';
@@ -94,7 +93,7 @@ describe('FriendService', () => {
         );
         const friendRequest = await friendRepository.find({
           where: {
-            user: { id: testData.users[0].id },
+            sender: { id: testData.users[0].id },
             status: Not(FRIENDSTATUS_DELETED),
           },
         });
@@ -152,8 +151,8 @@ describe('FriendService', () => {
 
         const friendRequest: Friend = await friendRepository.findOne({
           where: {
-            user: { id: testData.users[0].id },
-            friend: { id: testData.users[1].id },
+            sender: { id: testData.users[0].id },
+            reciever: { id: testData.users[1].id },
             status: Not(FRIENDSTATUS_DELETED),
           },
         });
@@ -172,8 +171,8 @@ describe('FriendService', () => {
 
         const friendRequest: Friend = await friendRepository.findOne({
           where: {
-            user: { id: testData.users[0].id },
-            friend: { id: testData.users[1].id },
+            sender: { id: testData.users[0].id },
+            reciever: { id: testData.users[1].id },
             status: Not(FRIENDSTATUS_DELETED),
           },
         });
@@ -206,8 +205,8 @@ describe('FriendService', () => {
 
         const friendRequest: Friend = await friendRepository.findOne({
           where: {
-            user: { id: testData.users[0].id },
-            friend: { id: testData.users[1].id },
+            sender: { id: testData.users[0].id },
+            reciever: { id: testData.users[1].id },
             status: Not(FRIENDSTATUS_DELETED),
           },
         });
@@ -273,8 +272,8 @@ describe('FriendService', () => {
 
         const friendRequest: Friend = await friendRepository.findOne({
           where: {
-            user: { id: testData.users[0].id },
-            friend: { id: testData.users[1].id },
+            sender: { id: testData.users[0].id },
+            reciever: { id: testData.users[1].id },
             status: Not(FRIENDSTATUS_DELETED),
           },
         });
@@ -295,15 +294,15 @@ describe('FriendService', () => {
 
         const friendRequest: Friend = await friendRepository.findOne({
           where: {
-            user: { id: testData.users[0].id },
-            friend: { id: testData.users[1].id },
+            sender: { id: testData.users[0].id },
+            reciever: { id: testData.users[1].id },
             status: Not(FRIENDSTATUS_DELETED),
           },
         });
         const anotherFriendRequest: Friend = await friendRepository.findOne({
           where: {
-            user: { id: testData.users[1].id },
-            friend: { id: testData.users[0].id },
+            sender: { id: testData.users[1].id },
+            reciever: { id: testData.users[0].id },
             status: Not(FRIENDSTATUS_DELETED),
           },
         });
@@ -323,8 +322,8 @@ describe('FriendService', () => {
 
         const friendRequest: Friend = await friendRepository.findOne({
           where: {
-            user: { id: testData.users[0].id },
-            friend: { id: testData.users[1].id },
+            sender: { id: testData.users[0].id },
+            reciever: { id: testData.users[1].id },
             status: Not(FRIENDSTATUS_DELETED),
           },
         });
@@ -345,8 +344,8 @@ describe('FriendService', () => {
 
         const friendRequest: Friend = await friendRepository.findOne({
           where: {
-            user: { id: testData.users[0].id },
-            friend: { id: testData.users[1].id },
+            sender: { id: testData.users[0].id },
+            reciever: { id: testData.users[1].id },
           },
         });
 
@@ -365,8 +364,8 @@ describe('FriendService', () => {
 
         const friendRequest: Friend = await friendRepository.findOne({
           where: {
-            user: { id: testData.users[0].id },
-            friend: { id: testData.users[1].id },
+            sender: { id: testData.users[0].id },
+            reciever: { id: testData.users[1].id },
           },
         });
 
