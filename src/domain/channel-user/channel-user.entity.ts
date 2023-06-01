@@ -25,6 +25,6 @@ export class ChannelUser extends BaseTimeEntity {
   @Column({ name: 'is_deleted', default: false })
   isDeleted: boolean;
 
-  @Column({ name: 'status', default: 'normal' })
-  status: UserChannelType;
+  // @Column({ name: 'status', default: 'normal' })
+  // status: UserChannelType;
 }

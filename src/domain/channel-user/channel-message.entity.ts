@@ -17,6 +17,6 @@ export class ChannelMessage extends BaseTimeEntity {
   @Column({ name: 'content' })
   content: string;
 
-  @Column({ name: 'type' })
-  type: ChatType;
+  // @Column({ name: 'type' })
+  // type: ChatType;
 }
