@@ -38,6 +38,8 @@ import { FindChannelPageDto } from './dto/find.channel.page.dto';
 import { PostChannelDto } from './dto/post.channel.dto';
 import { SaveChannelDto } from '../channel/dto/save.channel.dto';
 import { SaveChannelUserDto } from './dto/save.channel-user.dto';
+import { PostChannelJoinDto } from './dto/post.channel.join.dto';
+import { validateChannelJoin } from './channel-user.error';
 
 @Injectable()
 export class ChannelUserService {
@@ -57,9 +59,7 @@ export class ChannelUserService {
       getDto.channelId,
     );
     const users: UserModel[] = this.channelFactory.getUsers(channel);
-    if (!channel.users.has(getDto.userId)) {
-      throw new BadRequestException('You are not in this channel');
-    }
+    checkUserInChannel(channel, getDto.userId);
 
     const responseDto: ChannelParticipantDtos = new ChannelParticipantDtos();
     users.map((user) => {
@@ -137,5 +137,47 @@ export class ChannelUserService {
         ChannelModel.fromEntity(newChannel),
       );
     });
+  }
+
+  @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
+  async postChannelJoin(postDto: PostChannelJoinDto): Promise<void> {
+    const existChannelUser: ChannelUser =
+      await this.channelUserRepository.findByUserIdAndNotDeleted(
+        postDto.userId,
+      );
+    if (existChannelUser) {
+      await this.exitChannel(existChannelUser);
+    }
+
+    await this.joinChannel(postDto);
+
+    runOnTransactionComplete(() => {
+      const userModel: UserModel = this.userFactory.findById(postDto.userId);
+      if (userModel.joinedChannel) {
+        this.channelFactory.leave(
+          userModel,
+          this.channelFactory.channels.get(userModel.joinedChannel),
+        );
+      }
+      this.channelFactory.join(
+        userModel,
+        this.channelFactory.findChannelById(postDto.channelId),
+      );
+    });
+  }
+
+  private async joinChannel(dto: ChannelJoinDto): Promise<void> {
+    await validateChannelJoin(
+      dto,
+      this.channelRepository,
+      this.channelUserRepository,
+    );
+
+    await this.channelUserRepository.saveChannelUser(
+      new SaveChannelUserDto(dto.userId, dto.channelId),
+    );
+    await this.channelRepository.updateHeadCount(
+      new UpdateChannelHeadCountDto(dto.channelId, 1),
+    );
   }
 }
