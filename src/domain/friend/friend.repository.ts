@@ -3,6 +3,7 @@ import { In, Repository } from 'typeorm';
 import { Friend } from './friend.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
+  FRIENDSTATUS_DELETED,
   FRIENDSTATUS_FRIEND,
   FRIENDSTATUS_REQUESTING,
 } from 'src/global/type/type.friend.status';
@@ -50,6 +51,16 @@ export class FriendRepository {
         friend: { id: In([userId, friendId]) },
       },
       { status: FRIENDSTATUS_FRIEND },
+    );
+  }
+
+  async rejectFriendRequest(userId: number, friendId: number): Promise<void> {
+    await this.repository.update(
+      {
+        user: { id: In([userId, friendId]) },
+        friend: { id: In([userId, friendId]) },
+      },
+      { status: FRIENDSTATUS_DELETED },
     );
   }
 }

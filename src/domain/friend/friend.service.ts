@@ -12,6 +12,7 @@ import {
 import { GetUserPendingFriendDto } from './dto/get.user.peding.friend.dto';
 import { UserPendingFriendsDto } from './dto/user.pending.friends.dto';
 import { PostUserFriendAcceptDto } from './dto/post.user.friend.accept.dto';
+import { DeleteUserFriendRejectDto } from './dto/delete.user.friend.reject.dto';
 
 @Injectable()
 export class FriendService {
@@ -136,6 +137,31 @@ export class FriendService {
       await this.friendRepository.updateFriendStatus(
         postDto.friendId,
         postDto.userId,
+      );
+    }
+  }
+
+  //**  친구요청 거절 */
+  async deleteUserFriendReject(
+    deleteDto: DeleteUserFriendRejectDto,
+  ): Promise<void> {
+    const friendTables: Friend[] = await this.friendRepository.findFriendTables(
+      deleteDto.userId,
+      deleteDto.friendId,
+    );
+    let isRequesting = false;
+
+    for (const friend of friendTables) {
+      if (friend.status === FRIENDSTATUS_REQUESTING) {
+        isRequesting = true;
+        break;
+      }
+    }
+
+    if (isRequesting) {
+      await this.friendRepository.rejectFriendRequest(
+        deleteDto.userId,
+        deleteDto.friendId,
       );
     }
   }
