@@ -6,12 +6,14 @@ import { Friend } from './friend.entity';
 import { PostUserFriendRequestDto } from './dto/post.user.friend.request.dto';
 import {
   FRIENDSTATUS_DELETED,
+  FRIENDSTATUS_FRIEND,
   FRIENDSTATUS_REQUESTING,
 } from 'src/global/type/type.friend.status';
 import { GetUserPendingFriendDto } from './dto/get.user.peding.friend.dto';
 import { UserPendingFriendsDto } from './dto/user.pending.friends.dto';
 import { PostUserFriendAcceptDto } from './dto/post.user.friend.accept.dto';
 import { DeleteUserFriendRejectDto } from './dto/delete.user.friend.reject.dto';
+import { DeleteUserFriendDto } from './dto/delete.user.friend.dto';
 
 @Injectable()
 export class FriendService {
@@ -162,6 +164,34 @@ export class FriendService {
       await this.friendRepository.updateFriendRequestStatusDeletedByUserIdAndFriendId(
         deleteDto.userId,
         deleteDto.friendId,
+      );
+    }
+  }
+
+  //**친구 삭제 */
+  async deleteUserFriend(deleteDto: DeleteUserFriendDto): Promise<void> {
+    const friendTables: Friend[] =
+      await this.friendRepository.findAllFriendsByUserIdAndFrinedId(
+        deleteDto.userId,
+        deleteDto.friendId,
+      );
+    let isFriend = false;
+
+    for (const friend of friendTables) {
+      if (friend.status === FRIENDSTATUS_FRIEND) {
+        isFriend = true;
+        break;
+      }
+    }
+
+    if (isFriend) {
+      await this.friendRepository.updateFriendRequestStatusDeletedByUserIdAndFriendId(
+        deleteDto.userId,
+        deleteDto.friendId,
+      );
+      await this.friendRepository.updateFriendRequestStatusDeletedByUserIdAndFriendId(
+        deleteDto.friendId,
+        deleteDto.userId,
       );
     }
   }
