@@ -73,13 +73,13 @@ describe('DmLogService', () => {
     describe('Direct Message 대화 내역 조회', () => {
       it('[Valid Case] 대화 내역 형식 확인 (닉네임, 사진, 생성일)', async () => {
         await testData.createUserFriends(10);
-        await testData.createDirectMessage(20);
+        await testData.createDirectMessageToUser1(20);
 
         const userDirectMessegeDto: GetDirectMessageHistoryDto = {
           userId: testData.users[0].id,
           friendId: testData.users[1].id,
-          offset: testData.directMessage[9].id,
-          count: 10,
+          offset: null,
+          count: 20,
         };
 
         const directMessagehistory: GetDirectMessageHistoryResponseDto =
@@ -93,12 +93,12 @@ describe('DmLogService', () => {
 
       it('[Valid Case] 존재하는 대화 내역 조회', async () => {
         await testData.createUserFriends(10);
-        await testData.createDirectMessage(20);
+        await testData.createDirectMessageToUser1(20);
 
         const userDirectMessegeDto: GetDirectMessageHistoryDto = {
           userId: testData.users[0].id,
           friendId: testData.users[1].id,
-          offset: testData.directMessage[9].id,
+          offset: null,
           count: 10,
         };
 
@@ -106,7 +106,7 @@ describe('DmLogService', () => {
           await service.getDirectMessagesHistory(userDirectMessegeDto);
 
         expect(directMessagehistory.chats[0].nickname).toBe(
-          testData.users[0].nickname,
+          testData.users[1].nickname,
         );
         expect(directMessagehistory.chats[0].message).toBe(
           testData.directMessage[0].message,

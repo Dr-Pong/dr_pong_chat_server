@@ -143,15 +143,13 @@ export class DirectMessageTestService {
   }
 
   //* dm 유저에게 10개씩 생성/
-  async createDirectMessage(person: number): Promise<void> {
-    const index: number = person;
-    for (let i = 0; i < index; i++) {
+  async createDirectMessageToUser1(messageCount: number): Promise<void> {
+    for (let i = 0; i < messageCount; i++) {
       const directMessage = await this.directMessageRepository.save({
-        userId: this.users[0],
-        friendId: this.users[i],
+        sender: this.users[0],
         roomId: FriendChatManager.generateRoomId(
           this.users[0].id.toString(),
-          this.users[i].id.toString(),
+          this.users[1].id.toString(),
         ),
         message: 'message' + i.toString(),
         time: new Date().toISOString(),
