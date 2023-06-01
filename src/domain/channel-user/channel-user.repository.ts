@@ -2,8 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ChannelUser } from './channel-user.entity';
-import { User } from '../user/user.entity';
-import { Channel } from '../channel/channel.entity';
 
 @Injectable()
 export class ChannelUserRepository {
@@ -21,10 +19,10 @@ export class ChannelUserRepository {
     });
   }
 
-  async saveChannelUser(channel: Channel, user: User): Promise<ChannelUser> {
+  async saveChannelUser(saveDto: SaveChannelUserDto): Promise<ChannelUser> {
     return await this.userChannelRepository.save({
-      channel: channel,
-      user: user,
+      channel: {saveDto.channelId},
+      user: {saveDto.userId},
     });
   }
 }
