@@ -5,5 +5,5 @@ export class DirectMessageRoomInfoDto {
 }
 
 export class DirectMessageRoomsDto {
-  chats: DirectMessageRoomInfoDto[];
+  chatList: DirectMessageRoomInfoDto[];
 }
