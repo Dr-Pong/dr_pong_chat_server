@@ -6,6 +6,7 @@ import { Page } from 'src/global/utils/page';
 import { FindChannelPageDto } from '../channel-user/dto/find.channel.page.dto';
 import { CHANNEL_PROTECTED } from 'src/global/type/type.channel';
 import { SaveChannelDto } from './dto/save.channel.dto';
+import { UpdateChannelHeadCountDto } from '../channel-user/dto/update.channel.headcount.dto';
 
 @Injectable()
 export class ChannelRepository {
@@ -13,6 +14,10 @@ export class ChannelRepository {
     @InjectRepository(Channel)
     private readonly repository: Repository<Channel>,
   ) {}
+
+  async findById(channelId: string): Promise<Channel> {
+    return await this.repository.findOne({ where: { id: channelId } });
+  }
 
   async findByChannelName(name: string): Promise<Channel> {
     return await this.repository.findOne({
@@ -95,6 +100,17 @@ export class ChannelRepository {
       headCount: 0,
       maxCount: saveDto.maxCount,
     });
+  }
+
+  async updateHeadCount(updateDto: UpdateChannelHeadCountDto): Promise<void> {
+    await this.repository.update(
+      {
+        id: updateDto.channelId,
+      },
+      {
+        headCount: Number(() => `head_count + ${updateDto.headCount}`),
+      },
+    );
   }
 
   async deleteChannel(deleteDto: DeleteChannelDto): Promise<void> {
