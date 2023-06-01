@@ -10,6 +10,8 @@ import { ChannelJoinDto } from './dto/channel.join.dto';
 import { ChannelUserRepository } from './channel-user.repository';
 import { ChannelUser } from './channel-user.entity';
 import { PENALTY_BANNED } from 'src/global/type/type.channel-user';
+import { UserModel } from '../user/user.model';
+import { User } from '../user/user.entity';
 
 export function checkUserInChannel(
   channel: ChannelModel,
@@ -19,7 +21,13 @@ export function checkUserInChannel(
     throw new BadRequestException('You are not in this channel');
 }
 
-export function checkChannelExist(channel: Channel): void {
+export function checkUserExist(user: User | UserModel): void {
+  if (!user) {
+    throw new NotFoundException('User does not exist');
+  }
+}
+
+export function checkChannelExist(channel: Channel | ChannelModel): void {
   if (!channel) {
     throw new NotFoundException('Channel does not exist');
   }
@@ -60,8 +68,18 @@ export async function validateChannelJoin(
       dto.channelId,
     );
   checkChannelExist(channel);
-  checkChannelIsPrivate(channel);
   checkChannelIsFull(channel);
-  checkChannelPassword(channel, dto.password);
   checkUserIsBanned(channelUser);
+
+  if (dto.joinType === 'join') {
+    checkChannelIsPrivate(channel);
+    checkChannelPassword(channel, dto.password);
+  }
+}
+
+export function checkUserIsInvited(user: UserModel, channelId: string): void {
+  checkUserExist(user);
+  if (!user.inviteList.has(channelId)) {
+    throw new BadRequestException('You are not invited');
+  }
 }
