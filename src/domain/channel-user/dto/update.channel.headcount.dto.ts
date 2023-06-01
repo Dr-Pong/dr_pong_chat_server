@@ -1,11 +1,9 @@
-import { Channel } from 'src/domain/channel/channel.entity';
-
 export class UpdateChannelHeadCountDto {
-  channel: Channel;
+  channelId: string;
   headCount: number;
 
-  constructor(channel: Channel, headCount: number) {
-    this.channel = channel;
+  constructor(channelId: string, headCount: number) {
+    this.channelId = channelId;
     this.headCount = headCount;
   }
 }
