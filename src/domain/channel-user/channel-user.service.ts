@@ -17,10 +17,6 @@ import {
 import { UserFactory } from '../user/user.factory';
 import { ChannelUser } from './channel-user.entity';
 import { User } from '../user/user.entity';
-import {
-  CHANNEL_PRIVATE,
-  CHANNEL_PROTECTED,
-} from 'src/global/type/type.channel';
 import { ChannelJoinDto } from './dto/channel.join.dto';
 import { PostChannelAcceptInviteDto } from './dto/post.channel.accept.invite.dto';
 import { UpdateChannelHeadCountDto } from './dto/update.channel.headcount.dto';
@@ -32,14 +28,26 @@ import {
 import { ChannelMeDto } from './dto/channel.me.dto';
 import { GetChannelMyDto } from './dto/get.channel.my.dto';
 import { GetChannelPageDto } from './dto/get.channel.page.dto';
-import { ChannelPageDto, ChannelPageDtos } from './dto/channel.page.dto';
+import { ChannelPageDtos } from './dto/channel.page.dto';
 import { Page } from 'src/global/utils/page';
 import { FindChannelPageDto } from './dto/find.channel.page.dto';
 import { PostChannelDto } from './dto/post.channel.dto';
 import { SaveChannelDto } from '../channel/dto/save.channel.dto';
 import { SaveChannelUserDto } from './dto/save.channel-user.dto';
 import { PostChannelJoinDto } from './dto/post.channel.join.dto';
-import { validateChannelJoin } from './channel-user.error';
+import {
+  checkUserInChannel,
+  checkUserExist,
+  validateChannelJoin,
+  checkUserIsInvited,
+  checkChannelExist,
+} from './channel-user.error';
+import { PostInviteDto } from './dto/post.invite.dto';
+import { InviteModel } from '../user/invite.model';
+import {
+  JOIN_CHANNEL_INVITE,
+  JOIN_CHANNEL_JOIN,
+} from 'src/global/type/type.join.channel';
 
 @Injectable()
 export class ChannelUserService {
@@ -149,7 +157,14 @@ export class ChannelUserService {
       await this.exitChannel(existChannelUser);
     }
 
-    await this.joinChannel(postDto);
+    await this.joinChannel(
+      new ChannelJoinDto(
+        postDto.userId,
+        postDto.channelId,
+        postDto.password,
+        JOIN_CHANNEL_JOIN,
+      ),
+    );
 
     runOnTransactionComplete(() => {
       const userModel: UserModel = this.userFactory.findById(postDto.userId);
@@ -163,6 +178,68 @@ export class ChannelUserService {
         userModel,
         this.channelFactory.findChannelById(postDto.channelId),
       );
+    });
+  }
+
+  postInvite(postDto: PostInviteDto): void {
+    const channel: ChannelModel = this.channelFactory.channels.get(
+      postDto.channelId,
+    );
+    checkChannelExist(channel);
+
+    const host: UserModel = this.userFactory.findById(postDto.userId);
+    const target: UserModel = this.userFactory.findById(postDto.tragetId);
+    checkUserExist(host);
+    checkUserExist(target);
+
+    const invite: InviteModel = new InviteModel(
+      channel.id,
+      channel.name,
+      host.nickname,
+    );
+
+    this.userFactory.invite(target, invite);
+  }
+
+  @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
+  async postChannelAcceptInvite(
+    postDto: PostChannelAcceptInviteDto,
+  ): Promise<void> {
+    const user: UserModel = this.userFactory.findById(postDto.userId);
+    checkUserIsInvited(user, postDto.inviteId);
+
+    const existChannelUser: ChannelUser =
+      await this.channelUserRepository.findByUserIdAndNotDeleted(
+        postDto.userId,
+      );
+    if (existChannelUser) {
+      await this.exitChannel(existChannelUser);
+    }
+
+    this.joinChannel(
+      new ChannelJoinDto(
+        postDto.userId,
+        user.inviteList.get(postDto.inviteId).channelId,
+        null,
+        JOIN_CHANNEL_INVITE,
+      ),
+    );
+
+    runOnTransactionComplete(() => {
+      const userModel: UserModel = this.userFactory.findById(postDto.userId);
+      if (userModel.joinedChannel) {
+        this.channelFactory.leave(
+          userModel,
+          this.channelFactory.channels.get(userModel.joinedChannel),
+        );
+      }
+      this.channelFactory.join(
+        user,
+        this.channelFactory.channels.get(
+          user.inviteList.get(postDto.inviteId).channelId,
+        ),
+      );
+      user.inviteList.delete(postDto.inviteId);
     });
   }
 
