@@ -13,6 +13,10 @@ import { ChannelUserModule } from './channel-user.module';
 import { UserFactory } from '../user/user.factory';
 import { Repository } from 'typeorm';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { PostInviteDto } from './dto/post.invite.dto';
+import { InviteModel } from '../user/invite.model';
+import { PostChannelAcceptInviteDto } from './dto/post.channel.accept.invite.dto';
+import { DeleteChannelUserDto } from './dto/delete.channel.user.dto';
 
 describe('ChannelUserService', () => {
   let service: ChannelUserService;
@@ -246,8 +250,9 @@ describe('ChannelUserService', () => {
           postChannelRequest.maxHeadCount,
         );
 
-        const savedChannelFt: ChannelModel =
-          channelFactory.findChannelByChannelName(savedChannelDb.name);
+        const savedChannelFt: ChannelModel = channelFactory.findByChannelName(
+          savedChannelDb.name,
+        );
 
         expect(savedChannelFt.ownerId).toBe(user.id);
         expect(savedChannelFt.name).toBe(postChannelRequest.name);
@@ -284,8 +289,9 @@ describe('ChannelUserService', () => {
           postChannelRequest.maxHeadCount,
         );
 
-        const savedChannelFt: ChannelModel =
-          channelFactory.findChannelByChannelName(savedChannelDb.name);
+        const savedChannelFt: ChannelModel = channelFactory.findByChannelName(
+          savedChannelDb.name,
+        );
 
         expect(savedChannelFt.ownerId).toBe(user.id);
         expect(savedChannelFt.name).toBe(postChannelRequest.name);
@@ -322,8 +328,9 @@ describe('ChannelUserService', () => {
           postChannelRequest.maxHeadCount,
         );
 
-        const savedChannelFt: ChannelModel =
-          channelFactory.findChannelByChannelName(savedChannelDb.name);
+        const savedChannelFt: ChannelModel = channelFactory.findByChannelName(
+          savedChannelDb.name,
+        );
 
         expect(savedChannelFt.ownerId).toBe(user.id);
         expect(savedChannelFt.name).toBe(postChannelRequest.name);
@@ -359,8 +366,9 @@ describe('ChannelUserService', () => {
           new BadRequestException(),
         );
 
-        const savedChannelFt: ChannelModel =
-          channelFactory.findChannelByChannelName(savedChannelDb.name);
+        const savedChannelFt: ChannelModel = channelFactory.findByChannelName(
+          savedChannelDb.name,
+        );
 
         expect(savedChannelFt.ownerId).toBe(user.id);
         expect(savedChannelFt.name).toBe(postChannelRequest.name);
@@ -380,14 +388,15 @@ describe('ChannelUserService', () => {
         const basicChannel: ChannelModel = await testData.createBasicChannel();
         const joinChannelRequest: PostChannelJoinDto = {
           userId: user.id,
-          roomId: basicChannel.id,
+          channelId: basicChannel.id,
           password: null,
         };
 
         await service.postChannelJoin(joinChannelRequest);
 
-        const savedChannelFt: ChannelModel =
-          channelFactory.findChannelByChannelName(basicChannel.name);
+        const savedChannelFt: ChannelModel = channelFactory.findByChannelName(
+          basicChannel.name,
+        );
 
         expect(savedChannelFt.users.size).toBe(basicChannel.users.size + 1);
       });
@@ -398,14 +407,15 @@ describe('ChannelUserService', () => {
           await testData.createProtectedChannel();
         const joinChannelRequest: PostChannelJoinDto = {
           userId: user.id,
-          roomId: basicChannel.id,
+          channelId: basicChannel.id,
           password: 'password',
         };
 
         await service.postChannelJoin(joinChannelRequest);
 
-        const savedChannelFt: ChannelModel =
-          channelFactory.findChannelByChannelName(basicChannel.name);
+        const savedChannelFt: ChannelModel = channelFactory.findByChannelName(
+          basicChannel.name,
+        );
 
         expect(savedChannelFt.users.size).toBe(basicChannel.users.size + 1);
       });
@@ -416,16 +426,17 @@ describe('ChannelUserService', () => {
           await testData.createProtectedChannel();
         const joinChannelRequest: PostChannelJoinDto = {
           userId: user.id,
-          roomId: basicChannel.id,
+          channelId: basicChannel.id,
           password: 'password',
         };
 
         await service.postChannelJoin(joinChannelRequest);
 
-        const savedChannelFt: ChannelModel =
-          channelFactory.findChannelByChannelName(basicChannel.name);
+        const savedChannelFt: ChannelModel = channelFactory.findByChannelName(
+          basicChannel.name,
+        );
 
-        const savedUserFt: UserModel = userFactory.findUserById(user.id);
+        const savedUserFt: UserModel = userFactory.findById(user.id);
         expect(savedChannelFt.users.size).toBe(basicChannel.users.size + 1);
         expect(savedUserFt.inviteList.size).toBe(0);
       });
@@ -436,7 +447,7 @@ describe('ChannelUserService', () => {
           await testData.createProtectedChannel();
         const joinChannelRequest: PostChannelJoinDto = {
           userId: user.id,
-          roomId: basicChannel.id,
+          channelId: basicChannel.id,
           password: 'wrongPassword',
         };
 
@@ -451,7 +462,7 @@ describe('ChannelUserService', () => {
           await testData.createPrivateChannel();
         const joinChannelRequest: PostChannelJoinDto = {
           userId: user.id,
-          roomId: basicChannel.id,
+          channelId: basicChannel.id,
           password: null,
         };
 
@@ -466,7 +477,7 @@ describe('ChannelUserService', () => {
         basicChannel.banList.push(user.id);
         const joinChannelRequest: PostChannelJoinDto = {
           userId: user.id,
-          roomId: basicChannel.id,
+          channelId: basicChannel.id,
           password: null,
         };
 
@@ -481,35 +492,42 @@ describe('ChannelUserService', () => {
         const basicChannel: ChannelModel = await testData.createBasicChannel();
         const user: UserModel = await testData.createBasicUser();
 
-        const inviteRequest: ChannelInviteDto = {
-          userId: user.id,
-          roomId: basicChannel.id,
+        const inviteRequest: PostInviteDto = {
+          userId: basicChannel.ownerId,
+          channelId: basicChannel.id,
+          tragetId: user.id,
         };
 
         await service.postInvite(inviteRequest);
 
-        const savedUserFt: UserModel = userFactory.findUserById(user.id);
+        const savedUserFt: UserModel = userFactory.findById(user.id);
 
-        expect(savedUserFt.inviteList.length).toBe(1);
+        expect(savedUserFt.inviteList.size).toBe(1);
       });
       it('[Valid Case] public 채팅방 초대 수락', async () => {
         const basicChannel: ChannelModel = await testData.createBasicChannel();
         const user: UserModel = await testData.createBasicUser();
-        user.inviteList.push(basicChannel.id);
+        const invite: InviteModel = new InviteModel(
+          basicChannel.id,
+          basicChannel.name,
+          basicChannel.ownerId.toString(),
+        );
+
+        user.inviteList.set(basicChannel.id, invite);
 
         const InviteAcceptRequest: PostChannelAcceptInviteDto = {
           userId: user.id,
-          roomId: basicChannel.id,
+          channelId: basicChannel.id,
         };
 
         await service.postChannelAcceptInvite(InviteAcceptRequest);
-        const savedUserFt: UserModel = userFactory.findUserById(user.id);
+        const savedUserFt: UserModel = userFactory.findById(user.id);
 
-        const savedChannelFt: ChannelModel = channelFactory.findChannelById(
+        const savedChannelFt: ChannelModel = channelFactory.findById(
           basicChannel.id,
         );
 
-        expect(savedUserFt.inviteList.length).toBe(0);
+        expect(savedUserFt.inviteList.size).toBe(0);
         expect(savedUserFt.joinedChannel).toBe(basicChannel.id);
         expect(savedChannelFt.users.has(user.id)).toBe(true);
       });
@@ -517,21 +535,26 @@ describe('ChannelUserService', () => {
         const basicChannel: ChannelModel =
           await testData.createPrivateChannel();
         const user: UserModel = await testData.createBasicUser();
-        user.inviteList.push(basicChannel.id);
+        const invite: InviteModel = new InviteModel(
+          basicChannel.id,
+          basicChannel.name,
+          basicChannel.ownerId.toString(),
+        );
+        user.inviteList.set(basicChannel.id, invite);
 
         const InviteAcceptRequest: PostChannelAcceptInviteDto = {
           userId: user.id,
-          roomId: basicChannel.id,
+          channelId: basicChannel.id,
         };
 
         await service.postChannelAcceptInvite(InviteAcceptRequest);
-        const savedUserFt: UserModel = userFactory.findUserById(user.id);
+        const savedUserFt: UserModel = userFactory.findById(user.id);
 
-        const savedChannelFt: ChannelModel = channelFactory.findChannelById(
+        const savedChannelFt: ChannelModel = channelFactory.findById(
           basicChannel.id,
         );
 
-        expect(savedUserFt.inviteList.length).toBe(0);
+        expect(savedUserFt.inviteList.size).toBe(0);
         expect(savedUserFt.joinedChannel).toBe(basicChannel.id);
         expect(savedChannelFt.users.has(user.id)).toBe(true);
       });
@@ -539,38 +562,48 @@ describe('ChannelUserService', () => {
         const basicChannel: ChannelModel =
           await testData.createProtectedChannel();
         const user: UserModel = await testData.createBasicUser();
-        user.inviteList.push(basicChannel.id);
+        const invite: InviteModel = new InviteModel(
+          basicChannel.id,
+          basicChannel.name,
+          basicChannel.ownerId.toString(),
+        );
+        user.inviteList.set(basicChannel.id, invite);
 
         const InviteAcceptRequest: PostChannelAcceptInviteDto = {
           userId: user.id,
-          roomId: basicChannel.id,
+          channelId: basicChannel.id,
         };
 
         await service.postChannelAcceptInvite(InviteAcceptRequest);
-        const savedUserFt: UserModel = userFactory.findUserById(user.id);
+        const savedUserFt: UserModel = userFactory.findById(user.id);
 
-        const savedChannelFt: ChannelModel = channelFactory.findChannelById(
+        const savedChannelFt: ChannelModel = channelFactory.findById(
           basicChannel.id,
         );
 
-        expect(savedUserFt.inviteList.length).toBe(0);
+        expect(savedUserFt.inviteList.size).toBe(0);
         expect(savedUserFt.joinedChannel).toBe(basicChannel.id);
         expect(savedChannelFt.users.has(user.id)).toBe(true);
       });
       it('[Valid Case] 채팅방 초대 거절', async () => {
         const basicChannel: ChannelModel = await testData.createBasicChannel();
         const user: UserModel = await testData.createBasicUser();
-        user.inviteList.push(basicChannel.id);
+        const invite: InviteModel = new InviteModel(
+          basicChannel.id,
+          basicChannel.name,
+          basicChannel.ownerId.toString(),
+        );
+        user.inviteList.set(basicChannel.id, invite);
 
         const deleteInviteRequest: DeleteChannelInviteDto = {
           userId: user.id,
-          roomId: basicChannel.id,
+          channelId: basicChannel.id,
         };
 
         await service.deleteChannelInvite(deleteInviteRequest);
-        const savedUserFt: UserModel = userFactory.findUserById(user.id);
+        const savedUserFt: UserModel = userFactory.findById(user.id);
 
-        const savedChannelFt: ChannelModel = channelFactory.findChannelById(
+        const savedChannelFt: ChannelModel = channelFactory.findById(
           basicChannel.id,
         );
 
@@ -580,46 +613,46 @@ describe('ChannelUserService', () => {
       it('[Error Case] BAN 목록에 있는 유저가 초대 수락한 경우', async () => {
         const basicChannel: ChannelModel = await testData.createBasicChannel();
         const user: UserModel = await testData.createBasicUser();
-        basicChannel.banList.push(user.id);
+        basicChannel.banList.set(user.id, user.id);
 
         const InviteAcceptRequest: PostChannelAcceptInviteDto = {
           userId: user.id,
-          roomId: basicChannel.id,
+          channelId: basicChannel.id,
         };
 
         await expect(
           service.postChannelAcceptInvite(InviteAcceptRequest),
         ).rejects.toThrow(new BadRequestException());
-        const savedUserFt: UserModel = userFactory.findUserById(user.id);
+        const savedUserFt: UserModel = userFactory.findById(user.id);
 
-        const savedChannelFt: ChannelModel = channelFactory.findChannelById(
+        const savedChannelFt: ChannelModel = channelFactory.findById(
           basicChannel.id,
         );
 
-        expect(savedUserFt.inviteList.length).toBe(0);
+        expect(savedUserFt.inviteList.size).toBe(0);
         expect(savedUserFt.joinedChannel).toBe(null);
         expect(savedChannelFt.users.has(user.id)).toBe(false);
       });
       it('[Error Case] 수락했는데 채팅방이 꽉 찬 경우', async () => {
         const basicChannel: ChannelModel = await testData.createFullChannel();
         const user: UserModel = await testData.createBasicUser();
-        basicChannel.banList.push(user.id);
+        basicChannel.banList.set(user.id, user.id);
 
         const InviteAcceptRequest: PostChannelAcceptInviteDto = {
           userId: user.id,
-          roomId: basicChannel.id,
+          channelId: basicChannel.id,
         };
 
         await expect(
           service.postChannelAcceptInvite(InviteAcceptRequest),
         ).rejects.toThrow(new BadRequestException());
-        const savedUserFt: UserModel = userFactory.findUserById(user.id);
+        const savedUserFt: UserModel = userFactory.findById(user.id);
 
-        const savedChannelFt: ChannelModel = channelFactory.findChannelById(
+        const savedChannelFt: ChannelModel = channelFactory.findById(
           basicChannel.id,
         );
 
-        expect(savedUserFt.inviteList.length).toBe(0);
+        expect(savedUserFt.inviteList.size).toBe(0);
         expect(savedUserFt.joinedChannel).toBe(null);
         expect(savedChannelFt.users.has(user.id)).toBe(false);
       });
@@ -640,12 +673,12 @@ describe('ChannelUserService', () => {
 
         const deleteChannelUserRequest: DeleteChannelUserDto = {
           userId: user.id,
-          roomId: user.joinedChannel,
+          channelId: user.joinedChannel,
         };
 
         await service.deleteChannelUser(deleteChannelUserRequest);
 
-        const savedChannelFt: ChannelModel = channelFactory.findChannelById(
+        const savedChannelFt: ChannelModel = channelFactory.findById(
           user.joinedChannel,
         );
 
@@ -656,12 +689,12 @@ describe('ChannelUserService', () => {
 
         const deleteChannelUserRequest: DeleteChannelUserDto = {
           userId: channel.ownerId,
-          roomId: channel.id,
+          channelId: channel.id,
         };
 
         await service.deleteChannelUser(deleteChannelUserRequest);
 
-        const savedChannelFt: ChannelModel = channelFactory.findChannelById(
+        const savedChannelFt: ChannelModel = channelFactory.findById(
           channel.id,
         );
 
@@ -670,43 +703,43 @@ describe('ChannelUserService', () => {
       });
       it('[Valid Case] admin이 퇴장하는 경우', async () => {
         const channel: ChannelModel = await testData.createChannelWithAdmins();
-        const admin: UserModel = userFactory.findUserById(channel.adminList[0]);
+        const admin: UserModel = userFactory.findById(
+          channel.adminList.values().next().value,
+        );
 
         const deleteChannelUserRequest: DeleteChannelUserDto = {
-          userId: admin.adminList[0],
-          roomId: channel.id,
+          userId: admin.id,
+          channelId: channel.id,
         };
 
         await service.deleteChannelUser(deleteChannelUserRequest);
 
-        const savedChannelFt: ChannelModel = channelFactory.findChannelById(
+        const savedChannelFt: ChannelModel = channelFactory.findById(
           channel.id,
         );
 
         expect(savedChannelFt.users.has(admin.id)).toBe(false);
-        expect(savedChannelFt.adminList.length).toBe(
-          channel.adminList.length - 1,
-        );
+        expect(savedChannelFt.adminList.size).toBe(channel.adminList.size - 1);
       });
       it('[Valid Case] mute 된 유저가 퇴장하는 경우(mute 상태 유지)', async () => {
         const channel: ChannelModel = await testData.createChannelWithMuteds();
-        const user: UserModel = userFactory.findUserById(channel.muteList[0]);
+        const user: UserModel = userFactory.findById(
+          channel.muteList.values().next().value,
+        );
 
         const deleteChannelUserRequest: DeleteChannelUserDto = {
-          userId: user.adminList[0],
-          roomId: channel.id,
+          userId: user.id,
+          channelId: channel.id,
         };
 
         await service.deleteChannelUser(deleteChannelUserRequest);
 
-        const savedChannelFt: ChannelModel = channelFactory.findChannelById(
+        const savedChannelFt: ChannelModel = channelFactory.findById(
           channel.id,
         );
 
         expect(savedChannelFt.users.has(user.id)).toBe(false);
-        expect(savedChannelFt.muteList.find((id) => id === user.id)).toBe(
-          user.id,
-        );
+        expect(savedChannelFt.muteList.get(user.id)).toBe(user.id);
       });
     });
   });
