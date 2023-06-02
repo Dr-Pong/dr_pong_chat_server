@@ -1,3 +1,6 @@
 export class GetDirectMessageHistoryDto {
-  //쿼리 정해지면 만들기
+  userId: number;
+  friendId: number;
+  offset: number | null; //chat id
+  count: number;
 }

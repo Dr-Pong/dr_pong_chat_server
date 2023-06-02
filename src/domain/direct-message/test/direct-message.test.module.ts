@@ -1,12 +1,12 @@
 import { Module } from '@nestjs/common';
-import { TestService } from './test.service';
+import { DirectMessageTestService } from './direct-message.test.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from 'src/domain/user/user.entity';
 import { Block } from 'src/domain/block/block.entity';
 import { ProfileImage } from 'src/domain/profile-image/profile-image.entity';
 import { ProfileImageRepository } from 'src/domain/profile-image/profile-image.repository';
 import { DirectMessage } from '../direct-message.entity';
-import { Friend } from 'src/domain/frined/friend.entity';
+import { Friend } from 'src/domain/friend/friend.entity';
 
 @Module({
   imports: [
@@ -19,9 +19,9 @@ import { Friend } from 'src/domain/frined/friend.entity';
       DirectMessage,
     ]),
   ],
-  providers: [TestService],
+  providers: [DirectMessageTestService],
   exports: [
-    TestService,
+    DirectMessageTestService,
     TypeOrmModule.forFeature([
       User,
       Friend,
