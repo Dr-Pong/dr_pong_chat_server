@@ -59,7 +59,6 @@ export class DirectMessageTestService {
     const index: number = person;
     for (let i = 0; i < index; i++) {
       const user = await this.userRepository.save({
-        id: i,
         nickname: 'user' + i.toString(),
         image: this.profileImages[i],
       });
@@ -70,7 +69,6 @@ export class DirectMessageTestService {
   async createBasicUser() {
     const index: number = this.users.length;
     const user = await this.userRepository.save({
-      id: index,
       nickname: 'user' + index.toString(),
       image: this.profileImages[0],
     });
@@ -81,7 +79,6 @@ export class DirectMessageTestService {
     const index: number = this.users.length;
     for (let i = 1; i < index; i++) {
       const friend = await this.friendRepository.save({
-        id: index + i,
         user: this.users[0],
         friend: this.users[i],
         status: FRIENDSTATUS_REQUESTING,
@@ -95,7 +92,6 @@ export class DirectMessageTestService {
     const index: number = this.users.length;
     for (let i = 1; i < index; i++) {
       const friend = await this.friendRepository.save({
-        id: index + i,
         user: this.users[i],
         friend: this.users[0],
         status: FRIENDSTATUS_REQUESTING,
