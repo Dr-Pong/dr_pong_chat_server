@@ -46,4 +46,22 @@ export class DirectMessageRepository {
     });
     await this.repository.save(directMessage);
   }
+
+  async findLastDirectMessageByUserIdAndFriendId(
+    userId: number,
+    friendId: number,
+  ): Promise<DirectMessage> {
+    const directMessage: DirectMessage = await this.repository.findOne({
+      where: {
+        roomId: FriendChatManager.generateRoomId(
+          userId.toString(),
+          friendId.toString(),
+        ),
+      },
+      order: {
+        id: 'DESC',
+      },
+    });
+    return directMessage;
+  }
 }

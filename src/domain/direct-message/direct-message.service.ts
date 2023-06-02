@@ -81,6 +81,23 @@ export class DirectMessageService {
             postDto.userId,
             postDto.friendId,
           );
+        } else {
+          if (!directMessageRoom.isDisplay) {
+            await this.directMessageRoomRepository.updateDirectMessageRoomIsDisplayByUserIdAndFriendId(
+              postDto.userId,
+              postDto.friendId,
+            );
+          }
+          const lastmessage: DirectMessage =
+            await this.directRepository.findLastDirectMessageByUserIdAndFriendId(
+              postDto.userId,
+              postDto.friendId,
+            );
+          await this.directMessageRoomRepository.updateDirectMessageRoomLastReadMessageIdByUserIdAndFriendId(
+            postDto.userId,
+            postDto.friendId,
+            lastmessage,
+          );
         }
       }
     }

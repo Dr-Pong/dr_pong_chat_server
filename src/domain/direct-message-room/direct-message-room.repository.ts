@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { DirectMessageRoom } from './direct-message-room.entity';
 import { FriendChatManager } from 'src/global/utils/generate.room.id';
+import { DirectMessage } from '../direct-message/direct-message.entity';
 
 @Injectable()
 export class DirectMessageRoomRepository {
@@ -39,5 +40,32 @@ export class DirectMessageRoomRepository {
       isDisplay: true,
     });
     return await this.repository.save(directMessageRoom);
+  }
+
+  async updateDirectMessageRoomIsDisplayByUserIdAndFriendId(
+    userId: number,
+    friendId: number,
+  ) {
+    await this.repository.update(
+      {
+        userId: { id: userId },
+        friendId: { id: friendId },
+      },
+      { isDisplay: false },
+    );
+  }
+
+  async updateDirectMessageRoomLastReadMessageIdByUserIdAndFriendId(
+    userId: number,
+    friendId: number,
+    lastmessage: DirectMessage,
+  ) {
+    await this.repository.update(
+      {
+        userId: { id: userId },
+        friendId: { id: friendId },
+      },
+      { lastReadMessageId: lastmessage.id },
+    );
   }
 }
