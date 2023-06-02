@@ -108,22 +108,13 @@ export class DirectMessageTestService {
         this.users[0].id.toString(),
         this.users[i].id.toString(),
       );
-      const friend1 = await this.friendRepository.save({
-        roomId: roomId,
-        user: this.users[0],
-        friend: this.users[i],
+      const friend = await this.friendRepository.save({
+        sender: this.users[0],
+        receiver: this.users[i],
         status: FRIENDSTATUS_FRIEND,
-        chatOn: false,
-      });
-      this.friends.push(friend1);
-      const friend2 = await this.friendRepository.save({
         roomId: roomId,
-        user: this.users[i],
-        friend: this.users[0],
-        status: FRIENDSTATUS_FRIEND,
-        chatOn: false,
       });
-      this.friends.push(friend2);
+      this.friends.push(friend);
     }
   }
 
