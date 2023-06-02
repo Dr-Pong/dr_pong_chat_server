@@ -12,7 +12,7 @@ import { addTransactionalDataSource } from 'typeorm-transactional';
 import { DataSource } from 'typeorm';
 import { DirectMessageRoomModule } from './domain/direct-message-room/direct-message-room.module';
 import { DirectMessageModule } from './domain/direct-message/direct-message.module';
-import { FriendModule } from './domain/friend/frined.module';
+import { FriendModule } from './domain/friend/friend.module';
 
 @Module({
   imports: [
