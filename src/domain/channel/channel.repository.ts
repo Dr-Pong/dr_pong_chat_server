@@ -113,10 +113,10 @@ export class ChannelRepository {
     );
   }
 
-  async deleteChannel(deleteDto: DeleteChannelDto): Promise<void> {
+  async deleteChannelById(channelId: string): Promise<void> {
     await this.repository.update(
       {
-        id: deleteDto.channelId,
+        id: channelId,
       },
       {
         isDeleted: true,
