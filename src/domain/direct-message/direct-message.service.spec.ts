@@ -185,7 +185,7 @@ describe('DmLogService', () => {
         expect(dmRoomLog[0].isDisplay).toBe(true);
       });
 
-      it.only('[Valid Case] DM 전송(있던방에 전송)', async () => {
+      it('[Valid Case] DM 전송(있던방에 전송)', async () => {
         await testData.createUserFriends(10);
         await testData.createDirectMessageToUser1(10);
         await testData.createDirectMessageRoom();
@@ -211,7 +211,6 @@ describe('DmLogService', () => {
           },
         });
 
-        console.log('===dmlog===', dmLog);
         expect(dmLog[0].sender.id).toBe(userDirectMessegeDto.userId);
         expect(dmLog[0].roomId).toBe('1+2');
 
