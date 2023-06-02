@@ -56,7 +56,7 @@ export class FriendService {
     postDto: PostUserFriendRequestDto,
   ): Promise<void> {
     const friendTables: Friend[] =
-      await this.friendRepository.findAllFriendsByUserIdAndFrinedId(
+      await this.friendRepository.findAllFriendsByUserIdAndFriendId(
         postDto.userId,
         postDto.friendId,
       );
@@ -117,7 +117,7 @@ export class FriendService {
   //**친구 요청 수락 */
   async postUserFriendAccept(postDto: PostUserFriendAcceptDto): Promise<void> {
     const friendTables: Friend[] =
-      await this.friendRepository.findAllFriendsByUserIdAndFrinedId(
+      await this.friendRepository.findAllFriendsByUserIdAndFriendId(
         postDto.userId,
         postDto.friendId,
       );
@@ -147,7 +147,7 @@ export class FriendService {
     deleteDto: DeleteUserFriendRejectDto,
   ): Promise<void> {
     const friendTables: Friend[] =
-      await this.friendRepository.findAllFriendsByUserIdAndFrinedId(
+      await this.friendRepository.findAllFriendsByUserIdAndFriendId(
         deleteDto.userId,
         deleteDto.friendId,
       );
@@ -171,7 +171,7 @@ export class FriendService {
   //**친구 삭제 */
   async deleteUserFriend(deleteDto: DeleteUserFriendDto): Promise<void> {
     const friendTables: Friend[] =
-      await this.friendRepository.findAllFriendsByUserIdAndFrinedId(
+      await this.friendRepository.findAllFriendsByUserIdAndFriendId(
         deleteDto.userId,
         deleteDto.friendId,
       );

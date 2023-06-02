@@ -19,8 +19,8 @@ import { UserPendingFriendsDto } from './dto/user.pending.friends.dto';
 import { PostUserFriendAcceptDto } from './dto/post.user.friend.accept.dto';
 import { DeleteUserFriendRejectDto } from './dto/delete.user.friend.reject.dto';
 import { PostUserFriendRequestDto } from './dto/post.user.friend.request.dto';
-import { FriendModule } from './frined.module';
 import { DeleteUserFriendDto } from './dto/delete.user.friend.dto';
+import { FriendModule } from './frined.module';
 
 describe('FriendService', () => {
   let service: FriendService;

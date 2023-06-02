@@ -22,7 +22,7 @@ export class FriendRepository {
     return friends;
   }
 
-  async findAllFriendsByUserIdAndFrinedId(
+  async findAllFriendsByUserIdAndFriendId(
     userId: number,
     friendId: number,
   ): Promise<Friend[]> {
