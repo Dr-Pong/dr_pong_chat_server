@@ -8,6 +8,7 @@ import {
 } from 'typeorm';
 import { User } from '../user/user.entity';
 import { Channel } from '../channel/channel.entity';
+import { ChannelUserPenalty } from 'src/global/type/type.channel-user';
 
 @Entity()
 export class ChannelUser extends BaseTimeEntity {
@@ -26,5 +27,5 @@ export class ChannelUser extends BaseTimeEntity {
   isDeleted: boolean;
 
   @Column({ name: 'status', default: 'normal' })
-  status: UserChannelType;
+  penalty: ChannelUserPenalty;
 }

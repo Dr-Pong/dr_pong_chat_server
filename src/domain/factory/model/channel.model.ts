@@ -1,5 +1,5 @@
 import { ChannelType } from 'src/global/type/type.channel';
-import { Channel } from './channel.entity';
+import { Channel } from '../../channel/channel.entity';
 
 export class ChannelModel {
   id: string;

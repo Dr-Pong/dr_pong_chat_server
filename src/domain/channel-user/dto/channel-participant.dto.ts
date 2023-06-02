@@ -1,4 +1,4 @@
-import { UserModel } from 'src/domain/user/user.model';
+import { UserModel } from 'src/domain/factory/model/user.model';
 import { ChannelParticipantType } from 'src/global/type/type.channel-participant';
 
 export class ChannelParticipantDto {

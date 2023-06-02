@@ -9,7 +9,7 @@ export class FindChannelPageDto {
     const findChannelPageDto: FindChannelPageDto = new FindChannelPageDto();
     findChannelPageDto.page = getDto.page;
     findChannelPageDto.count = getDto.count;
-    findChannelPageDto.keyword = getDto.keywords;
+    findChannelPageDto.keyword = getDto.keyword;
     return findChannelPageDto;
   }
 }
