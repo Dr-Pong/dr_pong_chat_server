@@ -77,7 +77,7 @@ describe('DmLogService', () => {
         };
 
         const directMessageRooms: DirectMessageRoomsDto =
-          await service.getDirectMessageRooms(directMessageRoomsDto);
+          await service.getAllDirectMessageRooms(directMessageRoomsDto);
 
         expect(directMessageRooms).toHaveProperty('chatList');
         expect(directMessageRooms.chatList[0]).toHaveProperty('nickname');
@@ -94,7 +94,7 @@ describe('DmLogService', () => {
         };
 
         const directMessageRooms: DirectMessageRoomsDto =
-          await service.getDirectMessageRooms(directMessageRoomsDto);
+          await service.getAllDirectMessageRooms(directMessageRoomsDto);
 
         expect(directMessageRooms.chatList.length).toBe(10);
 
@@ -113,7 +113,7 @@ describe('DmLogService', () => {
         };
 
         const directMessageRooms: DirectMessageRoomsDto =
-          await service.getDirectMessageRooms(directMessageRoomsDto);
+          await service.getAllDirectMessageRooms(directMessageRoomsDto);
 
         expect(directMessageRooms.chatList.length).toBe(0);
       });
