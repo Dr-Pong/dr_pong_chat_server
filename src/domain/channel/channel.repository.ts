@@ -28,18 +28,18 @@ export class ChannelRepository {
     });
   }
 
-  async findChannelByPagesOrderByCreateAt(
+  async findPageByKeywordOrderByCreateAt(
     findDto: FindChannelPageDto,
   ): Promise<Page<Channel[]>> {
+    const keyword: string =
+      findDto.keyword === null ? '%' : '%' + findDto.keyword + '%';
+
     const totalChannels: number = await this.repository.count({
       where: {
-        name: Like('%' + findDto.keyword + '%'),
+        name: Like(keyword),
         isDeleted: false,
       },
     });
-
-    const keyword: string =
-      findDto.keyword === null ? '%' : '%' + findDto.keyword + '%';
 
     const channels: Channel[] = await this.repository.find({
       where: {
@@ -62,19 +62,22 @@ export class ChannelRepository {
     return page;
   }
 
-  async findChannelByPagesOrderByHeadCount(
+  async findPageByKeywordOrderByHeadCount(
     findDto: FindChannelPageDto,
   ): Promise<Page<Channel[]>> {
+    const keyword: string =
+      findDto.keyword === null ? '%' : '%' + findDto.keyword + '%';
+
     const totalChannels: number = await this.repository.count({
       where: {
-        name: Like('%' + findDto.keyword + '%'),
+        name: Like(keyword),
         isDeleted: false,
       },
     });
 
     const channels: Channel[] = await this.repository.find({
       where: {
-        name: Like('%' + findDto.keyword + '%'),
+        name: Like(keyword),
         isDeleted: false,
       },
       skip: (findDto.page - 1) * findDto.count,
@@ -98,10 +101,10 @@ export class ChannelRepository {
       operator: { id: saveDto.userId },
       name: saveDto.name,
       isDeleted: false,
-      access: saveDto.access,
+      type: saveDto.access,
       password: saveDto.access === CHANNEL_PROTECTED ? saveDto.password : null,
       headCount: 0,
-      maxCount: saveDto.maxCount,
+      maxHeadCount: saveDto.maxCount,
     });
   }
 
