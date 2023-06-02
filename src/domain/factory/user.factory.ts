@@ -18,6 +18,10 @@ export class UserFactory {
     return this.users.get(id);
   }
 
+  create(user: UserModel) {
+    this.users.set(user.id, user);
+  }
+
   joinChannel(userId: number, channel: ChannelModel): void {
     const user: UserModel = this.findById(userId);
     user.joinedChannel = channel.id;
