@@ -30,15 +30,18 @@ export class TestService {
     private readonly messageRepository: Repository<ChannelMessage>,
   ) {}
 
-  async createBasicChannel(name: string): Promise<ChannelModel> {
+  async createBasicChannel(
+    name: string,
+    userNum: number,
+  ): Promise<ChannelModel> {
     const owner: User = await this.userRepository.save({
-      nickname: 'nick' + name,
+      nickname: 'owner' + name,
       image: await this.imageRepository.save({
         url: 'https://avatars.githubusercontent.com/u/48426991?v=4',
       }),
     });
-    const userModel: UserModel = UserModel.fromEntity(owner);
-    this.userFactory.create(userModel);
+    const ownerModel: UserModel = UserModel.fromEntity(owner);
+    this.userFactory.create(ownerModel);
     const channel: Channel = await this.channelRepository.save({
       operator: owner,
       name: name,
@@ -47,14 +50,33 @@ export class TestService {
       password: null,
       type: CHANNEL_PUBLIC,
     });
+    await this.channelUserRepository.save({
+      user: owner,
+      channel: channel,
+    });
     const channelModel: ChannelModel = ChannelModel.fromEntity(channel);
     this.channelFactory.create(owner.id, channelModel);
+    for (let i = 0; i < userNum; i++) {
+      const user: User = await this.userRepository.save({
+        nickname: 'nick' + name + i.toString(),
+        image: await this.imageRepository.save({
+          url: 'https://avatars.githubusercontent.com/u/48426991?v=4',
+        }),
+      });
+      const userModel: UserModel = UserModel.fromEntity(user);
+      this.userFactory.create(userModel);
+      this.channelFactory.join(user.id, channel.id);
+      await this.channelUserRepository.save({
+        user: user,
+        channel: channel,
+      });
+    }
     return this.channelFactory.findById(channel.id);
   }
 
   async createBasicChannels(): Promise<void> {
-    for (let i = 0; i < 10; i++) {
-      await this.createBasicChannel('name' + i.toString());
+    for (let i = 1; i < 10; i++) {
+      await this.createBasicChannel('name' + i.toString(), i);
     }
   }
 
@@ -68,5 +90,15 @@ export class TestService {
     const userModel: UserModel = UserModel.fromEntity(user);
     this.userFactory.create(userModel);
     return this.userFactory.findById(user.id);
+  }
+
+  async createChannelWithAdmins(): Promise<ChannelModel> {
+    const channel: ChannelModel = await this.createBasicChannel('admins', 9);
+    channel.users.forEach((userId) => {
+      if (channel.ownerId !== userId) {
+        this.channelFactory.setAdmin(userId, channel.id);
+      }
+    });
+    return this.channelFactory.findById(channel.id);
   }
 }
