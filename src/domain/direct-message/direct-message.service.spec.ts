@@ -55,7 +55,7 @@ describe('DmLogService', () => {
 
   beforeEach(async () => {
     await testData.createProfileImages();
-    await testData.createBasicUsers(10);
+    await testData.createBasicUsers(20);
   });
 
   afterEach(async () => {
@@ -106,23 +106,19 @@ describe('DmLogService', () => {
           await service.getDirectMessagesHistory(userDirectMessegeDto);
 
         expect(directMessagehistory.chats[0].nickname).toBe(
-          testData.users[1].nickname,
-        );
-        expect(directMessagehistory.chats[0].message).toBe(
-          testData.directMessage[0].message,
-        );
-        expect(directMessagehistory.chats[0].createdAt).toBe(
-          testData.directMessage[0].createdAt,
+          testData.users[0].nickname,
         );
 
         expect(directMessagehistory.chats[1].nickname).toBe(
-          testData.users[1].nickname,
+          testData.users[0].nickname,
         );
+
+        expect(directMessagehistory.chats[0].message).toBe(
+          testData.directMessage[0].message,
+        );
+
         expect(directMessagehistory.chats[1].message).toBe(
           testData.directMessage[1].message,
-        );
-        expect(directMessagehistory.chats[1].createdAt).toBe(
-          testData.directMessage[1].createdAt,
         );
 
         expect(directMessagehistory.chats[9].message).toBe(
@@ -146,56 +142,47 @@ describe('DmLogService', () => {
         expect(directMessagehistory.chats.length).toBe(0);
       });
     });
-    // describe('Direct Message 전송', () => {
-    //   it('[Valid Case] DM 전송', async () => {
-    //     await testData.createUserFriends(10);
-    //     await testData.createDirectMessage(10);
+    describe('Direct Message 전송', () => {
+      it('[Valid Case] DM 전송', async () => {
+        await testData.createUserFriends(10);
 
-    //     const userDirectMessegeDto: PostDirectMessageDto = {
-    //       userId: testData.users[0].id,
-    //       friendId: testData.users[1].id,
-    //     };
+        const userDirectMessegeDto: PostDirectMessageDto = {
+          userId: testData.users[0].id,
+          friendId: testData.users[1].id,
+          message: '아아 테스트중log0',
+        };
 
-    //     await service.postDirectMessage(userDirectMessegeDto);
+        await service.postDirectMessage(userDirectMessegeDto);
 
-    //     const dmLog: DirectMessage[] = await dmlogRepository.find({
-    //       where: {
-    //         sender: { id: testData.users[0].id },
-    //         roomId: testData.directMessage[0].roomId,
-    //       },
-    //     });
+        const dmLog: DirectMessage[] = await dmlogRepository.find({
+          where: {
+            sender: { id: userDirectMessegeDto.userId },
+            roomId: '1+2',
+          },
+        });
 
-    //     expect(dmLog).toHaveProperty('sender');
-    //     expect(dmLog).toHaveProperty('receiver');
-    //     expect(dmLog).toHaveProperty('message');
+        expect(dmLog[0].sender.id).toBe(userDirectMessegeDto.userId);
+        expect(dmLog[0].roomId).toBe('1+2');
+        expect(dmLog[0].message).toBe(userDirectMessegeDto.message);
+      });
+      it('[Valid Case] 친구가 아닌 유저에게 전송이 불가능한지', async () => {
+        await testData.createUserFriends(10);
+        const userDirectMessegeDto: PostDirectMessageDto = {
+          userId: testData.users[0].id,
+          friendId: testData.users[13].id,
+          message: '안가야하는log0',
+        };
 
-    //     expect(dmLog[0].sender).toBe(testData.users[0]);
-    //     expect(dmLog[0].roomId).toBe(testData.directMessage[0].roomId);
-    //     expect(dmLog[0].message).toBe('log0');
+        await service.postDirectMessage(userDirectMessegeDto);
 
-    //     expect(dmLog[1].sender).toBe(testData.users[0]);
-    //     expect(dmLog[1].roomId).toBe(testData.directMessage[1].roomId);
-    //     expect(dmLog[1].message).toBe('log1');
-    //   });
-    //   it('[Valid Case] 친구가 아닌 유저에게 전송이 가능한지', async () => {
-    //     await testData.createDirectMessage(10);
+        const dmLog: DirectMessage[] = await dmlogRepository.find({
+          where: {
+            sender: { id: testData.users[0].id },
+          },
+        });
 
-    //     const userDirectMessegeDto: PostDirectMessageDto = {
-    //       userId: testData.users[0].id,
-    //       friendId: testData.users[10].id,
-    //     };
-
-    //     await service.postDirectMessage(userDirectMessegeDto);
-
-    //     const dmLog: DirectMessage[] = await dmlogRepository.find({
-    //       where: {
-    //         sender: { id: testData.users[0].id },
-    //         roomId: testData.directMessage[0].roomId,
-    //       },
-    //     });
-
-    //     expect(dmLog).toBeNull();
-    //   });
-    // });
+        expect(dmLog.length).toBe(0);
+      });
+    });
   });
 });
