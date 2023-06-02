@@ -1,11 +1,13 @@
 import { Module } from '@nestjs/common';
-import { TestService } from './test.service';
+import { FriendDirectMessageTestService } from './direct-message-room.test.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from 'src/domain/user/user.entity';
-import { Friend } from '../friend.entity';
 import { Block } from 'src/domain/block/block.entity';
 import { ProfileImage } from 'src/domain/profile-image/profile-image.entity';
 import { ProfileImageRepository } from 'src/domain/profile-image/profile-image.repository';
+import { Friend } from 'src/domain/friend/friend.entity';
+import { DirectMessage } from 'src/domain/direct-message/direct-message.entity';
+import { DirectMessageRoom } from '../direct-message-room.entity';
 
 @Module({
   imports: [
@@ -15,17 +17,21 @@ import { ProfileImageRepository } from 'src/domain/profile-image/profile-image.r
       Block,
       ProfileImageRepository,
       ProfileImage,
+      DirectMessage,
+      DirectMessageRoom,
     ]),
   ],
-  providers: [TestService],
+  providers: [FriendDirectMessageTestService],
   exports: [
-    TestService,
+    FriendDirectMessageTestService,
     TypeOrmModule.forFeature([
       User,
       Friend,
       Block,
       ProfileImage,
       ProfileImageRepository,
+      DirectMessage,
+      DirectMessageRoom,
     ]),
   ],
 })

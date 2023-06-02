@@ -7,9 +7,10 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { User } from '../user/user.entity';
+import { FriendType } from 'src/global/type/type.friend.status';
 
 @Entity()
-export class DirectMessage extends BaseTimeEntity {
+export class Friend extends BaseTimeEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -17,12 +18,10 @@ export class DirectMessage extends BaseTimeEntity {
   @JoinColumn({ name: 'user_id' })
   sender: User;
 
-  @Column({ name: 'room_id', nullable: false })
-  roomId: string;
+  @ManyToOne(() => User, { eager: true })
+  @JoinColumn({ name: 'friend_id' })
+  reciever: User;
 
-  @Column({ name: 'message', nullable: false })
-  message: string;
-
-  @Column({ name: 'time', nullable: false })
-  time: Date;
+  @Column({ name: 'status', nullable: false })
+  status: FriendType;
 }

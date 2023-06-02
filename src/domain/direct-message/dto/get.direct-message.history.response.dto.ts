@@ -7,4 +7,5 @@ export class ChatDto {
 
 export class GetDirectMessageHistoryResponseDto {
   chats: ChatDto[];
+  isLastPage: boolean;
 }
