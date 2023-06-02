@@ -12,6 +12,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { typeORMConfig } from './configs/typeorm.config';
 import { addTransactionalDataSource } from 'typeorm-transactional';
 import { DataSource } from 'typeorm';
+import { ChannelMessageModule } from './domain/channel-message/channel-message.module';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { DataSource } from 'typeorm';
     ChannelModule,
     ChannelLogModule,
     DirectMessageModule,
+    ChannelMessageModule,
   ],
   controllers: [AppController],
   providers: [AppService],
