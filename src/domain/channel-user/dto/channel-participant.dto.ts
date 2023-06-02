@@ -3,7 +3,7 @@ import { ChannelParticipantType } from 'src/global/type/type.channel-participant
 
 export class ChannelParticipantDto {
   nickname: string;
-  imageUrl: string;
+  imgUrl: string;
   roleType: ChannelParticipantType;
   isMuted: boolean;
 
@@ -11,7 +11,7 @@ export class ChannelParticipantDto {
     const channelParticipantDto: ChannelParticipantDto =
       new ChannelParticipantDto();
     channelParticipantDto.nickname = userModel.nickname;
-    channelParticipantDto.imageUrl = userModel.profileImage;
+    channelParticipantDto.imgUrl = userModel.profileImage;
     channelParticipantDto.roleType = userModel.roleType;
     channelParticipantDto.isMuted = userModel.isMuted;
     return channelParticipantDto;
@@ -20,7 +20,7 @@ export class ChannelParticipantDto {
 
 export class ChannelParticipantDtos {
   me: ChannelParticipantDto;
-  participants: ChannelParticipantDto[];
+  participants: ChannelParticipantDto[] = [];
   headCount: number;
-  maxHeadCount: number;
+  maxCount: number;
 }
