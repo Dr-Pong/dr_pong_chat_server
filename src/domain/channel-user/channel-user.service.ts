@@ -9,10 +9,10 @@ import {
   IsolationLevel,
   Transactional,
   runOnTransactionComplete,
+  runOnTransactionRollback,
 } from 'typeorm-transactional';
 import { UserFactory } from '../user/user.factory';
 import { ChannelUser } from './channel-user.entity';
-import { User } from '../user/user.entity';
 import { ChannelJoinDto } from './dto/channel.join.dto';
 import { PostChannelAcceptInviteDto } from './dto/post.channel.accept.invite.dto';
 import { UpdateChannelHeadCountDto } from './dto/update.channel.headcount.dto';
@@ -47,6 +47,11 @@ import {
 import { ChannelExitDto } from './dto/channel.exit.dto';
 import { DeleteChannelUserDto } from './dto/delete.channel.user.dto';
 import { ChannelMessageRepository } from '../channel-message/channel-message.repository';
+import { SaveChannelMessageDto } from '../channel-message/save.channel-message.dto';
+import { PostChannelMessageDto } from '../channel-message/post.channel-message.dto';
+import { ChannelMessage } from '../channel-message/channel-message.entity';
+import { ChatGateWay } from 'src/gateway/chat.gateway';
+import { MessageDto } from 'src/gateway/dto/message.dto';
 
 @Injectable()
 export class ChannelUserService {
@@ -56,6 +61,7 @@ export class ChannelUserService {
     private readonly messageRepository: ChannelMessageRepository,
     private readonly channelFactory: ChannelFactory,
     private readonly userFactory: UserFactory,
+    private readonly chatGateway: ChatGateWay,
   ) {}
 
   /**
@@ -65,7 +71,7 @@ export class ChannelUserService {
   getChannelParticipants(
     getDto: GetChannelParticipantsDto,
   ): ChannelParticipantDtos {
-    const channel: ChannelModel = this.channelFactory.findChannelById(
+    const channel: ChannelModel = this.channelFactory.findById(
       getDto.channelId,
     );
     const users: UserModel[] = this.channelFactory.getUsers(channel);
@@ -88,7 +94,7 @@ export class ChannelUserService {
    */
   getChannelMy(getDto: GetChannelMyDto): ChannelMeDto {
     const user: UserModel = this.userFactory.findById(getDto.userId);
-    const channel: ChannelModel = this.channelFactory.findChannelById(
+    const channel: ChannelModel = this.channelFactory.findById(
       user.joinedChannel,
     );
 
@@ -118,6 +124,28 @@ export class ChannelUserService {
     );
 
     this.userFactory.invite(target, invite);
+  }
+
+  async postChannelMessage(postDto: PostChannelMessageDto): Promise<void> {
+    const channel: ChannelModel = this.channelFactory.findById(
+      postDto.channelId,
+    );
+    checkChannelExist(channel);
+    const user: UserModel = this.userFactory.findById(postDto.userId);
+    checkUserInChannel(channel, user.id);
+
+    const message: MessageDto = MessageDto.fromPostDto(postDto);
+    this.chatGateway.sendMessageToChannel(
+      postDto.userId,
+      postDto.channelId,
+      message,
+    );
+
+    await this.messageRepository.save(
+      SaveChannelMessageDto.fromMessageDto(message),
+    );
+
+    runOnTransactionRollback(async () => {});
   }
 
   /**
@@ -219,15 +247,16 @@ export class ChannelUserService {
       if (userModel.joinedChannel) {
         this.channelFactory.leave(
           userModel,
-          this.channelFactory.findChannelById(userModel.joinedChannel),
+          this.channelFactory.findById(userModel.joinedChannel),
         );
       }
       this.channelFactory.join(
         userModel,
-        this.channelFactory.findChannelById(postDto.channelId),
+        this.channelFactory.findById(postDto.channelId),
       );
     });
   }
+
   /**
    * 유저가 채널 초대를 수락하는 함수
    * 입장 성공 시 기존에 있던 채널에서는 자동 퇴장처리된다
@@ -237,7 +266,7 @@ export class ChannelUserService {
     postDto: PostChannelAcceptInviteDto,
   ): Promise<void> {
     const user: UserModel = this.userFactory.findById(postDto.userId);
-    checkUserIsInvited(user, postDto.inviteId);
+    checkUserIsInvited(user, postDto.channelId);
 
     const existChannelUser: ChannelUser =
       await this.channelUserRepository.findByUserIdAndNotDeleted(
@@ -252,7 +281,7 @@ export class ChannelUserService {
     this.joinChannel(
       new ChannelJoinDto(
         postDto.userId,
-        user.inviteList.get(postDto.inviteId).channelId,
+        postDto.channelId,
         null,
         JOIN_CHANNEL_INVITE,
       ),
@@ -264,16 +293,14 @@ export class ChannelUserService {
       if (userModel.joinedChannel) {
         this.channelFactory.leave(
           userModel,
-          this.channelFactory.channels.get(userModel.joinedChannel),
+          this.channelFactory.findById(userModel.joinedChannel),
         );
       }
       this.channelFactory.join(
-        user,
-        this.channelFactory.channels.get(
-          user.inviteList.get(postDto.inviteId).channelId,
-        ),
+        userModel,
+        this.channelFactory.findById(postDto.channelId),
       );
-      user.inviteList.delete(postDto.inviteId);
+      this.userFactory.deleteInvite(userModel, postDto.channelId);
     });
   }
 
@@ -298,7 +325,7 @@ export class ChannelUserService {
       const userModel: UserModel = this.userFactory.findById(deleteDto.userId);
       this.channelFactory.leave(
         userModel,
-        this.channelFactory.findChannelById(deleteDto.channelId),
+        this.channelFactory.findById(deleteDto.channelId),
       );
     });
   }
@@ -321,6 +348,7 @@ export class ChannelUserService {
     await this.channelRepository.updateHeadCount(
       new UpdateChannelHeadCountDto(dto.channelId, 1),
     );
+    await this.messageRepository.save(SaveChannelMessageDto.fromJoinDto(dto));
   }
 
   /**
@@ -335,5 +363,6 @@ export class ChannelUserService {
     await this.channelRepository.updateHeadCount(
       new UpdateChannelHeadCountDto(dto.channelId, -1),
     );
+    await this.messageRepository.save(SaveChannelMessageDto.fromExitDto(dto));
   }
 }

@@ -1,5 +1,7 @@
-import { ChatType } from 'src/global/type/type.chat';
-import { PostChannelMessageDto } from './post.channel-message.dto';
+import { CHAT_JOIN, ChatType } from 'src/global/type/type.chat';
+import { MessageDto } from 'src/gateway/dto/message.dto';
+import { PostChannelJoinDto } from '../channel-user/dto/post.channel.join.dto';
+import { DeleteChannelUserDto } from '../channel-user/dto/delete.channel.user.dto';
 
 export class SaveChannelMessageDto {
   userId: number;
@@ -8,12 +10,32 @@ export class SaveChannelMessageDto {
   content: string;
   time: Date;
 
-  static from(saveDto: PostChannelMessageDto): SaveChannelMessageDto {
+  static fromMessageDto(messageDto: MessageDto): SaveChannelMessageDto {
     const dto = new SaveChannelMessageDto();
-    dto.userId = saveDto.userId;
-    dto.channelId = saveDto.channelId;
-    dto.type = saveDto.type;
-    dto.content = saveDto.content;
+    dto.userId = messageDto.userId;
+    dto.channelId = messageDto.channelId;
+    dto.type = messageDto.type;
+    dto.content = messageDto.content;
+    dto.time = messageDto.time;
+    return dto;
+  }
+
+  static fromJoinDto(joinDto: PostChannelJoinDto): SaveChannelMessageDto {
+    const dto = new SaveChannelMessageDto();
+    dto.userId = joinDto.userId;
+    dto.channelId = joinDto.channelId;
+    dto.type = CHAT_JOIN;
+    dto.content = 'joined channel';
+    dto.time = new Date();
+    return dto;
+  }
+
+  static fromExitDto(exitDto: DeleteChannelUserDto): SaveChannelMessageDto {
+    const dto = new SaveChannelMessageDto();
+    dto.userId = exitDto.userId;
+    dto.channelId = exitDto.channelId;
+    dto.type = CHAT_JOIN;
+    dto.content = 'exited channel';
     dto.time = new Date();
     return dto;
   }
