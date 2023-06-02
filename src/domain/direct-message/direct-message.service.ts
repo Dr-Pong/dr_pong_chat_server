@@ -10,12 +10,16 @@ import { PostDirectMessageDto } from './dto/post.direct-message.dto';
 import { FriendRepository } from '../friend/friend.repository';
 import { Friend } from '../friend/friend.entity';
 import { FRIENDSTATUS_FRIEND } from 'src/global/type/type.friend.status';
+import { DirectMessageRoom } from '../direct-message-room/direct-message-room.entity';
+import { FriendChatManager } from 'src/global/utils/generate.room.id';
+import { DirectMessageRoomRepository } from '../direct-message-room/direct-message-room.repository';
 
 @Injectable()
 export class DirectMessageService {
   constructor(
     private directRepository: DirectMessageRepository,
     private friendRepository: FriendRepository,
+    private directMessageRoomRepository: DirectMessageRoomRepository,
   ) {}
 
   async getDirectMessagesHistory(
@@ -67,6 +71,17 @@ export class DirectMessageService {
           postDto.friendId,
           postDto.message,
         );
+        const directMessageRoom: DirectMessageRoom =
+          await this.directMessageRoomRepository.findDirectMessageRoomByUserIdAndFriendId(
+            postDto.userId,
+            postDto.friendId,
+          );
+        if (!directMessageRoom) {
+          await this.directMessageRoomRepository.saveDirectMessageRoomByUserIdAndFriendId(
+            postDto.userId,
+            postDto.friendId,
+          );
+        }
       }
     }
   }

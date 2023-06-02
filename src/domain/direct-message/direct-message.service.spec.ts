@@ -11,12 +11,15 @@ import { TestModule } from './test/direct-message.test.module';
 import { PostDirectMessageDto } from './dto/post.direct-message.dto';
 import { GetDirectMessageHistoryDto } from './dto/get.direct-message.history.dto';
 import { GetDirectMessageHistoryResponseDto } from './dto/get.direct-message.history.response.dto';
+import { DirectMessageRoomModule } from '../direct-message-room/direct-message-room.module';
+import { DirectMessageRoom } from '../direct-message-room/direct-message-room.entity';
 
 describe('DmLogService', () => {
   let service: DirectMessageService;
   let testData: DirectMessageTestService;
   let dataSources: DataSource;
   let dmlogRepository: Repository<DirectMessage>;
+  let dmRoomlogRepository: Repository<DirectMessageRoom>;
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -35,6 +38,7 @@ describe('DmLogService', () => {
           },
         }),
         DirectMessageModule,
+        DirectMessageRoomModule,
         TestModule,
       ],
       providers: [
@@ -50,6 +54,9 @@ describe('DmLogService', () => {
     dataSources = module.get<DataSource>(DataSource);
     dmlogRepository = module.get<Repository<DirectMessage>>(
       getRepositoryToken(DirectMessage),
+    );
+    dmRoomlogRepository = module.get<Repository<DirectMessageRoom>>(
+      getRepositoryToken(DirectMessageRoom),
     );
   });
 
@@ -143,7 +150,7 @@ describe('DmLogService', () => {
       });
     });
     describe('Direct Message 전송', () => {
-      it('[Valid Case] DM 전송', async () => {
+      it('[Valid Case] DM 전송(처음전송)', async () => {
         await testData.createUserFriends(10);
 
         const userDirectMessegeDto: PostDirectMessageDto = {
@@ -160,11 +167,61 @@ describe('DmLogService', () => {
             roomId: '1+2',
           },
         });
+        const dmRoomLog: DirectMessageRoom[] = await dmRoomlogRepository.find({
+          where: {
+            userId: { id: userDirectMessegeDto.userId },
+            friendId: { id: userDirectMessegeDto.friendId },
+          },
+        });
 
         expect(dmLog[0].sender.id).toBe(userDirectMessegeDto.userId);
         expect(dmLog[0].roomId).toBe('1+2');
         expect(dmLog[0].message).toBe(userDirectMessegeDto.message);
+
+        expect(dmRoomLog[0].userId.id).toBe(userDirectMessegeDto.userId);
+        expect(dmRoomLog[0].friendId.id).toBe(userDirectMessegeDto.friendId);
+        expect(dmRoomLog[0].roomId).toBe('1+2');
+        expect(dmRoomLog[0].lastReadMessageId).toBe(null);
+        expect(dmRoomLog[0].isDisplay).toBe(true);
       });
+
+      it.only('[Valid Case] DM 전송(있던방에 전송)', async () => {
+        await testData.createUserFriends(10);
+        await testData.createDirectMessageToUser1(10);
+        await testData.createDirectMessageRoom();
+
+        const userDirectMessegeDto: PostDirectMessageDto = {
+          userId: testData.users[0].id,
+          friendId: testData.users[1].id,
+          message: '아아 테스트중log0',
+        };
+
+        await service.postDirectMessage(userDirectMessegeDto);
+
+        const dmLog: DirectMessage[] = await dmlogRepository.find({
+          where: {
+            sender: { id: userDirectMessegeDto.userId },
+            roomId: '1+2',
+          },
+        });
+        const dmRoomLog: DirectMessageRoom[] = await dmRoomlogRepository.find({
+          where: {
+            userId: { id: userDirectMessegeDto.userId },
+            friendId: { id: userDirectMessegeDto.friendId },
+          },
+        });
+
+        console.log('===dmlog===', dmLog);
+        expect(dmLog[0].sender.id).toBe(userDirectMessegeDto.userId);
+        expect(dmLog[0].roomId).toBe('1+2');
+
+        expect(dmRoomLog[0].userId.id).toBe(userDirectMessegeDto.userId);
+        expect(dmRoomLog[0].friendId.id).toBe(userDirectMessegeDto.friendId);
+        expect(dmRoomLog[0].roomId).toBe('1+2');
+        expect(dmRoomLog[0].lastReadMessageId).toBe(11);
+        expect(dmRoomLog[0].isDisplay).toBe(true);
+      });
+
       it('[Valid Case] 친구가 아닌 유저에게 전송이 불가능한지', async () => {
         await testData.createUserFriends(10);
         const userDirectMessegeDto: PostDirectMessageDto = {

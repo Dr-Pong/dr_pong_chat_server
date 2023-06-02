@@ -146,30 +146,20 @@ export class DirectMessageTestService {
   }
 
   //FriendDirectMessage만들기 list
-  async createFriendDirectMessage(): Promise<void> {
-    const index: number = this.users.length;
+  async createDirectMessageRoom(): Promise<void> {
     const friendDirectMessages: DirectMessageRoom[] = [];
 
-    for (let i = 0; i < index; i++) {
-      const lastMessage = await this.directMessageRepository.findOne({
-        where: { id: this.directMessage[i].id },
-        order: { time: 'DESC' },
-      });
+    const friendDirectMessage = await this.friendDirectMessageRepository.save({
+      userId: this.users[0],
+      friendId: this.users[1],
+      roomId: FriendChatManager.generateRoomId(
+        this.users[0].id.toString(),
+        this.users[1].id.toString(),
+      ),
+      lastReadMessageId: null,
+      isDisplay: true,
+    });
 
-      const friendDirectMessage = await this.friendDirectMessageRepository.save(
-        {
-          userId: this.users[0],
-          friendId: this.users[i],
-          roomId: FriendChatManager.generateRoomId(
-            this.users[0].id.toString(),
-            this.users[i].id.toString(),
-          ),
-          last_message_id: lastMessage ? lastMessage.id : null,
-          is_chat_on: true,
-        },
-      );
-
-      friendDirectMessages.push(friendDirectMessage);
-    }
+    friendDirectMessages.push(friendDirectMessage);
   }
 }
