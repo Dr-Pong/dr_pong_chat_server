@@ -79,10 +79,10 @@ describe('DmLogService', () => {
         const directMessageRooms: DirectMessageRoomsDto =
           await service.getDirectMessageRooms(directMessageRoomsDto);
 
-        expect(directMessageRooms).toHaveProperty('chats');
-        expect(directMessageRooms.chats[0]).toHaveProperty('nickname');
-        expect(directMessageRooms.chats[0]).toHaveProperty('imgUrl');
-        expect(directMessageRooms.chats[0]).toHaveProperty('newChat');
+        expect(directMessageRooms).toHaveProperty('chatList');
+        expect(directMessageRooms.chatList[0]).toHaveProperty('nickname');
+        expect(directMessageRooms.chatList[0]).toHaveProperty('imgUrl');
+        expect(directMessageRooms.chatList[0]).toHaveProperty('newChat');
       });
 
       it('[Valid Case] 현재 진행중인 DM목록 반환', async () => {
@@ -96,15 +96,15 @@ describe('DmLogService', () => {
         const directMessageRooms: DirectMessageRoomsDto =
           await service.getDirectMessageRooms(directMessageRoomsDto);
 
-        expect(directMessageRooms.chats.length).toBe(10);
+        expect(directMessageRooms.chatList.length).toBe(10);
 
-        expect(directMessageRooms.chats[0].nickname).toBe(
+        expect(directMessageRooms.chatList[0].nickname).toBe(
           testData.users[1].nickname,
         );
-        expect(directMessageRooms.chats[0].imgUrl).toBe(
+        expect(directMessageRooms.chatList[0].imgUrl).toBe(
           testData.users[1].image,
         );
-        expect(directMessageRooms.chats[0].newChat).toBe(0);
+        expect(directMessageRooms.chatList[0].newChat).toBe(0);
       });
 
       it('[Valid Case] 진행중인 DM목록이 없을때 확인', async () => {
@@ -115,7 +115,7 @@ describe('DmLogService', () => {
         const directMessageRooms: DirectMessageRoomsDto =
           await service.getDirectMessageRooms(directMessageRoomsDto);
 
-        expect(directMessageRooms.chats.length).toBe(0);
+        expect(directMessageRooms.chatList.length).toBe(0);
       });
     });
 
