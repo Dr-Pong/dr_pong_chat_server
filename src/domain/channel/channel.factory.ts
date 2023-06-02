@@ -3,23 +3,17 @@ import { ChannelModel } from './channel.model';
 import { UserModel } from '../user/user.model';
 import { ChannelType } from 'src/global/type/type.channel';
 import { UserFactory } from '../user/user.factory';
-import {
-  ChannelParticipantType,
-  CHANNELPARTICIPANT_ADMIN,
-  CHANNELPARTICIPANT_NORMAL,
-  CHANNELPARTICIPANT_OWNER,
-} from 'src/global/type/type.channel-participant';
 
 @Injectable()
 export class ChannelFactory {
   constructor(private readonly userFactory: UserFactory) {}
   channels: Map<string, ChannelModel> = new Map();
 
-  findChannelById(id: string): ChannelModel {
+  findById(id: string): ChannelModel {
     return this.channels.get(id);
   }
 
-  findChannelByChannelName(name: string): ChannelModel {
+  findByChannelName(name: string): ChannelModel {
     this.channels.forEach((channel) => {
       if (channel.name === name) {
         return channel;
@@ -34,22 +28,6 @@ export class ChannelFactory {
       users.push(this.userFactory.users.get(user));
     });
     return users;
-  }
-
-  getUserStatus(
-    user: UserModel,
-    channel: ChannelModel,
-  ): ChannelParticipantType {
-    if (!channel.users.has(user.id)) {
-      return null;
-    }
-    if (channel.ownerId === user.id) {
-      return CHANNELPARTICIPANT_OWNER;
-    }
-    if (channel.adminList.has(user.id)) {
-      return CHANNELPARTICIPANT_ADMIN;
-    }
-    return CHANNELPARTICIPANT_NORMAL;
   }
 
   create(user: UserModel, channel: ChannelModel): boolean {

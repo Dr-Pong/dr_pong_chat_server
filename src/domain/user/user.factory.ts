@@ -98,4 +98,11 @@ export class UserFactory {
       this.users.set(user.id, user);
     }
   }
+
+  deleteInvite(user: UserModel, channelId: string): void {
+    if (user.inviteList.has(channelId)) {
+      user.inviteList.delete(channelId);
+      this.users.set(user.id, user);
+    }
+  }
 }

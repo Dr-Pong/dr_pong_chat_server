@@ -1,9 +1,9 @@
 export class PostChannelAcceptInviteDto {
   userId: number;
-  inviteId: string;
+  channelId: string;
 
-  constructor(userId: number, inviteId: string) {
+  constructor(userId: number, channelId: string) {
     this.userId = userId;
-    this.inviteId = inviteId;
+    this.channelId = channelId;
   }
 }
