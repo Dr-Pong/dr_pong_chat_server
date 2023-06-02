@@ -17,7 +17,7 @@ export class FriendRepository {
 
   async findFriendsByUserId(userId: number): Promise<Friend[]> {
     const friends: Friend[] = await this.repository.find({
-      where: [{ sender: { id: userId } }, { reciever: { id: userId } }],
+      where: [{ sender: { id: userId } }, { receiver: { id: userId } }],
     });
     return friends;
   }
@@ -27,7 +27,7 @@ export class FriendRepository {
     friendId: number,
   ): Promise<Friend[]> {
     const deletedFriends: Friend[] = await this.repository.find({
-      where: [{ sender: { id: userId }, reciever: { id: friendId } }],
+      where: [{ sender: { id: userId }, receiver: { id: friendId } }],
     });
     return deletedFriends;
   }
@@ -45,7 +45,7 @@ export class FriendRepository {
 
   async findAllFriendsStatusPendingByUserId(userId: number): Promise<Friend[]> {
     const pendingFriends: Friend[] = await this.repository.find({
-      where: [{ sender: { id: userId } }, { reciever: { id: userId } }],
+      where: [{ sender: { id: userId } }, { receiver: { id: userId } }],
     });
     return pendingFriends;
   }
@@ -57,7 +57,7 @@ export class FriendRepository {
     await this.repository.update(
       {
         sender: { id: In([userId, friendId]) },
-        reciever: { id: In([userId, friendId]) },
+        receiver: { id: In([userId, friendId]) },
       },
       { status: FRIENDSTATUS_FRIEND },
     );
@@ -70,7 +70,7 @@ export class FriendRepository {
     await this.repository.update(
       {
         sender: { id: In([userId, friendId]) },
-        reciever: { id: In([userId, friendId]) },
+        receiver: { id: In([userId, friendId]) },
       },
       { status: FRIENDSTATUS_DELETED },
     );

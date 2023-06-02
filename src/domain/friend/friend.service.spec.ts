@@ -153,7 +153,7 @@ describe('FriendService', () => {
         const friendRequest: Friend = await friendRepository.findOne({
           where: {
             sender: { id: testData.users[0].id },
-            reciever: { id: testData.users[1].id },
+            receiver: { id: testData.users[1].id },
             status: Not(FRIENDSTATUS_DELETED),
           },
         });
@@ -173,7 +173,7 @@ describe('FriendService', () => {
         const friendRequest: Friend = await friendRepository.findOne({
           where: {
             sender: { id: testData.users[0].id },
-            reciever: { id: testData.users[1].id },
+            receiver: { id: testData.users[1].id },
             status: Not(FRIENDSTATUS_DELETED),
           },
         });
@@ -207,7 +207,7 @@ describe('FriendService', () => {
         const friendRequest: Friend = await friendRepository.findOne({
           where: {
             sender: { id: testData.users[0].id },
-            reciever: { id: testData.users[1].id },
+            receiver: { id: testData.users[1].id },
             status: Not(FRIENDSTATUS_DELETED),
           },
         });
@@ -274,7 +274,7 @@ describe('FriendService', () => {
         const friendRequest: Friend = await friendRepository.findOne({
           where: {
             sender: { id: testData.users[0].id },
-            reciever: { id: testData.users[1].id },
+            receiver: { id: testData.users[1].id },
             status: Not(FRIENDSTATUS_DELETED),
           },
         });
@@ -296,14 +296,14 @@ describe('FriendService', () => {
         const friendRequest: Friend = await friendRepository.findOne({
           where: {
             sender: { id: testData.users[0].id },
-            reciever: { id: testData.users[1].id },
+            receiver: { id: testData.users[1].id },
             status: Not(FRIENDSTATUS_DELETED),
           },
         });
         const anotherFriendRequest: Friend = await friendRepository.findOne({
           where: {
             sender: { id: testData.users[1].id },
-            reciever: { id: testData.users[0].id },
+            receiver: { id: testData.users[0].id },
             status: Not(FRIENDSTATUS_DELETED),
           },
         });
@@ -324,7 +324,7 @@ describe('FriendService', () => {
         const friendRequest: Friend = await friendRepository.findOne({
           where: {
             sender: { id: testData.users[0].id },
-            reciever: { id: testData.users[1].id },
+            receiver: { id: testData.users[1].id },
             status: Not(FRIENDSTATUS_DELETED),
           },
         });
@@ -346,7 +346,7 @@ describe('FriendService', () => {
         const friendRequest: Friend = await friendRepository.findOne({
           where: {
             sender: { id: testData.users[0].id },
-            reciever: { id: testData.users[1].id },
+            receiver: { id: testData.users[1].id },
           },
         });
 
@@ -366,7 +366,7 @@ describe('FriendService', () => {
         const friendRequest: Friend = await friendRepository.findOne({
           where: {
             sender: { id: testData.users[0].id },
-            reciever: { id: testData.users[1].id },
+            receiver: { id: testData.users[1].id },
           },
         });
 
@@ -387,7 +387,7 @@ describe('FriendService', () => {
         const friendRequest: Friend = await friendRepository.findOne({
           where: {
             sender: { id: testData.users[0].id },
-            reciever: { id: testData.users[1].id },
+            receiver: { id: testData.users[1].id },
           },
         });
 
@@ -405,7 +405,7 @@ describe('FriendService', () => {
         const friendRequest: Friend = await friendRepository.findOne({
           where: {
             sender: { id: testData.users[0].id },
-            reciever: { id: testData.users[3].id },
+            receiver: { id: testData.users[3].id },
           },
         });
 

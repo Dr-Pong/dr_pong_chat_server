@@ -20,7 +20,7 @@ export class Friend extends BaseTimeEntity {
 
   @ManyToOne(() => User, { eager: true })
   @JoinColumn({ name: 'friend_id' })
-  reciever: User;
+  receiver: User;
 
   @Column({ name: 'status', nullable: false })
   status: FriendType;

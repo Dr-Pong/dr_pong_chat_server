@@ -24,15 +24,15 @@ export class FriendService {
     const userFriends: Friend[] =
       await this.friendRepository.findFriendsByUserId(getDto.userId);
     const friends: FriendDto[] = userFriends.map((friend) => {
-      if (friend.reciever.id === getDto.userId) {
+      if (friend.receiver.id === getDto.userId) {
         return {
           nickname: friend.sender.nickname,
           imgUrl: friend.sender.image.url,
         };
       }
       return {
-        nickname: friend.reciever.nickname,
-        imgUrl: friend.reciever.image.url,
+        nickname: friend.receiver.nickname,
+        imgUrl: friend.receiver.image.url,
       };
     });
     friends.sort((a, b) => {
@@ -87,15 +87,15 @@ export class FriendService {
       );
 
     const friends: FriendDto[] = userFriends.map((friend) => {
-      if (friend.reciever.id === getDto.userId) {
+      if (friend.receiver.id === getDto.userId) {
         return {
           nickname: friend.sender.nickname,
           imgUrl: friend.sender.image.url,
         };
       }
       return {
-        nickname: friend.reciever.nickname,
-        imgUrl: friend.reciever.image.url,
+        nickname: friend.receiver.nickname,
+        imgUrl: friend.receiver.image.url,
       };
     });
     friends.sort((a, b) => {
