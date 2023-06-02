@@ -11,7 +11,6 @@ import { FriendRepository } from '../friend/friend.repository';
 import { Friend } from '../friend/friend.entity';
 import { FRIENDSTATUS_FRIEND } from 'src/global/type/type.friend.status';
 import { DirectMessageRoom } from '../direct-message-room/direct-message-room.entity';
-import { FriendChatManager } from 'src/global/utils/generate.room.id';
 import { DirectMessageRoomRepository } from '../direct-message-room/direct-message-room.repository';
 
 @Injectable()
@@ -26,7 +25,7 @@ export class DirectMessageService {
     getDto: GetDirectMessageHistoryDto,
   ): Promise<GetDirectMessageHistoryResponseDto> {
     const directMessagesHistory: DirectMessage[] =
-      await this.directRepository.findAllDirectMessageByUserIdAndFriendId(
+      await this.directRepository.findAllByUserIdAndFriendId(
         getDto.userId,
         getDto.friendId,
         getDto.offset,
@@ -66,34 +65,34 @@ export class DirectMessageService {
         (friend.sender.id === postDto.friendId ||
           friend.receiver.id === postDto.friendId)
       ) {
-        await this.directRepository.saveDirectMessageByUserIdAndFriendId(
+        await this.directRepository.save(
           postDto.userId,
           postDto.friendId,
           postDto.message,
         );
         const directMessageRoom: DirectMessageRoom =
-          await this.directMessageRoomRepository.findDirectMessageRoomByUserIdAndFriendId(
+          await this.directMessageRoomRepository.findByUserIdAndFriendId(
             postDto.userId,
             postDto.friendId,
           );
         if (!directMessageRoom) {
-          await this.directMessageRoomRepository.saveDirectMessageRoomByUserIdAndFriendId(
+          await this.directMessageRoomRepository.save(
             postDto.userId,
             postDto.friendId,
           );
         } else {
           if (!directMessageRoom.isDisplay) {
-            await this.directMessageRoomRepository.updateDirectMessageRoomIsDisplayByUserIdAndFriendId(
+            await this.directMessageRoomRepository.updateIsDisplayByUserIdAndFriendId(
               postDto.userId,
               postDto.friendId,
             );
           }
           const lastmessage: DirectMessage =
-            await this.directRepository.findLastDirectMessageByUserIdAndFriendId(
+            await this.directRepository.findByUserIdAndFriendIdOrderByIdDesc(
               postDto.userId,
               postDto.friendId,
             );
-          await this.directMessageRoomRepository.updateDirectMessageRoomLastReadMessageIdByUserIdAndFriendId(
+          await this.directMessageRoomRepository.updateLastMessageIdByUserIdAndFriendId(
             postDto.userId,
             postDto.friendId,
             lastmessage,

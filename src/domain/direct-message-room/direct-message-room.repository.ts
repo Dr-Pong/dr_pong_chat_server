@@ -12,7 +12,7 @@ export class DirectMessageRoomRepository {
     private readonly repository: Repository<DirectMessageRoom>,
   ) {}
 
-  async findDirectMessageRoomByUserIdAndFriendId(
+  async findByUserIdAndFriendId(
     userId: number,
     friendId: number,
   ): Promise<DirectMessageRoom> {
@@ -25,10 +25,7 @@ export class DirectMessageRoomRepository {
     return directMessageRoom;
   }
 
-  async saveDirectMessageRoomByUserIdAndFriendId(
-    userId: number,
-    friendId: number,
-  ): Promise<DirectMessageRoom> {
+  async save(userId: number, friendId: number): Promise<DirectMessageRoom> {
     const directMessageRoom: DirectMessageRoom = await this.repository.create({
       userId: { id: userId },
       friendId: { id: friendId },
@@ -42,10 +39,7 @@ export class DirectMessageRoomRepository {
     return await this.repository.save(directMessageRoom);
   }
 
-  async updateDirectMessageRoomIsDisplayByUserIdAndFriendId(
-    userId: number,
-    friendId: number,
-  ) {
+  async updateIsDisplayByUserIdAndFriendId(userId: number, friendId: number) {
     await this.repository.update(
       {
         userId: { id: userId },
@@ -55,7 +49,7 @@ export class DirectMessageRoomRepository {
     );
   }
 
-  async updateDirectMessageRoomLastReadMessageIdByUserIdAndFriendId(
+  async updateLastMessageIdByUserIdAndFriendId(
     userId: number,
     friendId: number,
     lastmessage: DirectMessage,
