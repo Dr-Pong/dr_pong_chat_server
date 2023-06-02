@@ -6,9 +6,9 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { ChannelFactory } from 'src/domain/channel/channel.factory';
-import { UserFactory } from 'src/domain/user/user.factory';
-import { UserModel } from 'src/domain/user/user.model';
+import { ChannelFactory } from 'src/domain/factory/channel.factory';
+import { UserFactory } from 'src/domain/factory/user.factory';
+import { UserModel } from 'src/domain/factory/model/user.model';
 import { ChatType } from 'src/global/type/type.chat';
 import { MessageDto } from './dto/message.dto';
 

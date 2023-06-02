@@ -5,7 +5,6 @@ import {
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
-  Unique,
 } from 'typeorm';
 import { User } from '../user/user.entity';
 import { ChannelType } from 'src/global/type/type.channel';
@@ -19,7 +18,6 @@ export class Channel extends BaseTimeEntity {
   @JoinColumn({ name: 'operator' })
   operator: User;
 
-  @Unique(['name'])
   @Column({ name: 'name', nullable: false })
   name: string;
 
@@ -29,12 +27,12 @@ export class Channel extends BaseTimeEntity {
   @Column({ name: 'headcount', nullable: false, default: 0 })
   headCount: number;
 
-  @Column({ name: 'password', nullable: true })
+  @Column({ name: 'password', nullable: true, default: null })
   password: string;
 
   @Column({ name: 'type', nullable: false })
   type: ChannelType;
 
-  @Column({ name: 'is_deleted', default: false })
+  @Column({ name: 'is_deleted', nullable: false, default: false })
   isDeleted: boolean;
 }

@@ -38,9 +38,12 @@ export class ChannelRepository {
       },
     });
 
+    const keyword: string =
+      findDto.keyword === null ? '%' : '%' + findDto.keyword + '%';
+
     const channels: Channel[] = await this.repository.find({
       where: {
-        name: Like('%' + findDto.keyword + '%'),
+        name: Like(keyword),
         isDeleted: false,
       },
       skip: (findDto.page - 1) * findDto.count,
