@@ -1,5 +1,5 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
-import { ChannelModel } from '../channel/channel.model';
+import { ChannelModel } from '../factory/model/channel.model';
 import { Channel } from '../channel/channel.entity';
 import {
   CHANNEL_PRIVATE,
@@ -10,7 +10,7 @@ import { ChannelJoinDto } from './dto/channel.join.dto';
 import { ChannelUserRepository } from './channel-user.repository';
 import { ChannelUser } from './channel-user.entity';
 import { PENALTY_BANNED } from 'src/global/type/type.channel-user';
-import { UserModel } from '../user/user.model';
+import { UserModel } from '../factory/model/user.model';
 import { User } from '../user/user.entity';
 
 export function checkUserInChannel(

@@ -2,16 +2,16 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { ChannelUserRepository } from './channel-user.repository';
 import { ChannelRepository } from '../channel/channel.repository';
 import { Channel } from '../channel/channel.entity';
-import { ChannelFactory } from '../channel/channel.factory';
-import { ChannelModel } from '../channel/channel.model';
-import { UserModel } from '../user/user.model';
+import { ChannelFactory } from '../factory/channel.factory';
+import { ChannelModel } from '../factory/model/channel.model';
+import { UserModel } from '../factory/model/user.model';
 import {
   IsolationLevel,
   Transactional,
   runOnTransactionComplete,
   runOnTransactionRollback,
 } from 'typeorm-transactional';
-import { UserFactory } from '../user/user.factory';
+import { UserFactory } from '../factory/user.factory';
 import { ChannelUser } from './channel-user.entity';
 import { ChannelJoinDto } from './dto/channel.join.dto';
 import { PostChannelAcceptInviteDto } from './dto/post.channel.accept.invite.dto';
@@ -39,7 +39,7 @@ import {
   checkChannelExist,
 } from './channel-user.error';
 import { PostInviteDto } from './dto/post.invite.dto';
-import { InviteModel } from '../user/invite.model';
+import { InviteModel } from '../factory/model/invite.model';
 import {
   JOIN_CHANNEL_INVITE,
   JOIN_CHANNEL_JOIN,
