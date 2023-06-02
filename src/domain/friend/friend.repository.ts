@@ -38,7 +38,7 @@ export class FriendRepository {
   ): Promise<void> {
     await this.repository.save({
       sender: { id: userId },
-      reciever: { id: friendId },
+      receiver: { id: friendId },
       status: FRIENDSTATUS_REQUESTING,
     });
   }
