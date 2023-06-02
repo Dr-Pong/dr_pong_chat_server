@@ -93,7 +93,9 @@ export class UserFactory {
   }
 
   invite(user: UserModel, invite: InviteModel): void {
-    user.inviteList.set(invite.id, invite);
-    this.users.set(user.id, user);
+    if (!user.inviteList.has(invite.channelId)) {
+      user.inviteList.set(invite.channelId, invite);
+      this.users.set(user.id, user);
+    }
   }
 }
