@@ -12,6 +12,7 @@ import { Friend } from '../friend/friend.entity';
 import { FRIENDSTATUS_FRIEND } from 'src/global/type/type.friend.status';
 import { DirectMessageRoom } from '../direct-message-room/direct-message-room.entity';
 import { DirectMessageRoomRepository } from '../direct-message-room/direct-message-room.repository';
+import { IsolationLevel, Transactional } from 'typeorm-transactional';
 
 @Injectable()
 export class DirectMessageService {
@@ -21,6 +22,7 @@ export class DirectMessageService {
     private directMessageRoomRepository: DirectMessageRoomRepository,
   ) {}
 
+  @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
   async getDirectMessagesHistory(
     getDto: GetDirectMessageHistoryDto,
   ): Promise<GetDirectMessageHistoryResponseDto> {
@@ -55,6 +57,7 @@ export class DirectMessageService {
     return responseDto;
   }
 
+  @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
   async postDirectMessage(postDto: PostDirectMessageDto): Promise<void> {
     const userFriends: Friend[] =
       await this.friendRepository.findFriendsByUserId(postDto.userId);
