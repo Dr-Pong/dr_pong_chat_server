@@ -74,7 +74,7 @@ export class ChannelUserService {
     const channel: ChannelModel = this.channelFactory.findById(
       getDto.channelId,
     );
-    const users: UserModel[] = this.channelFactory.getUsers(channel);
+    const users: UserModel[] = this.channelFactory.getUsers(channel.id);
     checkUserInChannel(channel, getDto.userId);
 
     const responseDto: ChannelParticipantDtos = new ChannelParticipantDtos();
@@ -123,7 +123,7 @@ export class ChannelUserService {
       host.nickname,
     );
 
-    this.userFactory.invite(target, invite);
+    this.userFactory.invite(target.id, invite);
   }
 
   async postChannelMessage(postDto: PostChannelMessageDto): Promise<void> {
@@ -145,7 +145,9 @@ export class ChannelUserService {
       SaveChannelMessageDto.fromMessageDto(message),
     );
 
-    runOnTransactionRollback(async () => {});
+    runOnTransactionRollback(async () => {
+      //에러 메시지 전송
+    });
   }
 
   /**
@@ -204,13 +206,10 @@ export class ChannelUserService {
     runOnTransactionComplete(() => {
       const userModel: UserModel = this.userFactory.findById(postDto.userId);
       if (userModel.joinedChannel) {
-        this.channelFactory.leave(
-          userModel,
-          this.channelFactory.channels.get(userModel.joinedChannel),
-        );
+        this.channelFactory.leave(userModel.id, userModel.joinedChannel);
       }
       this.channelFactory.create(
-        userModel,
+        userModel.id,
         ChannelModel.fromEntity(newChannel),
       );
     });
@@ -245,15 +244,9 @@ export class ChannelUserService {
     runOnTransactionComplete(() => {
       const userModel: UserModel = this.userFactory.findById(postDto.userId);
       if (userModel.joinedChannel) {
-        this.channelFactory.leave(
-          userModel,
-          this.channelFactory.findById(userModel.joinedChannel),
-        );
+        this.channelFactory.leave(userModel.id, userModel.joinedChannel);
       }
-      this.channelFactory.join(
-        userModel,
-        this.channelFactory.findById(postDto.channelId),
-      );
+      this.channelFactory.join(userModel.id, postDto.channelId);
     });
   }
 
@@ -291,16 +284,10 @@ export class ChannelUserService {
     runOnTransactionComplete(() => {
       const userModel: UserModel = this.userFactory.findById(postDto.userId);
       if (userModel.joinedChannel) {
-        this.channelFactory.leave(
-          userModel,
-          this.channelFactory.findById(userModel.joinedChannel),
-        );
+        this.channelFactory.leave(userModel.id, userModel.joinedChannel);
       }
-      this.channelFactory.join(
-        userModel,
-        this.channelFactory.findById(postDto.channelId),
-      );
-      this.userFactory.deleteInvite(userModel, postDto.channelId);
+      this.channelFactory.join(userModel.id, postDto.channelId);
+      this.userFactory.deleteInvite(userModel.id, postDto.channelId);
     });
   }
 
@@ -323,10 +310,7 @@ export class ChannelUserService {
     /** 트랜잭션이 성공하면 Factory에도 결과를 반영한다 */
     runOnTransactionComplete(() => {
       const userModel: UserModel = this.userFactory.findById(deleteDto.userId);
-      this.channelFactory.leave(
-        userModel,
-        this.channelFactory.findById(deleteDto.channelId),
-      );
+      this.channelFactory.leave(userModel.id, deleteDto.channelId);
     });
   }
 

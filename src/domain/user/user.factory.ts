@@ -18,7 +18,8 @@ export class UserFactory {
     return this.users.get(id);
   }
 
-  joinChannel(user: UserModel, channel: ChannelModel): void {
+  joinChannel(userId: number, channel: ChannelModel): void {
+    const user: UserModel = this.findById(userId);
     user.joinedChannel = channel.id;
     if (channel.muteList.has(user.id)) {
       user.isMuted = true;
@@ -27,39 +28,47 @@ export class UserFactory {
     this.users.set(user.id, user);
   }
 
-  leaveChannel(user: UserModel): void {
+  leaveChannel(userId: number): void {
+    const user: UserModel = this.findById(userId);
     user.joinedChannel = null;
     user.isMuted = false;
     user.roleType = null;
     this.users.set(user.id, user);
   }
 
-  setOwner(user: UserModel): void {
+  setOwner(userId: number): void {
+    const user: UserModel = this.findById(userId);
     user.roleType = CHANNEL_PARTICIPANT_OWNER;
     this.users.set(user.id, user);
   }
 
-  mute(user: UserModel) {
+  mute(userId: number) {
+    const user: UserModel = this.findById(userId);
     user.isMuted = true;
     this.users.set(user.id, user);
   }
 
-  unMute(user: UserModel) {
+  unMute(userId: number) {
+    const user: UserModel = this.findById(userId);
     user.isMuted = false;
     this.users.set(user.id, user);
   }
 
-  setAdmin(user: UserModel): void {
+  setAdmin(userId: number): void {
+    const user: UserModel = this.findById(userId);
     user.roleType = CHANNEL_PARTICIPANT_ADMIN;
     this.users.set(user.id, user);
   }
 
-  unSetAdmin(user: UserModel): void {
+  unSetAdmin(userId: number): void {
+    const user: UserModel = this.findById(userId);
     user.roleType = CHANNEL_PARTICIPANT_NORMAL;
     this.users.set(user.id, user);
   }
 
-  block(user: UserModel, target: UserModel): boolean {
+  block(userId: number, targetId: number): boolean {
+    const user: UserModel = this.findById(userId);
+    const target: UserModel = this.findById(targetId);
     if (!user.blockedList.has(target.id)) {
       user.blockedList.set(target.id, target.id);
       this.users.set(user.id, user);
@@ -68,7 +77,9 @@ export class UserFactory {
     return false;
   }
 
-  unblock(user: UserModel, target: UserModel): boolean {
+  unblock(userId: number, targetId: number): boolean {
+    const user: UserModel = this.findById(userId);
+    const target: UserModel = this.findById(targetId);
     if (user.blockedList.has(target.id)) {
       user.blockedList.delete(target.id);
       this.users.set(user.id, user);
@@ -77,29 +88,34 @@ export class UserFactory {
     return false;
   }
 
-  setSocket(user: UserModel, socket: Socket): void {
+  setSocket(userId: number, socket: Socket): void {
+    const user: UserModel = this.findById(userId);
     user.socket = socket;
     this.users.set(user.id, user);
   }
 
-  updateProfile(user: UserModel, profileImage: string): void {
+  updateProfile(userId: number, profileImage: string): void {
+    const user: UserModel = this.findById(userId);
     user.profileImage = profileImage;
     this.users.set(user.id, user);
   }
 
-  setStatus(user: UserModel, status: UserStatusType): void {
+  setStatus(userId: number, status: UserStatusType): void {
+    const user: UserModel = this.findById(userId);
     user.status = status;
     this.users.set(user.id, user);
   }
 
-  invite(user: UserModel, invite: InviteModel): void {
+  invite(userId: number, invite: InviteModel): void {
+    const user: UserModel = this.findById(userId);
     if (!user.inviteList.has(invite.channelId)) {
       user.inviteList.set(invite.channelId, invite);
       this.users.set(user.id, user);
     }
   }
 
-  deleteInvite(user: UserModel, channelId: string): void {
+  deleteInvite(userId: number, channelId: string): void {
+    const user: UserModel = this.findById(userId);
     if (user.inviteList.has(channelId)) {
       user.inviteList.delete(channelId);
       this.users.set(user.id, user);

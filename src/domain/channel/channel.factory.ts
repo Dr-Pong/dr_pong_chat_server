@@ -22,43 +22,45 @@ export class ChannelFactory {
     return null;
   }
 
-  getUsers(channel: ChannelModel): UserModel[] {
+  getUsers(channelId: string): UserModel[] {
     const users: UserModel[] = [];
-    channel.users.forEach((user) => {
+    this.findById(channelId).users.forEach((user) => {
       users.push(this.userFactory.users.get(user));
     });
     return users;
   }
 
-  create(user: UserModel, channel: ChannelModel): boolean {
-    if (!this.channels.get(channel.id)) {
-      channel.ownerId = user.id;
-      this.join(user, channel);
-      this.userFactory.joinChannel(user, channel);
-      this.userFactory.setOwner(user);
+  create(userId: number, channel: ChannelModel): boolean {
+    if (!this.findByChannelName(channel.name)) {
+      channel.ownerId = userId;
       this.channels.set(channel.id, channel);
+      this.join(userId, channel.id);
+      this.userFactory.joinChannel(userId, channel);
+      this.userFactory.setOwner(userId);
       return true;
     }
     return false;
   }
 
-  join(user: UserModel, channel: ChannelModel): boolean {
+  join(userId: number, channelId: string): boolean {
+    const channel: ChannelModel = this.findById(channelId);
     if (
       channel.maxHeadCount !== channel.users.size &&
-      !channel.users.has(user.id)
+      !channel.users.has(userId)
     ) {
-      channel.users.set(user.id, user.id);
-      this.userFactory.joinChannel(user, channel);
+      channel.users.set(userId, userId);
+      this.userFactory.joinChannel(userId, channel);
       this.channels.set(channel.id, channel);
       return true;
     }
     return false;
   }
 
-  leave(user: UserModel, channel: ChannelModel): boolean {
-    if (channel.users.has(user.id)) {
-      channel.users.delete(user.id);
-      this.userFactory.leaveChannel(user);
+  leave(userId: number, channelId: string): boolean {
+    const channel: ChannelModel = this.findById(channelId);
+    if (channel.users.has(userId)) {
+      channel.users.delete(userId);
+      this.userFactory.leaveChannel(userId);
       this.channels.set(channel.id, channel);
       if (channel.users.size === 0) {
         this.channels.delete(channel.id);
@@ -68,75 +70,82 @@ export class ChannelFactory {
     return false;
   }
 
-  setMute(user: UserModel, channel: ChannelModel): boolean {
-    if (channel.users.has(user.id)) {
-      channel.muteList.set(user.id, user.id);
+  setMute(userId: number, channelId: string): boolean {
+    const channel: ChannelModel = this.findById(channelId);
+    if (channel.users.has(userId)) {
+      channel.muteList.set(userId, userId);
       this.channels.set(channel.id, channel);
-      this.userFactory.mute(user);
+      this.userFactory.mute(userId);
       return true;
     }
     return false;
   }
 
-  unsetMute(user: UserModel, channel: ChannelModel): boolean {
-    if (channel.users.has(user.id)) {
-      channel.muteList.delete(user.id);
-      this.channels.set(channel.id, channel);
-      return true;
-    }
-    return false;
-  }
-
-  setBan(user: UserModel, channel: ChannelModel): boolean {
-    if (channel.users.has(user.id)) {
-      channel.banList.set(user.id, user.id);
+  unsetMute(userId: number, channelId: string): boolean {
+    const channel: ChannelModel = this.findById(channelId);
+    if (channel.users.has(userId)) {
+      channel.muteList.delete(userId);
       this.channels.set(channel.id, channel);
       return true;
     }
     return false;
   }
 
-  unsetBan(user: UserModel, channel: ChannelModel): boolean {
-    if (channel.users.has(user.id)) {
-      channel.banList.delete(user.id);
+  setBan(userId: number, channelId: string): boolean {
+    const channel: ChannelModel = this.findById(channelId);
+    if (channel.users.has(userId)) {
+      channel.banList.set(userId, userId);
       this.channels.set(channel.id, channel);
       return true;
     }
     return false;
   }
 
-  updateType(type: ChannelType, channel: ChannelModel): void {
+  unsetBan(userId: number, channelId: string): boolean {
+    const channel: ChannelModel = this.findById(channelId);
+    if (channel.users.has(userId)) {
+      channel.banList.delete(userId);
+      this.channels.set(channel.id, channel);
+      return true;
+    }
+    return false;
+  }
+
+  updateType(type: ChannelType, channelId: string): void {
+    const channel: ChannelModel = this.findById(channelId);
     channel.type = type;
     this.channels.set(channel.id, channel);
   }
 
-  updatePassword(password: string, channel: ChannelModel): void {
+  updatePassword(password: string, channelId: string): void {
+    const channel: ChannelModel = this.findById(channelId);
     channel.password = password;
-    this.channels.set(channel.id, channel);
+    this.channels.set(channelId, channel);
   }
 
-  setAdmin(user: UserModel, channel: ChannelModel): boolean {
-    if (channel.users.has(user.id)) {
-      channel.adminList.set(user.id, user.id);
+  setAdmin(userId: number, channelId: string): boolean {
+    const channel: ChannelModel = this.findById(channelId);
+    if (channel.users.has(userId)) {
+      channel.adminList.set(userId, userId);
       this.channels.set(channel.id, channel);
       return true;
     }
     return false;
   }
 
-  unsetAdmin(user: UserModel, channel: ChannelModel): boolean {
-    if (channel.users.has(user.id)) {
-      channel.adminList.set(user.id, user.id);
+  unsetAdmin(userId: number, channelId: string): boolean {
+    const channel: ChannelModel = this.findById(channelId);
+    if (channel.users.has(userId)) {
+      channel.adminList.set(userId, userId);
       this.channels.set(channel.id, channel);
       return true;
     }
     return false;
   }
 
-  delete(channel: ChannelModel): boolean {
-    channel.users.forEach((user) =>
-      this.userFactory.leaveChannel(this.userFactory.users.get(user)),
-    );
-    return this.channels.delete(channel.id);
+  delete(channelId: string): boolean {
+    const channel: ChannelModel = this.findById(channelId);
+    channel.users.forEach((user) => this.userFactory.leaveChannel(user));
+    return this.channels.delete(channelId);
   }
 }
