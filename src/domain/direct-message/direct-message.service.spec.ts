@@ -1,20 +1,20 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { DirectMessageService } from './direct-message.service';
-import { TestService } from './test/test.service';
+import { DirectMessageTestService } from './test/direct-message.test.service';
 import { DataSource, Repository } from 'typeorm';
 import { DirectMessage } from './direct-message.entity';
 import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
 import { typeORMConfig } from 'src/configs/typeorm.config';
 import { addTransactionalDataSource } from 'typeorm-transactional';
 import { DirectMessageModule } from './direct-message.module';
-import { TestModule } from './test/test.module';
+import { TestModule } from './test/direct-message.test.module';
 import { PostDirectMessageDto } from './dto/post.direct-message.dto';
 import { GetDirectMessageHistoryDto } from './dto/get.direct-message.history.dto';
 import { GetDirectMessageHistoryResponseDto } from './dto/get.direct-message.history.response.dto';
 
 describe('DmLogService', () => {
   let service: DirectMessageService;
-  let testData: TestService;
+  let testData: DirectMessageTestService;
   let dataSources: DataSource;
   let dmlogRepository: Repository<DirectMessage>;
 
@@ -40,7 +40,7 @@ describe('DmLogService', () => {
     }).compile();
 
     service = module.get<DirectMessageService>(DirectMessageService);
-    testData = module.get<TestService>(TestService);
+    testData = module.get<DirectMessageTestService>(DirectMessageTestService);
     dataSources = module.get<DataSource>(DataSource);
     dmlogRepository = module.get<Repository<DirectMessage>>(
       getRepositoryToken(DirectMessage),
@@ -84,16 +84,20 @@ describe('DmLogService', () => {
 
       it('[Valid Case] 존재하는 대화 내역 조회', async () => {
         await testData.createUserFriends(10);
-        await testData.createDirectMessage(10);
+        await testData.createDirectMessage(20);
 
         const userDirectMessegeDto: GetDirectMessageHistoryDto = {
-          //쿼리 정해지만 만들기
+          userId: testData.users[0].id,
+          friendId: testData.users[1].id,
+          offset: testData.directMessage[9].id,
+          count: 10,
         };
 
         const directMessagehistory: GetDirectMessageHistoryResponseDto =
           await service.getDirectMessagesHistory(userDirectMessegeDto);
 
         expect(directMessagehistory).toHaveProperty('chats');
+        expect(directMessagehistory).toHaveProperty('isLastPage');
         expect(directMessagehistory.chats[0]).toHaveProperty('nickname');
         expect(directMessagehistory.chats[0]).toHaveProperty('message');
         expect(directMessagehistory.chats[0]).toHaveProperty('createdAt');
@@ -127,7 +131,10 @@ describe('DmLogService', () => {
         await testData.createUserFriends(10);
 
         const userDirectMessegeDto: GetDirectMessageHistoryDto = {
-          //쿼리 정해지만 만들기
+          userId: testData.users[0].id,
+          friendId: testData.users[1].id,
+          offset: null,
+          count: 10,
         };
 
         const directMessagehistory: GetDirectMessageHistoryResponseDto =
@@ -151,13 +158,13 @@ describe('DmLogService', () => {
         const dmLog: DirectMessage[] = await dmlogRepository.find({
           where: {
             sender: { id: testData.users[0].id },
-            roomId: { id: testData.directMessage[0].roomId.id },
+            roomId: testData.directMessage[0].roomId,
           },
         });
 
         expect(dmLog).toHaveProperty('sender');
         expect(dmLog).toHaveProperty('receiver');
-        expect(dmLog).toHaveProperty('log');
+        expect(dmLog).toHaveProperty('message');
 
         expect(dmLog[0].sender).toBe(testData.users[0]);
         expect(dmLog[0].roomId).toBe(testData.directMessage[0].roomId);
@@ -180,7 +187,7 @@ describe('DmLogService', () => {
         const dmLog: DirectMessage[] = await dmlogRepository.find({
           where: {
             sender: { id: testData.users[0].id },
-            roomId: { id: testData.directMessage[0].roomId.id },
+            roomId: testData.directMessage[0].roomId,
           },
         });
 

@@ -9,12 +9,12 @@ import {
   FRIENDSTATUS_REQUESTING,
 } from 'src/global/type/type.friend.status';
 import { FriendChatManager } from 'src/global/utils/generate.room.id';
-import { Friend } from 'src/domain/frined/friend.entity';
+import { Friend } from 'src/domain/friend/friend.entity';
 import { DirectMessage } from '../direct-message.entity';
-import { FriendDirectMessage } from 'src/domain/friend-direct-message/friend-direct-message.entity';
+import { DirectMessageRoom } from 'src/domain/direct-message-room/direct-message-room.entity';
 
 @Injectable()
-export class TestService {
+export class DirectMessageTestService {
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,
@@ -26,15 +26,15 @@ export class TestService {
     private blockRepository: Repository<Block>,
     @InjectRepository(DirectMessage)
     private directMessageRepository: Repository<DirectMessage>,
-    @InjectRepository(FriendDirectMessage)
-    private friendDirectMessageRepository: Repository<FriendDirectMessage>,
+    @InjectRepository(DirectMessageRoom)
+    private friendDirectMessageRepository: Repository<DirectMessageRoom>,
   ) {}
   users: User[] = [];
   profileImages: ProfileImage[] = [];
   friends: Friend[] = [];
   blocks: Block[] = [];
   directMessage: DirectMessage[] = [];
-  friendDirectMessage: FriendDirectMessage[] = [];
+  friendDirectMessage: DirectMessageRoom[] = [];
 
   clear() {
     this.users.splice(0);
@@ -146,24 +146,28 @@ export class TestService {
   async createDirectMessage(person: number): Promise<void> {
     const index: number = person;
     for (let i = 0; i < index; i++) {
-      const dmLog = await this.directMessageRepository.save({
-        sender: this.users[0],
-        roomId: this.friendDirectMessage[i],
+      const directMessage = await this.directMessageRepository.save({
+        userId: this.users[0],
+        friendId: this.users[i],
+        roomId: FriendChatManager.generateRoomId(
+          this.users[0].id.toString(),
+          this.users[i].id.toString(),
+        ),
         message: 'message' + i.toString(),
-        time: '2021-01-01 00:00:' + i.toString(),
+        time: new Date().toISOString(),
       });
-      this.directMessage.push(dmLog);
+      this.directMessage.push(directMessage);
     }
   }
 
   //FriendDirectMessage만들기 list
   async createFriendDirectMessage(): Promise<void> {
     const index: number = this.users.length;
-    const friendDirectMessages: FriendDirectMessage[] = [];
+    const friendDirectMessages: DirectMessageRoom[] = [];
 
     for (let i = 0; i < index; i++) {
       const lastMessage = await this.directMessageRepository.findOne({
-        where: { roomId: this.friendDirectMessage[i] },
+        where: { id: this.directMessage[i].id },
         order: { time: 'DESC' },
       });
 
