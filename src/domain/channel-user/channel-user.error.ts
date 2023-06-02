@@ -77,9 +77,9 @@ export async function validateChannelJoin(
   }
 }
 
-export function checkUserIsInvited(user: UserModel, inviteId: string): void {
+export function checkUserIsInvited(user: UserModel, channelId: string): void {
   checkUserExist(user);
-  if (!user.inviteList.has(inviteId)) {
+  if (!user.inviteList.has(channelId)) {
     throw new BadRequestException('You are not invited');
   }
 }
