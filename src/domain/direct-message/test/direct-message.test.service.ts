@@ -59,7 +59,6 @@ export class DirectMessageTestService {
     const index: number = person;
     for (let i = 0; i < index; i++) {
       const user = await this.userRepository.save({
-        id: i,
         nickname: 'user' + i.toString(),
         image: this.profileImages[i],
       });
@@ -70,7 +69,6 @@ export class DirectMessageTestService {
   async createBasicUser() {
     const index: number = this.users.length;
     const user = await this.userRepository.save({
-      id: index,
       nickname: 'user' + index.toString(),
       image: this.profileImages[0],
     });
@@ -81,7 +79,6 @@ export class DirectMessageTestService {
     const index: number = this.users.length;
     for (let i = 1; i < index; i++) {
       const friend = await this.friendRepository.save({
-        id: index + i,
         user: this.users[0],
         friend: this.users[i],
         status: FRIENDSTATUS_REQUESTING,
@@ -95,7 +92,6 @@ export class DirectMessageTestService {
     const index: number = this.users.length;
     for (let i = 1; i < index; i++) {
       const friend = await this.friendRepository.save({
-        id: index + i,
         user: this.users[i],
         friend: this.users[0],
         status: FRIENDSTATUS_REQUESTING,
@@ -112,22 +108,13 @@ export class DirectMessageTestService {
         this.users[0].id.toString(),
         this.users[i].id.toString(),
       );
-      const friend1 = await this.friendRepository.save({
-        roomId: roomId,
-        user: this.users[0],
-        friend: this.users[i],
+      const friend = await this.friendRepository.save({
+        sender: this.users[0],
+        receiver: this.users[i],
         status: FRIENDSTATUS_FRIEND,
-        chatOn: false,
-      });
-      this.friends.push(friend1);
-      const friend2 = await this.friendRepository.save({
         roomId: roomId,
-        user: this.users[i],
-        friend: this.users[0],
-        status: FRIENDSTATUS_FRIEND,
-        chatOn: false,
       });
-      this.friends.push(friend2);
+      this.friends.push(friend);
     }
   }
 
@@ -143,15 +130,13 @@ export class DirectMessageTestService {
   }
 
   //* dm 유저에게 10개씩 생성/
-  async createDirectMessage(person: number): Promise<void> {
-    const index: number = person;
-    for (let i = 0; i < index; i++) {
+  async createDirectMessageToUser1(messageCount: number): Promise<void> {
+    for (let i = 0; i < messageCount; i++) {
       const directMessage = await this.directMessageRepository.save({
-        userId: this.users[0],
-        friendId: this.users[i],
+        sender: this.users[0],
         roomId: FriendChatManager.generateRoomId(
           this.users[0].id.toString(),
-          this.users[i].id.toString(),
+          this.users[1].id.toString(),
         ),
         message: 'message' + i.toString(),
         time: new Date().toISOString(),
@@ -161,30 +146,20 @@ export class DirectMessageTestService {
   }
 
   //FriendDirectMessage만들기 list
-  async createFriendDirectMessage(): Promise<void> {
-    const index: number = this.users.length;
+  async createDirectMessageRoom(): Promise<void> {
     const friendDirectMessages: DirectMessageRoom[] = [];
 
-    for (let i = 0; i < index; i++) {
-      const lastMessage = await this.directMessageRepository.findOne({
-        where: { id: this.directMessage[i].id },
-        order: { time: 'DESC' },
-      });
+    const friendDirectMessage = await this.friendDirectMessageRepository.save({
+      userId: this.users[0],
+      friendId: this.users[1],
+      roomId: FriendChatManager.generateRoomId(
+        this.users[0].id.toString(),
+        this.users[1].id.toString(),
+      ),
+      lastReadMessageId: null,
+      isDisplay: true,
+    });
 
-      const friendDirectMessage = await this.friendDirectMessageRepository.save(
-        {
-          userId: this.users[0],
-          friendId: this.users[i],
-          roomId: FriendChatManager.generateRoomId(
-            this.users[0].id.toString(),
-            this.users[i].id.toString(),
-          ),
-          last_message_id: lastMessage ? lastMessage.id : null,
-          is_chat_on: true,
-        },
-      );
-
-      friendDirectMessages.push(friendDirectMessage);
-    }
+    friendDirectMessages.push(friendDirectMessage);
   }
 }

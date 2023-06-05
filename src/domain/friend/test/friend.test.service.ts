@@ -73,7 +73,7 @@ export class FriendTestService {
       );
       const friend = await this.friendRepository.save({
         sender: this.users[0],
-        reciever: this.users[i],
+        receiver: this.users[i],
         status: FRIENDSTATUS_REQUESTING,
         roomId: roomId,
       });
@@ -89,7 +89,7 @@ export class FriendTestService {
     );
     const friend = await this.friendRepository.save({
       sender: this.users[index],
-      reciever: this.users[0],
+      receiver: this.users[0],
       status: FRIENDSTATUS_REQUESTING,
       roomId: roomId,
     });
@@ -105,7 +105,7 @@ export class FriendTestService {
       );
       const friend = await this.friendRepository.save({
         sender: this.users[0],
-        reciever: this.users[i],
+        receiver: this.users[i],
         status: FRIENDSTATUS_FRIEND,
         roomId: roomId,
       });
@@ -121,7 +121,7 @@ export class FriendTestService {
     );
     const friend = await this.friendRepository.save({
       sender: this.users[index],
-      reciever: this.users[0],
+      receiver: this.users[0],
       status: FRIENDSTATUS_FRIEND,
       roomId: roomId,
     });
@@ -136,7 +136,7 @@ export class FriendTestService {
       );
       const friend = await this.friendRepository.save({
         sender: this.users[0],
-        reciever: this.users[i],
+        receiver: this.users[i],
         status: FRIENDSTATUS_FRIEND,
         roomId: roomId,
       });

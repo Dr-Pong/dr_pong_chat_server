@@ -108,10 +108,15 @@ export class FriendDirectMessageTestService {
   async createUserFriends(person: number): Promise<void> {
     const index: number = person;
     for (let i = 1; i < index; i++) {
+      const roomId = FriendChatManager.generateRoomId(
+        this.users[0].id.toString(),
+        this.users[i].id.toString(),
+      );
       const friend = await this.friendRepository.save({
-        user: this.users[0],
-        friend: this.users[i],
+        sender: this.users[0],
+        receiver: this.users[i],
         status: FRIENDSTATUS_FRIEND,
+        roomId: roomId,
       });
       this.friends.push(friend);
     }
