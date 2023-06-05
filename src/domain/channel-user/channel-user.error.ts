@@ -52,7 +52,7 @@ export function checkChannelPassword(channel: Channel, password: string): void {
 }
 
 export function checkUserIsBanned(channelUser: ChannelUser): void {
-  if (channelUser.penalty === PENALTY_BANNED)
+  if (channelUser && channelUser.penalty === PENALTY_BANNED)
     throw new BadRequestException('You are banned');
 }
 
