@@ -46,10 +46,6 @@ export class DirectMessageRoomRepository {
     return await this.repository.save(directMessageRoom);
   }
 
-  async delete(directMessageRoom: DirectMessageRoom): Promise<void> {
-    await this.repository.remove(directMessageRoom);
-  }
-
   async updateIsDisplayByUserIdAndFriendId(userId: number, friendId: number) {
     await this.repository.update(
       {

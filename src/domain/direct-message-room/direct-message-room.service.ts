@@ -48,13 +48,10 @@ export class DirectMessageRoomService {
 
   @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
   async deleteDirectMessageRoom(deleteDto: DeleteDirectMessageRoomDto) {
-    const directMessageRoom: DirectMessageRoom =
-      await this.directMessageRoomRepository.findByUserIdAndFriendId(
-        deleteDto.userId,
-        deleteDto.friendId,
-      );
-
-    await this.directMessageRoomRepository.delete(directMessageRoom);
+    await this.directMessageRoomRepository.updateIsDisplayByUserIdAndFriendId(
+      deleteDto.userId,
+      deleteDto.friendId,
+    );
   }
 
   @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
