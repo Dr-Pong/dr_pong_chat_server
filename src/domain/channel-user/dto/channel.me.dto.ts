@@ -9,11 +9,15 @@ export class ChannelMeDto {
   static fromModel(channel: ChannelModel): ChannelMeDto {
     if (!channel) return null;
 
-    const dto: ChannelMeDto = new ChannelMeDto();
-    dto.id = channel.id;
-    dto.title = channel.name;
-    dto.headCount = channel.users.size;
-    dto.maxCount = channel.maxHeadCount;
-    return dto;
+    const { id, name: title, maxHeadCount: maxCount } = channel;
+
+    return new ChannelMeDto(id, title, channel.users.size, maxCount);
+  }
+
+  constructor(id: string, title: string, headCount: number, maxCount: number) {
+    this.id = id;
+    this.title = title;
+    this.headCount = headCount;
+    this.maxCount = maxCount;
   }
 }

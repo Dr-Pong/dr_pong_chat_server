@@ -11,13 +11,28 @@ export class ChannelPageDto {
   maxCount: number;
 
   static fromEntity(entity: Channel): ChannelPageDto {
-    const dto: ChannelPageDto = new ChannelPageDto();
-    dto.id = entity.id;
-    dto.title = entity.name;
-    dto.access = entity.type;
-    dto.headCount = entity.headCount;
-    dto.maxCount = entity.maxHeadCount;
-    return dto;
+    const {
+      id,
+      name: title,
+      type: access,
+      headCount,
+      maxHeadCount: maxCount,
+    } = entity;
+    return new ChannelPageDto(id, title, access, headCount, maxCount);
+  }
+
+  constructor(
+    id: string,
+    title: string,
+    access: ChannelType,
+    headCount: number,
+    maxCount: number,
+  ) {
+    this.id = id;
+    this.title = title;
+    this.access = access;
+    this.headCount = headCount;
+    this.maxCount = maxCount;
   }
 }
 

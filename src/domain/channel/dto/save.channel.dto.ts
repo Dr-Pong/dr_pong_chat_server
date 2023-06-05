@@ -15,12 +15,28 @@ export class SaveChannelDto {
   static from(dto: PostChannelDto): SaveChannelDto {
     let type: ChannelType = dto.access;
     if (type === CHANNEL_PUBLIC && dto.password) type = CHANNEL_PROTECTED;
-    const saveChannelDto: SaveChannelDto = new SaveChannelDto();
-    saveChannelDto.userId = dto.userId;
-    saveChannelDto.name = dto.name;
-    saveChannelDto.access = type;
-    saveChannelDto.password = dto.password;
-    saveChannelDto.maxCount = dto.maxCount;
+    const { userId, name, password, maxCount } = dto;
+    const saveChannelDto: SaveChannelDto = new SaveChannelDto(
+      userId,
+      name,
+      type,
+      password,
+      maxCount,
+    );
     return saveChannelDto;
+  }
+
+  constructor(
+    userId: number,
+    name: string,
+    access: ChannelType,
+    password: string,
+    maxCount: number,
+  ) {
+    this.userId = userId;
+    this.name = name;
+    this.access = access;
+    this.password = password;
+    this.maxCount = maxCount;
   }
 }

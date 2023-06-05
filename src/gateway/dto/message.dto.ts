@@ -9,12 +9,21 @@ export class MessageDto {
   time: Date;
 
   static fromPostDto(postDto: PostChannelMessageDto): MessageDto {
-    const dto = new MessageDto();
-    dto.userId = postDto.userId;
-    dto.channelId = postDto.channelId;
-    dto.type = postDto.type === null ? CHAT_MESSAGE : postDto.type;
-    dto.content = postDto.content;
-    dto.time = new Date();
-    return dto;
+    const { userId, channelId, content } = postDto;
+    const type = postDto.type === null ? CHAT_MESSAGE : postDto.type;
+    return new MessageDto(userId, channelId, type, content);
+  }
+
+  constructor(
+    userId: number,
+    channelId: string,
+    type: ChatType,
+    content: string,
+  ) {
+    this.userId = userId;
+    this.channelId = channelId;
+    this.type = type;
+    this.content = content;
+    this.time = new Date();
   }
 }

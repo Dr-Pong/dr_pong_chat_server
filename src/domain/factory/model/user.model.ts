@@ -20,17 +20,21 @@ export class UserModel {
   status: UserStatusType;
 
   static fromEntity(user: User): UserModel {
-    const userModel = new UserModel();
-    userModel.id = user.id;
-    userModel.nickname = user.nickname;
-    userModel.joinedChannel = null;
-    userModel.blockedList = new Map();
-    userModel.inviteList = new Map();
-    userModel.roleType = null;
-    userModel.isMuted = false;
-    userModel.socket = null;
-    userModel.profileImage = user.image.url;
-    userModel.status = USERSTATUS_OFFLINE;
-    return userModel;
+    const { id, nickname } = user;
+    const profileImage: string = user.image.url;
+    return new UserModel(id, nickname, profileImage);
+  }
+
+  constructor(id: number, nickname: string, profileImage: string) {
+    this.id = id;
+    this.nickname = nickname;
+    this.joinedChannel = null;
+    this.blockedList = new Map();
+    this.inviteList = new Map();
+    this.roleType = null;
+    this.isMuted = false;
+    this.socket = null;
+    this.profileImage = profileImage;
+    this.status = USERSTATUS_OFFLINE;
   }
 }
