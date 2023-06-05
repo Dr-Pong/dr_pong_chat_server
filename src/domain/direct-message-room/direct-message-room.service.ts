@@ -72,14 +72,13 @@ export class DirectMessageRoomService {
 
   async hasNewChat(directMessageRooms: DirectMessageRoom[]): Promise<boolean> {
     for (const directMessageRoom of directMessageRooms) {
-      const unreadChat: number =
-        await this.directRepository.countAllUnreadChatByRoomId(
+      const unreadChat: boolean =
+        await this.directRepository.hasAnyUnreadChatByRoomId(
           directMessageRoom.roomId,
           directMessageRoom.lastReadMessageId,
         );
-      if (unreadChat > 0) return true;
+      if (unreadChat) return true;
     }
-
     return false;
   }
 }
