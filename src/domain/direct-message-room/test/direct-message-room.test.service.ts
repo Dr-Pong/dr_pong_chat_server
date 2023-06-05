@@ -59,7 +59,7 @@ export class FriendDirectMessageTestService {
     for (let i = 0; i < index; i++) {
       const user = await this.userRepository.save({
         nickname: 'user' + i.toString(),
-        image: this.profileImages[i],
+        image: this.profileImages[i % 2 == 0 ? 0 : 1],
       });
       this.users.push(user);
     }
@@ -145,7 +145,6 @@ export class FriendDirectMessageTestService {
 
   //*FriendDirectMessage만들기 list*/
   async createDirectMessageRoom(): Promise<void> {
-    console.log(this.users);
     const friendDirectMessages: DirectMessageRoom[] = [];
 
     const friendDirectMessage = await this.directMessageRoomRepository.save({
