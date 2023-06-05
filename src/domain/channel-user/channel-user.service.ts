@@ -241,7 +241,7 @@ export class ChannelUserService {
     );
 
     /** 트랜잭션이 성공하면 Factory에도 결과를 반영한다 */
-    runOnTransactionComplete(() => {
+    runOnTransactionComplete(async () => {
       const userModel: UserModel = this.userFactory.findById(postDto.userId);
       if (userModel.joinedChannel) {
         this.channelFactory.leave(userModel.id, userModel.joinedChannel);
@@ -271,7 +271,7 @@ export class ChannelUserService {
       );
     }
 
-    this.joinChannel(
+    await this.joinChannel(
       new ChannelJoinDto(
         postDto.userId,
         postDto.channelId,
@@ -281,7 +281,7 @@ export class ChannelUserService {
     );
 
     /** 트랜잭션이 성공하면 Factory에도 결과를 반영한다 */
-    runOnTransactionComplete(() => {
+    runOnTransactionComplete(async () => {
       const userModel: UserModel = this.userFactory.findById(postDto.userId);
       if (userModel.joinedChannel) {
         this.channelFactory.leave(userModel.id, userModel.joinedChannel);
@@ -295,7 +295,7 @@ export class ChannelUserService {
   @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
   async deleteChannelUser(deleteDto: DeleteChannelUserDto): Promise<void> {
     const channelUser: ChannelUser =
-      await this.channelUserRepository.findByUserIdAndChannelId(
+      await this.channelUserRepository.findByUserIdAndChannelIdAndIsDelFalse(
         deleteDto.userId,
         deleteDto.channelId,
       );
@@ -308,7 +308,7 @@ export class ChannelUserService {
     );
 
     /** 트랜잭션이 성공하면 Factory에도 결과를 반영한다 */
-    runOnTransactionComplete(() => {
+    runOnTransactionComplete(async () => {
       const userModel: UserModel = this.userFactory.findById(deleteDto.userId);
       this.channelFactory.leave(userModel.id, deleteDto.channelId);
     });
