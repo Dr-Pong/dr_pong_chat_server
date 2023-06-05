@@ -24,6 +24,8 @@ import { DeleteUserFriendRejectDto } from './dto/delete.user.friend.reject.dto';
 import { PostUserFriendRequestDto } from './dto/post.user.friend.request.dto';
 import { DeleteUserFriendDto } from './dto/delete.user.friend.dto';
 import { FriendModule } from './friend.module';
+import { GetUserFriendNotificationsRequestDto } from './dto/get.user.friend.notifications.request.dto';
+import { UserFriendNotificationsDto } from './dto/user.friend.notifications.dto';
 
 describe('FriendService', () => {
   let service: FriendService;
@@ -414,6 +416,53 @@ describe('FriendService', () => {
         });
 
         expect(friendRequest).toBeNull();
+      });
+    });
+    describe('친구 요청 개수', () => {
+      it('[Valid Case]친구요청이 없는경우', async () => {
+        const userFriendNotificationDto: GetUserFriendNotificationsRequestDto =
+          {
+            userId: testData.users[0].id,
+          };
+
+        const friendRequestCount: UserFriendNotificationsDto =
+          await service.getUserFriendNotificationCount(
+            userFriendNotificationDto,
+          );
+
+        expect(friendRequestCount).toBe(0);
+      });
+
+      it('[Valid Case]친구요청이 있는경우', async () => {
+        await testData.createUserRequesting(10);
+
+        const userFriendNotificationDto: GetUserFriendNotificationsRequestDto =
+          {
+            userId: testData.users[0].id,
+          };
+
+        const friendRequestCount: UserFriendNotificationsDto =
+          await service.getUserFriendNotificationCount(
+            userFriendNotificationDto,
+          );
+
+        expect(friendRequestCount).toBe(10);
+      });
+
+      it('[Valid Case] 50개 이상 요청이 오면 이후요청 무시', async () => {
+        await testData.createUserRequesting(60);
+
+        const userFriendNotificationDto: GetUserFriendNotificationsRequestDto =
+          {
+            userId: testData.users[0].id,
+          };
+
+        const friendRequestCount: UserFriendNotificationsDto =
+          await service.getUserFriendNotificationCount(
+            userFriendNotificationDto,
+          );
+
+        expect(friendRequestCount).toBe(50);
       });
     });
   });
