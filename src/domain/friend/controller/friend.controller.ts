@@ -13,7 +13,7 @@ import { FriendService } from 'src/domain/friend/friend.service';
 import { FriendListResponseDto } from 'src/domain/friend/dto/friend.list.response.dto';
 import { FriendPendingListResponseDto } from 'src/domain/friend/dto/friend.pending.list.response.dto';
 import { FriendDmChatlistResponseDto } from 'src/domain/friend/dto/friend.dm.chatlist.response.dto';
-import { PostFriendChatDto } from 'src/domain/friend/dto/post.friend.chat.dto';
+import { PostFriendChatRequestDto } from 'src/domain/friend/dto/post.friend.chat.request.dto';
 import { FriendDmRoomListResponseDto } from 'src/domain/friend/dto/friend.dm.room.list.response.dto';
 import { FriendDmNewResponseDto } from 'src/domain/friend/dto/friend.dm.new.response';
 
@@ -141,7 +141,7 @@ export class FriendController {
   @Post('/users/friends/:nickname/chats')
   async friendChatPost(
     @Param('nickname') nickname: string,
-    @Body() postFriendChatDto: PostFriendChatDto,
+    @Body() postFriendChatRequestDto: PostFriendChatRequestDto,
   ): Promise<void> {}
 
   /* 진행 중인 DM 목록 받기
