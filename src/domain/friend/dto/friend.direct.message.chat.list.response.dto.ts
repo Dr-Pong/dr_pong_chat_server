@@ -4,7 +4,8 @@ interface Chat {
   nickname: string;
   createdAt: Date;
 }
-export class FriendDmChatlistResponseDto {
+
+export class FriendDirectMessageChatListResponseDto {
   chatList: Chat[];
   isLastPage: boolean;
 }

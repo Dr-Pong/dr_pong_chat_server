@@ -12,10 +12,10 @@ import {
 import { FriendService } from 'src/domain/friend/friend.service';
 import { FriendListResponseDto } from 'src/domain/friend/dto/friend.list.response.dto';
 import { FriendPendingListResponseDto } from 'src/domain/friend/dto/friend.pending.list.response.dto';
-import { FriendDmChatlistResponseDto } from 'src/domain/friend/dto/friend.dm.chatlist.response.dto';
+import { FriendDirectMessageChatListResponseDto } from 'src/domain/friend/dto/friend.direct.message.chat.list.response.dto';
 import { PostFriendChatRequestDto } from 'src/domain/friend/dto/post.friend.chat.request.dto';
-import { FriendDmRoomListResponseDto } from 'src/domain/friend/dto/friend.dm.room.list.response.dto';
-import { FriendDmNewResponseDto } from 'src/domain/friend/dto/friend.dm.new.response';
+import { FriendDirectMessageRoomListResponseDto } from 'src/domain/friend/dto/friend.direct.message.room.list.response.dto';
+import { FriendDirectMessageNewResponseDto } from 'src/domain/friend/dto/friend.direct.message.new.response';
 
 @Controller('controller')
 export class FriendController {
@@ -122,9 +122,9 @@ export class FriendController {
     @Param('nickname') nickname: string,
     @Query('count', new DefaultValuePipe(40), ParseIntPipe) count: number,
     @Query('offset', new DefaultValuePipe(0), ParseIntPipe) offset: number,
-  ): Promise<FriendDmChatlistResponseDto> {
-    const friendDmChatlist: FriendDmChatlistResponseDto = {};
-    return friendDmChatlist;
+  ): Promise<FriendDirectMessageChatListResponseDto> {
+    const friendDirectMessageChatList: FriendDirectMessageChatListResponseDto = {};
+    return friendDirectMessageChatList;
   }
 
   /* DM 전송
@@ -158,9 +158,9 @@ export class FriendController {
    * */
 
   @Get('/users/friends/chatlist')
-  async friendDmListGet(): Promise<FriendDmRoomListResponseDto> {
-    const friendDmRoomList: FriendDmRoomListResponseDto = {};
-    return friendDmRoomList;
+  async friendDmListGet(): Promise<FriendDirectMessageRoomListResponseDto> {
+    const friendDirectMessageRoomList: FriendDirectMessageRoomListResponseDto = {};
+    return friendDirectMessageRoomList;
   }
 
   /* 진행 중인 DM 리스트에서 특정 방 삭제
@@ -170,7 +170,7 @@ export class FriendController {
    * }
    * */
   @Delete('/users/friends/chats/:nickname')
-  async friendDmDelete(@Param('nickname') nickname: string): Promise<void> {}
+  async friendDirectMessageDelete(@Param('nickname') nickname: string): Promise<void> {}
 
   /* 새로운 DM 유무 확인
    *
@@ -180,8 +180,8 @@ export class FriendController {
    * }
    * */
   @Get('/users/friends/chats/new')
-  async friendDmNewGet(): Promise<FriendDmNewResponseDto> {
-    const friendDmNew: FriendDmNewResponseDto = {};
-    return friendDmNew;
+  async friendDirectMessageNewGet(): Promise<FriendDirectMessageNewResponseDto> {
+    const friendDirectMessageNew: FriendDirectMessageNewResponseDto = {};
+    return friendDirectMessageNew;
   }
 }
