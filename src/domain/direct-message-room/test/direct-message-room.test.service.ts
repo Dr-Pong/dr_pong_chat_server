@@ -143,8 +143,7 @@ export class FriendDirectMessageTestService {
     }
   }
 
-  //*FriendDirectMessage만들기 list*/
-  async createDirectMessageRoom(): Promise<void> {
+  async createDirectMessageRoomToUser1(): Promise<void> {
     const friendDirectMessages: DirectMessageRoom[] = [];
 
     const friendDirectMessage = await this.directMessageRoomRepository.save({
@@ -155,6 +154,40 @@ export class FriendDirectMessageTestService {
         this.users[1].id.toString(),
       ),
       lastReadMessageId: null,
+      isDisplay: true,
+    });
+
+    friendDirectMessages.push(friendDirectMessage);
+  }
+
+  async createAllReadDirectMessageRoomToUser1(): Promise<void> {
+    const friendDirectMessages: DirectMessageRoom[] = [];
+
+    const friendDirectMessage = await this.directMessageRoomRepository.save({
+      userId: this.users[0],
+      friendId: this.users[1],
+      roomId: FriendChatManager.generateRoomId(
+        this.users[0].id.toString(),
+        this.users[1].id.toString(),
+      ),
+      lastReadMessageId: this.directMessage[9].id,
+      isDisplay: true,
+    });
+
+    friendDirectMessages.push(friendDirectMessage);
+  }
+
+  async createHalfReadDirectMessageRoomToUser1(): Promise<void> {
+    const friendDirectMessages: DirectMessageRoom[] = [];
+
+    const friendDirectMessage = await this.directMessageRoomRepository.save({
+      userId: this.users[0],
+      friendId: this.users[1],
+      roomId: FriendChatManager.generateRoomId(
+        this.users[0].id.toString(),
+        this.users[1].id.toString(),
+      ),
+      lastReadMessageId: this.directMessage[4].id,
       isDisplay: true,
     });
 
@@ -191,30 +224,5 @@ export class FriendDirectMessageTestService {
     });
 
     friendDirectMessages.push(friendDirectMessage);
-  }
-
-  async createHalfReadDirectMessageRooms(): Promise<void> {
-    const index: number = this.users.length;
-    const friendDirectMessages: DirectMessageRoom[] = [];
-
-    for (let i = 0; i < index; i++) {
-      const lastMessage = await this.directMessageRepository.findOne({
-        where: { id: this.directMessage[i].id },
-        order: { time: 'DESC' },
-      });
-
-      const friendDirectMessage = await this.directMessageRoomRepository.save({
-        userId: this.users[0],
-        friendId: this.users[i],
-        roomId: FriendChatManager.generateRoomId(
-          this.users[0].id.toString(),
-          this.users[i].id.toString(),
-        ),
-        lastReadMessageId: i % 2 === 0 ? lastMessage.id : null,
-        isDisplay: true,
-      });
-
-      friendDirectMessages.push(friendDirectMessage);
-    }
   }
 }
