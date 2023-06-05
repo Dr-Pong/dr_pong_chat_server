@@ -46,7 +46,23 @@ export class DirectMessageRoomRepository {
     return await this.repository.save(directMessageRoom);
   }
 
-  async updateIsDisplayByUserIdAndFriendId(userId: number, friendId: number) {
+  async updateIsDisplayFalseByUserIdAndFriendId(
+    userId: number,
+    friendId: number,
+  ) {
+    await this.repository.update(
+      {
+        userId: { id: userId },
+        friendId: { id: friendId },
+      },
+      { isDisplay: false },
+    );
+  }
+
+  async updateIsDisplayTrueByUserIdAndFriendId(
+    userId: number,
+    friendId: number,
+  ) {
     await this.repository.update(
       {
         userId: { id: userId },

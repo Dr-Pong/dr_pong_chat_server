@@ -76,7 +76,7 @@ export class DirectMessageService {
           await this.directMessageRoomRepository.save(userId, friendId);
         } else {
           if (!directMessageRoom.isDisplay) {
-            await this.directMessageRoomRepository.updateIsDisplayByUserIdAndFriendId(
+            await this.directMessageRoomRepository.updateIsDisplayTrueByUserIdAndFriendId(
               userId,
               friendId,
             );

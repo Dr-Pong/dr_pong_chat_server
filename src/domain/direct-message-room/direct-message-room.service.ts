@@ -48,7 +48,7 @@ export class DirectMessageRoomService {
 
   @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
   async deleteDirectMessageRoom(deleteDto: DeleteDirectMessageRoomDto) {
-    await this.directMessageRoomRepository.updateIsDisplayByUserIdAndFriendId(
+    await this.directMessageRoomRepository.updateIsDisplayFalseByUserIdAndFriendId(
       deleteDto.userId,
       deleteDto.friendId,
     );
