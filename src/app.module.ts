@@ -13,7 +13,7 @@ import { DataSource } from 'typeorm';
 import { ChannelMessageModule } from './domain/channel-message/channel-message.module';
 import { DirectMessageRoomModule } from './domain/direct-message-room/direct-message-room.module';
 import { DirectMessageModule } from './domain/direct-message/direct-message.module';
-import { FriendModule } from './domain/friend/frined.module';
+import { FriendModule } from './domain/friend/friend.module';
 
 @Module({
   imports: [

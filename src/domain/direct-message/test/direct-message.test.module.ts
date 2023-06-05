@@ -7,6 +7,7 @@ import { ProfileImage } from 'src/domain/profile-image/profile-image.entity';
 import { ProfileImageRepository } from 'src/domain/profile-image/profile-image.repository';
 import { DirectMessage } from '../direct-message.entity';
 import { Friend } from 'src/domain/friend/friend.entity';
+import { DirectMessageRoom } from 'src/domain/direct-message-room/direct-message-room.entity';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { Friend } from 'src/domain/friend/friend.entity';
       ProfileImageRepository,
       ProfileImage,
       DirectMessage,
+      DirectMessageRoom,
     ]),
   ],
   providers: [DirectMessageTestService],

@@ -14,25 +14,27 @@ import { UserPendingFriendsDto } from './dto/user.pending.friends.dto';
 import { PostUserFriendAcceptDto } from './dto/post.user.friend.accept.dto';
 import { DeleteUserFriendRejectDto } from './dto/delete.user.friend.reject.dto';
 import { DeleteUserFriendDto } from './dto/delete.user.friend.dto';
+import { IsolationLevel, Transactional } from 'typeorm-transactional';
 
 @Injectable()
 export class FriendService {
   constructor(private friendRepository: FriendRepository) {}
 
   //**친구 목록 GET 반환 */
+  @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
   async getUserFriends(getDto: GetUserFriendDto): Promise<UserFriendsDto> {
     const userFriends: Friend[] =
       await this.friendRepository.findFriendsByUserId(getDto.userId);
     const friends: FriendDto[] = userFriends.map((friend) => {
-      if (friend.reciever.id === getDto.userId) {
+      if (friend.receiver.id === getDto.userId) {
         return {
           nickname: friend.sender.nickname,
           imgUrl: friend.sender.image.url,
         };
       }
       return {
-        nickname: friend.reciever.nickname,
-        imgUrl: friend.reciever.image.url,
+        nickname: friend.receiver.nickname,
+        imgUrl: friend.receiver.image.url,
       };
     });
     friends.sort((a, b) => {
@@ -52,11 +54,12 @@ export class FriendService {
   }
 
   //**친구 추가 */
+  @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
   async postUserFriendRequest(
     postDto: PostUserFriendRequestDto,
   ): Promise<void> {
     const friendTables: Friend[] =
-      await this.friendRepository.findAllFriendsByUserIdAndFrinedId(
+      await this.friendRepository.findAllFriendsByUserIdAndFriendId(
         postDto.userId,
         postDto.friendId,
       );
@@ -78,6 +81,7 @@ export class FriendService {
   }
 
   //**친구 요청 목록*/
+  @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
   async getUserPendingFriendRequests(
     getDto: GetUserPendingFriendDto,
   ): Promise<UserPendingFriendsDto> {
@@ -87,15 +91,15 @@ export class FriendService {
       );
 
     const friends: FriendDto[] = userFriends.map((friend) => {
-      if (friend.reciever.id === getDto.userId) {
+      if (friend.receiver.id === getDto.userId) {
         return {
           nickname: friend.sender.nickname,
           imgUrl: friend.sender.image.url,
         };
       }
       return {
-        nickname: friend.reciever.nickname,
-        imgUrl: friend.reciever.image.url,
+        nickname: friend.receiver.nickname,
+        imgUrl: friend.receiver.image.url,
       };
     });
     friends.sort((a, b) => {
@@ -115,9 +119,10 @@ export class FriendService {
   }
 
   //**친구 요청 수락 */
+  @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
   async postUserFriendAccept(postDto: PostUserFriendAcceptDto): Promise<void> {
     const friendTables: Friend[] =
-      await this.friendRepository.findAllFriendsByUserIdAndFrinedId(
+      await this.friendRepository.findAllFriendsByUserIdAndFriendId(
         postDto.userId,
         postDto.friendId,
       );
@@ -143,11 +148,12 @@ export class FriendService {
   }
 
   //**  친구요청 거절 */
+  @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
   async deleteUserFriendReject(
     deleteDto: DeleteUserFriendRejectDto,
   ): Promise<void> {
     const friendTables: Friend[] =
-      await this.friendRepository.findAllFriendsByUserIdAndFrinedId(
+      await this.friendRepository.findAllFriendsByUserIdAndFriendId(
         deleteDto.userId,
         deleteDto.friendId,
       );
@@ -169,9 +175,10 @@ export class FriendService {
   }
 
   //**친구 삭제 */
+  @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
   async deleteUserFriend(deleteDto: DeleteUserFriendDto): Promise<void> {
     const friendTables: Friend[] =
-      await this.friendRepository.findAllFriendsByUserIdAndFrinedId(
+      await this.friendRepository.findAllFriendsByUserIdAndFriendId(
         deleteDto.userId,
         deleteDto.friendId,
       );
