@@ -3,7 +3,10 @@ import { FriendService } from './friend.service';
 import { FriendTestService } from './test/friend.test.service';
 import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
 import { typeORMConfig } from 'src/configs/typeorm.config';
-import { addTransactionalDataSource } from 'typeorm-transactional';
+import {
+  addTransactionalDataSource,
+  initializeTransactionalContext,
+} from 'typeorm-transactional';
 import { TestModule } from './test/friend.test.module';
 import { Test, TestingModule } from '@nestjs/testing';
 import { GetUserFriendDto as GetUserFriendDto } from './dto/get.user.friend.dto';
@@ -29,6 +32,7 @@ describe('FriendService', () => {
   let friendRepository: Repository<Friend>;
 
   beforeAll(async () => {
+    initializeTransactionalContext();
     const module: TestingModule = await Test.createTestingModule({
       imports: [
         TypeOrmModule.forRootAsync({

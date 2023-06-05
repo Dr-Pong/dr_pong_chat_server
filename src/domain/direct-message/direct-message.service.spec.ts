@@ -5,7 +5,10 @@ import { DataSource, Repository } from 'typeorm';
 import { DirectMessage } from './direct-message.entity';
 import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
 import { typeORMConfig } from 'src/configs/typeorm.config';
-import { addTransactionalDataSource } from 'typeorm-transactional';
+import {
+  addTransactionalDataSource,
+  initializeTransactionalContext,
+} from 'typeorm-transactional';
 import { DirectMessageModule } from './direct-message.module';
 import { TestModule } from './test/direct-message.test.module';
 import { PostDirectMessageDto } from './dto/post.direct-message.dto';
@@ -22,6 +25,7 @@ describe('DmLogService', () => {
   let dmRoomlogRepository: Repository<DirectMessageRoom>;
 
   beforeAll(async () => {
+    initializeTransactionalContext();
     const module: TestingModule = await Test.createTestingModule({
       imports: [
         TypeOrmModule.forRootAsync({
