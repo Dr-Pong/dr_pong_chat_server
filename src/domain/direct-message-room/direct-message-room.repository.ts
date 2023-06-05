@@ -25,6 +25,13 @@ export class DirectMessageRoomRepository {
     return directMessageRoom;
   }
 
+  async findAllByUserId(userId: number): Promise<DirectMessageRoom[]> {
+    const directMessageRooms: DirectMessageRoom[] = await this.repository.find({
+      where: { userId: { id: userId } },
+    });
+    return directMessageRooms;
+  }
+
   async save(userId: number, friendId: number): Promise<DirectMessageRoom> {
     const directMessageRoom: DirectMessageRoom = await this.repository.create({
       userId: { id: userId },
