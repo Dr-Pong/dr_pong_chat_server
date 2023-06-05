@@ -4,6 +4,9 @@ import { Like, Repository } from 'typeorm';
 import { Injectable } from '@nestjs/common';
 import { Page } from 'src/global/utils/page';
 import { FindChannelPageDto } from '../channel-user/dto/find.channel.page.dto';
+import { CHANNEL_PROTECTED } from 'src/global/type/type.channel';
+import { SaveChannelDto } from './dto/save.channel.dto';
+import { UpdateChannelHeadCountDto } from '../channel-user/dto/update.channel.headcount.dto';
 
 @Injectable()
 export class ChannelRepository {
@@ -11,6 +14,10 @@ export class ChannelRepository {
     @InjectRepository(Channel)
     private readonly repository: Repository<Channel>,
   ) {}
+
+  async findById(channelId: string): Promise<Channel> {
+    return await this.repository.findOne({ where: { id: channelId } });
+  }
 
   async findByChannelName(name: string): Promise<Channel> {
     return await this.repository.findOne({
@@ -31,9 +38,12 @@ export class ChannelRepository {
       },
     });
 
+    const keyword: string =
+      findDto.keyword === null ? '%' : '%' + findDto.keyword + '%';
+
     const channels: Channel[] = await this.repository.find({
       where: {
-        name: Like('%' + findDto.keyword + '%'),
+        name: Like(keyword),
         isDeleted: false,
       },
       skip: (findDto.page - 1) * findDto.count,
@@ -83,12 +93,37 @@ export class ChannelRepository {
     return page;
   }
 
-  async saveChannel(channel: Channel): Promise<Channel> {
-    return await this.repository.save(channel);
+  async saveChannel(saveDto: SaveChannelDto): Promise<Channel> {
+    return await this.repository.save({
+      operator: { id: saveDto.userId },
+      name: saveDto.name,
+      isDeleted: false,
+      access: saveDto.access,
+      password: saveDto.access === CHANNEL_PROTECTED ? saveDto.password : null,
+      headCount: 0,
+      maxCount: saveDto.maxCount,
+    });
   }
 
-  async deleteChannel(channel: Channel): Promise<void> {
-    channel.isDeleted = true;
-    await this.repository.save(channel);
+  async updateHeadCount(updateDto: UpdateChannelHeadCountDto): Promise<void> {
+    await this.repository.update(
+      {
+        id: updateDto.channelId,
+      },
+      {
+        headCount: Number(() => `head_count + ${updateDto.headCount}`),
+      },
+    );
+  }
+
+  async deleteChannelById(channelId: string): Promise<void> {
+    await this.repository.update(
+      {
+        id: channelId,
+      },
+      {
+        isDeleted: true,
+      },
+    );
   }
 }

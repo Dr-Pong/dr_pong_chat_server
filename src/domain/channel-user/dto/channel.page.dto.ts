@@ -1,5 +1,5 @@
 import { Channel } from 'src/domain/channel/channel.entity';
-import { ChannelModel } from 'src/domain/channel/channel.model';
+import { ChannelModel } from 'src/domain/factory/model/channel.model';
 import { ChannelType } from 'src/global/type/type.channel';
 import { Page } from 'src/global/utils/page';
 

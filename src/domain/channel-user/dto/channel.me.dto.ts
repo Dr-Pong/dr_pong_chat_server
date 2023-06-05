@@ -1,4 +1,4 @@
-import { ChannelModel } from 'src/domain/channel/channel.model';
+import { ChannelModel } from 'src/domain/factory/model/channel.model';
 
 export class ChannelMeDto {
   id: string;
