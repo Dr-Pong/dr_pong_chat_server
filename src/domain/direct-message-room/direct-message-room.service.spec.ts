@@ -92,6 +92,8 @@ describe('DmLogService', () => {
       it('[Valid Case] 현재 진행중인 DM목록 반환', async () => {
         await testData.createDirectMessageToUser1(10);
         await testData.createDirectMessageRoom();
+        await testData.createDirectMessageToUser2(10);
+        await testData.createDirectMessageRoomToUser2();
 
         const directMessageRoomsDto: GetDirectMessageRoomsDto = {
           userId: testData.users[0].id,
@@ -100,15 +102,23 @@ describe('DmLogService', () => {
         const directMessageRooms: DirectMessageRoomsDto =
           await service.getAllDirectMessageRooms(directMessageRoomsDto);
 
-        expect(directMessageRooms.chatList.length).toBe(10);
+        expect(directMessageRooms.chatList.length).toBe(2);
 
         expect(directMessageRooms.chatList[0].nickname).toBe(
           testData.users[1].nickname,
         );
         expect(directMessageRooms.chatList[0].imgUrl).toBe(
-          testData.users[1].image,
+          testData.users[1].image.url,
         );
-        expect(directMessageRooms.chatList[0].newChat).toBe(0);
+        expect(directMessageRooms.chatList[0].newChat).toBe(10);
+
+        expect(directMessageRooms.chatList[1].nickname).toBe(
+          testData.users[2].nickname,
+        );
+        expect(directMessageRooms.chatList[1].imgUrl).toBe(
+          testData.users[2].image.url,
+        );
+        expect(directMessageRooms.chatList[1].newChat).toBe(10);
       });
 
       it('[Valid Case] 진행중인 DM목록이 없을때 확인', async () => {
