@@ -28,6 +28,18 @@ export class ChannelUserRepository {
       where: {
         user: { id: userId },
         channel: { id: channelId },
+      },
+    });
+  }
+
+  async findByUserIdAndChannelIdAndIsDelFalse(
+    userId: number,
+    channelId: string,
+  ): Promise<ChannelUser> {
+    return await this.repository.findOne({
+      where: {
+        user: { id: userId },
+        channel: { id: channelId },
         isDeleted: false,
       },
     });
