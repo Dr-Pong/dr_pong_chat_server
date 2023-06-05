@@ -33,6 +33,10 @@ import { FactoryModule } from '../factory/factory.module';
 import { PostChannelDto } from './dto/post.channel.dto';
 import { PostChannelJoinDto } from './dto/post.channel.join.dto';
 import { ChannelUser } from './channel-user.entity';
+import {
+  ORDER_CHANNEL_POPULAR,
+  ORDER_CHANNEL_RESENT,
+} from 'src/global/type/type.order.channel';
 
 describe('ChannelUserService', () => {
   let service: ChannelUserService;
@@ -108,7 +112,7 @@ describe('ChannelUserService', () => {
         const getResentPageDto: GetChannelPageDto = {
           page: 1,
           count: 10,
-          orderBy: 'resent',
+          orderBy: ORDER_CHANNEL_RESENT,
           keyword: null,
         };
 
@@ -130,7 +134,7 @@ describe('ChannelUserService', () => {
         const getPopularPageDto: GetChannelPageDto = {
           page: 1,
           count: 10,
-          orderBy: 'popular',
+          orderBy: ORDER_CHANNEL_POPULAR,
           keyword: null,
         };
         const channelList: ChannelPageDtos = await service.getChannelPages(
@@ -155,7 +159,7 @@ describe('ChannelUserService', () => {
         const getEmptyPageDto: GetChannelPageDto = {
           page: 1,
           count: 10,
-          orderBy: 'resent',
+          orderBy: ORDER_CHANNEL_RESENT,
           keyword: null,
         };
 
@@ -175,7 +179,7 @@ describe('ChannelUserService', () => {
         const getKeywordMatchPageDto: GetChannelPageDto = {
           page: 1,
           count: 10,
-          orderBy: 'resent',
+          orderBy: ORDER_CHANNEL_RESENT,
           keyword: 'name',
         };
 
@@ -200,7 +204,7 @@ describe('ChannelUserService', () => {
         const getKeywordUnmatchPageDto: GetChannelPageDto = {
           page: 1,
           count: 10,
-          orderBy: 'resent',
+          orderBy: ORDER_CHANNEL_RESENT,
           keyword: 'noooooooooooooo',
         };
 
