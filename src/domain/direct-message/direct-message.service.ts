@@ -62,10 +62,10 @@ export class DirectMessageService {
   async postDirectMessage(postDto: PostDirectMessageDto): Promise<void> {
     const { userId, friendId, message } = postDto;
     const userFriends: Friend[] =
-      await this.friendRepository.findFriendsByUserId(postDto.userId);
+      await this.friendRepository.findFriendsByUserId(userId);
 
     for (const friend of userFriends) {
-      if (this.isValidFriend(friend, postDto.friendId)) {
+      if (this.isValidFriend(friend, friendId)) {
         await this.directRepository.save(userId, friendId, message);
         const directMessageRoom: DirectMessageRoom =
           await this.directMessageRoomRepository.findByUserIdAndFriendId(
