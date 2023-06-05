@@ -128,13 +128,15 @@ export class ChannelUserService {
     this.userFactory.invite(target.id, invite);
   }
 
+  @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
   async postChannelMessage(postDto: PostChannelMessageDto): Promise<void> {
     const channel: ChannelModel = this.channelFactory.findById(
       postDto.channelId,
     );
-    checkChannelExist(channel);
     const user: UserModel = this.userFactory.findById(postDto.userId);
+    checkChannelExist(channel);
     checkUserInChannel(channel, user.id);
+    if (user.isMuted) return;
 
     const message: MessageDto = MessageDto.fromPostDto(postDto);
     this.chatGateway.sendMessageToChannel(
