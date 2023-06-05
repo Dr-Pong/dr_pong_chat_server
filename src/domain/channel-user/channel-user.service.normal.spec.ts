@@ -855,80 +855,124 @@ describe('ChannelUserService', () => {
       });
     });
 
-    // describe('채팅방 퇴장', () => {
-    //   it('[Valid Case] 일반 유저가 퇴장하는 경우', async () => {
-    //     const user: UserModel = await testData.createUserInChannel();
+    describe('채팅방 퇴장', () => {
+      it('[Valid Case] 일반 유저가 퇴장하는 경우', async () => {
+        const user: UserModel = await testData.createUserInChannel();
+        const channel: ChannelModel = channelFactory.findById(
+          user.joinedChannel,
+        );
 
-    //     const deleteChannelUserRequest: DeleteChannelUserDto = {
-    //       userId: user.id,
-    //       channelId: user.joinedChannel,
-    //     };
+        const deleteChannelUserRequest: DeleteChannelUserDto = {
+          userId: user.id,
+          channelId: channel.id,
+        };
 
-    //     await service.deleteChannelUser(deleteChannelUserRequest);
+        await service.deleteChannelUser(deleteChannelUserRequest);
 
-    //     const savedChannelFt: ChannelModel = channelFactory.findById(
-    //       user.joinedChannel,
-    //     );
+        const channelUserDb: ChannelUser = await channelUserRepository.findOne({
+          where: {
+            user: { id: user.id },
+            channel: { id: channel.id },
+            isDeleted: false,
+          },
+        });
 
-    //     expect(savedChannelFt.users.has(user.id)).toBe(false);
-    //   });
-    //   it('[Valid Case] owner가 퇴장하는 경우', async () => {
-    //     const channel: ChannelModel = await testData.createChannelWithOwner();
+        expect(channelUserDb).toBe(null);
 
-    //     const deleteChannelUserRequest: DeleteChannelUserDto = {
-    //       userId: channel.ownerId,
-    //       channelId: channel.id,
-    //     };
+        const savedChannelFt: ChannelModel = channelFactory.findById(
+          channel.id,
+        );
 
-    //     await service.deleteChannelUser(deleteChannelUserRequest);
+        expect(savedChannelFt.users.has(user.id)).toBe(false);
+      });
+      it('[Valid Case] owner가 퇴장하는 경우', async () => {
+        const channel: ChannelModel = await testData.createBasicChannel(
+          'channel',
+          5,
+        );
 
-    //     const savedChannelFt: ChannelModel = channelFactory.findById(
-    //       channel.id,
-    //     );
+        const deleteChannelUserRequest: DeleteChannelUserDto = {
+          userId: channel.ownerId,
+          channelId: channel.id,
+        };
 
-    //     expect(savedChannelFt.users.has(channel.ownerId)).toBe(false);
-    //     expect(savedChannelFt.ownerId).toBe(null);
-    //   });
-    //   it('[Valid Case] admin이 퇴장하는 경우', async () => {
-    //     const channel: ChannelModel = await testData.createChannelWithAdmins();
-    //     const admin: UserModel = userFactory.findById(
-    //       channel.adminList.values().next().value,
-    //     );
+        await service.deleteChannelUser(deleteChannelUserRequest);
+        const channelUserDb: ChannelUser = await channelUserRepository.findOne({
+          where: {
+            user: { id: channel.ownerId },
+            channel: { id: channel.id },
+            isDeleted: false,
+          },
+        });
 
-    //     const deleteChannelUserRequest: DeleteChannelUserDto = {
-    //       userId: admin.id,
-    //       channelId: channel.id,
-    //     };
+        expect(channelUserDb).toBe(null);
 
-    //     await service.deleteChannelUser(deleteChannelUserRequest);
+        const savedChannelFt: ChannelModel = channelFactory.findById(
+          channel.id,
+        );
 
-    //     const savedChannelFt: ChannelModel = channelFactory.findById(
-    //       channel.id,
-    //     );
+        expect(savedChannelFt.users.has(channel.ownerId)).toBe(false);
+        expect(savedChannelFt.ownerId).toBe(null);
+      });
 
-    //     expect(savedChannelFt.users.has(admin.id)).toBe(false);
-    //     expect(savedChannelFt.adminList.size).toBe(channel.adminList.size - 1);
-    //   });
-    //   it('[Valid Case] mute 된 유저가 퇴장하는 경우(mute 상태 유지)', async () => {
-    //     const channel: ChannelModel = await testData.createChannelWithMuteds();
-    //     const user: UserModel = userFactory.findById(
-    //       channel.muteList.values().next().value,
-    //     );
+      it('[Valid Case] admin이 퇴장하는 경우', async () => {
+        const channel: ChannelModel = await testData.createChannelWithAdmins();
+        const admin: UserModel = userFactory.findById(
+          channel.adminList.values().next().value,
+        );
 
-    //     const deleteChannelUserRequest: DeleteChannelUserDto = {
-    //       userId: user.id,
-    //       channelId: channel.id,
-    //     };
+        const deleteChannelUserRequest: DeleteChannelUserDto = {
+          userId: admin.id,
+          channelId: channel.id,
+        };
 
-    //     await service.deleteChannelUser(deleteChannelUserRequest);
+        await service.deleteChannelUser(deleteChannelUserRequest);
+        const channelUserDb: ChannelUser = await channelUserRepository.findOne({
+          where: {
+            user: { id: admin.id },
+            channel: { id: channel.id },
+            isDeleted: false,
+          },
+        });
 
-    //     const savedChannelFt: ChannelModel = channelFactory.findById(
-    //       channel.id,
-    //     );
+        expect(channelUserDb).toBe(null);
 
-    //     expect(savedChannelFt.users.has(user.id)).toBe(false);
-    //     expect(savedChannelFt.muteList.get(user.id)).toBe(user.id);
-    //   });
-    // });
+        const savedChannelFt: ChannelModel = channelFactory.findById(
+          channel.id,
+        );
+
+        expect(savedChannelFt.users.has(admin.id)).toBe(false);
+        expect(savedChannelFt.users.size).toBe(8);
+      });
+      it('[Valid Case] mute 된 유저가 퇴장하는 경우(mute 상태 유지)', async () => {
+        const user: UserModel = await testData.createMutedUserInChannel();
+        const channel: ChannelModel = channelFactory.findById(
+          user.joinedChannel,
+        );
+
+        const deleteChannelUserRequest: DeleteChannelUserDto = {
+          userId: user.id,
+          channelId: channel.id,
+        };
+
+        await service.deleteChannelUser(deleteChannelUserRequest);
+        const channelUserDb: ChannelUser = await channelUserRepository.findOne({
+          where: {
+            user: { id: channel.ownerId },
+            channel: { id: channel.id },
+            isDeleted: false,
+          },
+        });
+
+        expect(channelUserDb).toBe(null);
+
+        const savedChannelFt: ChannelModel = channelFactory.findById(
+          channel.id,
+        );
+
+        expect(savedChannelFt.users.has(user.id)).toBe(false);
+        expect(savedChannelFt.muteList.get(user.id)).toBe(user.id);
+      });
+    });
   });
 });

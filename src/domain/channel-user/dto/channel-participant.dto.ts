@@ -8,13 +8,20 @@ export class ChannelParticipantDto {
   isMuted: boolean;
 
   static fromModel(userModel: UserModel): ChannelParticipantDto {
-    const channelParticipantDto: ChannelParticipantDto =
-      new ChannelParticipantDto();
-    channelParticipantDto.nickname = userModel.nickname;
-    channelParticipantDto.imgUrl = userModel.profileImage;
-    channelParticipantDto.roleType = userModel.roleType;
-    channelParticipantDto.isMuted = userModel.isMuted;
-    return channelParticipantDto;
+    const { nickname, profileImage, roleType, isMuted } = userModel;
+    return new ChannelParticipantDto(nickname, profileImage, roleType, isMuted);
+  }
+
+  constructor(
+    nickname: string,
+    imgUrl: string,
+    roleType: ChannelParticipantType,
+    isMuted: boolean,
+  ) {
+    this.nickname = nickname;
+    this.imgUrl = imgUrl;
+    this.roleType = roleType;
+    this.isMuted = isMuted;
   }
 }
 

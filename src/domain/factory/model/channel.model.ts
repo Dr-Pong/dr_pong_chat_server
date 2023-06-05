@@ -14,17 +14,29 @@ export class ChannelModel {
   maxHeadCount: number;
 
   static fromEntity(channel: Channel): ChannelModel {
-    const channelModel = new ChannelModel();
-    channelModel.id = channel.id;
-    channelModel.name = channel.name;
-    channelModel.users = new Map();
-    channelModel.type = channel.type;
-    channelModel.password = channel.password;
-    channelModel.ownerId = channel.operator.id;
-    channelModel.muteList = new Map();
-    channelModel.banList = new Map();
-    channelModel.adminList = new Map();
-    channelModel.maxHeadCount = channel.maxHeadCount;
-    return channelModel;
+    const { id, name, type, password, maxHeadCount } = channel;
+    const ownerId: number = channel.operator.id;
+
+    return new ChannelModel(id, name, type, password, ownerId, maxHeadCount);
+  }
+
+  constructor(
+    id: string,
+    name: string,
+    type: ChannelType,
+    password: string,
+    ownerId: number,
+    maxHeadCount: number,
+  ) {
+    this.id = id;
+    this.name = name;
+    this.users = new Map();
+    this.type = type;
+    this.password = password;
+    this.ownerId = ownerId;
+    this.muteList = new Map();
+    this.banList = new Map();
+    this.adminList = new Map();
+    this.maxHeadCount = maxHeadCount;
   }
 }
