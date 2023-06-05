@@ -75,4 +75,19 @@ export class DirectMessageRepository {
 
     return unreadChats;
   }
+
+  async hasAnyUnreadChatByRoomId(
+    roomId: string,
+    lastMessageId: number,
+  ): Promise<boolean> {
+    if (lastMessageId === null) lastMessageId = 0;
+    const unreadChat: DirectMessage = await this.repository.findOne({
+      where: {
+        roomId: roomId,
+        id: MoreThan(lastMessageId),
+      },
+    });
+
+    return unreadChat !== null;
+  }
 }
