@@ -449,7 +449,7 @@ describe('FriendService', () => {
         expect(friendRequestCount).toBe(10);
       });
 
-      it('[Valid Case] 50개 이상 요청이 오면 이후요청 무시', async () => {
+      it('[Valid Case]  50개 까지만 요청 받기', async () => {
         await testData.createUserRequesting(60);
 
         const userFriendNotificationDto: GetUserFriendNotificationsRequestDto =
