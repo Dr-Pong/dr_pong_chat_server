@@ -15,6 +15,8 @@ import { PostUserFriendAcceptDto } from './dto/post.user.friend.accept.dto';
 import { DeleteUserFriendRejectDto } from './dto/delete.user.friend.reject.dto';
 import { DeleteUserFriendDto } from './dto/delete.user.friend.dto';
 import { IsolationLevel, Transactional } from 'typeorm-transactional';
+import { GetUserFriendNotificationsRequestDto } from './dto/get.user.friend.notifications.request.dto';
+import { UserFriendNotificationsDto } from './dto/user.friend.notifications.dto';
 
 @Injectable()
 export class FriendService {
@@ -201,5 +203,25 @@ export class FriendService {
         deleteDto.userId,
       );
     }
+  }
+
+  //** 친구요청 개수 */
+  @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
+  async getUserFriendNotificationCount(
+    getDto: GetUserFriendNotificationsRequestDto,
+  ): Promise<UserFriendNotificationsDto> {
+    const userFriends: Friend[] =
+      await this.friendRepository.findAllFriendsStatusPendingByUserId(
+        getDto.userId,
+      );
+
+    let friendsCount = userFriends.length;
+    if (friendsCount > 50) {
+      friendsCount = 50;
+    }
+    const responseDto: UserFriendNotificationsDto = {
+      requestCount: friendsCount,
+    };
+    return responseDto;
   }
 }
