@@ -58,10 +58,15 @@ export class ChannelFactory {
 
   leave(userId: number, channelId: string): boolean {
     const channel: ChannelModel = this.findById(channelId);
+    if (channel.ownerId === userId) channel.ownerId = null;
+
     if (channel.users.has(userId)) {
       channel.users.delete(userId);
+      channel.adminList.delete(userId);
+
       this.userFactory.leaveChannel(userId);
       this.channels.set(channel.id, channel);
+
       if (channel.users.size === 0) {
         this.channels.delete(channel.id);
       }
