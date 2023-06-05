@@ -1,1 +1,3 @@
-export class FriendDmNewResponseDto {}
+export class FriendDmNewResponseDto {
+  hasNewChat: boolean;
+}
