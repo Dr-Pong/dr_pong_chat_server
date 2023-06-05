@@ -46,8 +46,7 @@ export class FriendDirectMessageTestService {
   }
 
   async createProfileImages(): Promise<void> {
-    const index: number = this.users.length;
-    for (let i = 0; i < index; i++) {
+    for (let i = 0; i < 2; i++) {
       const profileImage = await this.profileImageRepository.save({
         url: 'profileImage' + i.toString(),
       });
@@ -59,7 +58,6 @@ export class FriendDirectMessageTestService {
     const index: number = person;
     for (let i = 0; i < index; i++) {
       const user = await this.userRepository.save({
-        id: i,
         nickname: 'user' + i.toString(),
         image: this.profileImages[i],
       });
@@ -70,7 +68,6 @@ export class FriendDirectMessageTestService {
   async createBasicUser() {
     const index: number = this.users.length;
     const user = await this.userRepository.save({
-      id: index,
       nickname: 'user' + index.toString(),
       image: this.profileImages[0],
     });
@@ -81,7 +78,6 @@ export class FriendDirectMessageTestService {
     const index: number = this.users.length;
     for (let i = 1; i < index; i++) {
       const friend = await this.friendRepository.save({
-        id: index + i,
         user: this.users[0],
         friend: this.users[i],
         status: FRIENDSTATUS_REQUESTING,
@@ -95,7 +91,6 @@ export class FriendDirectMessageTestService {
     const index: number = this.users.length;
     for (let i = 1; i < index; i++) {
       const friend = await this.friendRepository.save({
-        id: index + i,
         user: this.users[i],
         friend: this.users[0],
         status: FRIENDSTATUS_REQUESTING,
@@ -133,18 +128,15 @@ export class FriendDirectMessageTestService {
     }
   }
 
-  //* dm n명의 유저에게 메시지 하나 전송*/
-  async createDirectMessage(person: number): Promise<void> {
-    const index: number = person;
-    for (let i = 0; i < index; i++) {
+  async createDirectMessageToUser1(messageCount: number): Promise<void> {
+    for (let i = 0; i < messageCount; i++) {
       const directMessage = await this.directMessageRepository.save({
-        userId: this.users[0],
-        friendId: this.users[i],
+        sender: this.users[0],
         roomId: FriendChatManager.generateRoomId(
           this.users[0].id.toString(),
-          this.users[i].id.toString(),
+          this.users[1].id.toString(),
         ),
-        content: 'directMessage' + i.toString(),
+        message: 'message' + i.toString(),
         time: new Date(),
       });
       this.directMessage.push(directMessage);
@@ -152,29 +144,54 @@ export class FriendDirectMessageTestService {
   }
 
   //*FriendDirectMessage만들기 list*/
-  async createDirectMessageRooms(): Promise<void> {
-    const index: number = this.users.length;
+  async createDirectMessageRoom(): Promise<void> {
+    console.log(this.users);
     const friendDirectMessages: DirectMessageRoom[] = [];
 
-    for (let i = 0; i < index; i++) {
-      const lastMessage = await this.directMessageRepository.findOne({
-        where: { id: this.directMessage[i].id },
-        order: { time: 'DESC' },
-      });
+    const friendDirectMessage = await this.directMessageRoomRepository.save({
+      userId: this.users[0],
+      friendId: this.users[1],
+      roomId: FriendChatManager.generateRoomId(
+        this.users[0].id.toString(),
+        this.users[1].id.toString(),
+      ),
+      lastReadMessageId: null,
+      isDisplay: true,
+    });
 
-      const friendDirectMessage = await this.directMessageRoomRepository.save({
-        userId: this.users[0],
-        friendId: this.users[i],
+    friendDirectMessages.push(friendDirectMessage);
+  }
+
+  async createDirectMessageToUser2(messageCount: number): Promise<void> {
+    for (let i = 0; i < messageCount; i++) {
+      const directMessage = await this.directMessageRepository.save({
+        sender: this.users[0],
         roomId: FriendChatManager.generateRoomId(
           this.users[0].id.toString(),
-          this.users[i].id.toString(),
+          this.users[2].id.toString(),
         ),
-        lastReadMessageId: lastMessage ? lastMessage.id : null,
-        isDisplay: true,
+        message: 'message' + i.toString(),
+        time: new Date(),
       });
-
-      friendDirectMessages.push(friendDirectMessage);
+      this.directMessage.push(directMessage);
     }
+  }
+
+  async createDirectMessageRoomToUser2(): Promise<void> {
+    const friendDirectMessages: DirectMessageRoom[] = [];
+
+    const friendDirectMessage = await this.directMessageRoomRepository.save({
+      userId: this.users[0],
+      friendId: this.users[2],
+      roomId: FriendChatManager.generateRoomId(
+        this.users[0].id.toString(),
+        this.users[2].id.toString(),
+      ),
+      lastReadMessageId: null,
+      isDisplay: true,
+    });
+
+    friendDirectMessages.push(friendDirectMessage);
   }
 
   async createHalfReadDirectMessageRooms(): Promise<void> {
