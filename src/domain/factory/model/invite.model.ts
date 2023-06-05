@@ -1,4 +1,4 @@
-import { uuid } from 'uuid-with-v6';
+import { v4 as uuid } from 'uuid';
 
 export class InviteModel {
   id: string;
@@ -8,7 +8,7 @@ export class InviteModel {
   createdAt: Date;
 
   constructor(channelId: string, channelName: string, from: string) {
-    this.id = uuid.v6();
+    this.id = uuid();
     this.channelId = channelId;
     this.channelName = channelName;
     this.from = from;
