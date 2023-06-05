@@ -31,6 +31,8 @@ export class ChatGateWay implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   sendMessageToChannel(userId: number, channelId: string, message: MessageDto) {
+    const user: UserModel = this.userFactory.findById(userId);
+    if (!user.socket) return;
     const channelUsers: UserModel[] = [];
 
     this.channelFactory.findById(channelId).users.forEach((id) => {
