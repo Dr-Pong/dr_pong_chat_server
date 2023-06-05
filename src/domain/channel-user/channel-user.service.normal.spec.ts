@@ -31,6 +31,8 @@ import {
 import { GatewayModule } from 'src/gateway/gateway.module';
 import { FactoryModule } from '../factory/factory.module';
 import { PostChannelDto } from './dto/post.channel.dto';
+import { PostChannelJoinDto } from './dto/post.channel.join.dto';
+import { ChannelUser } from './channel-user.entity';
 
 describe('ChannelUserService', () => {
   let service: ChannelUserService;
@@ -39,6 +41,7 @@ describe('ChannelUserService', () => {
   let testData: TestService;
   let dataSource: DataSource;
   let channelRepository: Repository<Channel>;
+  let channelUserRepository: Repository<ChannelUser>;
 
   initializeTransactionalContext();
   beforeAll(async () => {
@@ -66,6 +69,10 @@ describe('ChannelUserService', () => {
           provide: getRepositoryToken(Channel),
           useClass: Repository,
         },
+        {
+          provide: getRepositoryToken(ChannelUser),
+          useClass: Repository,
+        },
       ],
     }).compile();
 
@@ -76,6 +83,9 @@ describe('ChannelUserService', () => {
     dataSource = module.get<DataSource>(DataSource);
     channelRepository = module.get<Repository<Channel>>(
       getRepositoryToken(Channel),
+    );
+    channelUserRepository = module.get<Repository<ChannelUser>>(
+      getRepositoryToken(ChannelUser),
     );
     await dataSource.synchronize(true);
   });
@@ -421,111 +431,152 @@ describe('ChannelUserService', () => {
       });
     });
 
-    // describe('채팅방 입장', () => {
-    //   it('[Valid Case] public 채팅방 입장', async () => {
-    //     await testData.createBasicChannels();
-    //     const user: UserModel = await testData.createBasicUser();
-    //     const basicChannel: ChannelModel = await testData.createBasicChannel();
-    //     const joinChannelRequest: PostChannelJoinDto = {
-    //       userId: user.id,
-    //       channelId: basicChannel.id,
-    //       password: null,
-    //     };
+    describe('채팅방 입장', () => {
+      it('[Valid Case] public 채팅방 입장', async () => {
+        const user: UserModel = await testData.createBasicUser('user');
+        const basicChannel: ChannelModel = await testData.createBasicChannel(
+          'channel',
+          5,
+        );
+        const joinChannelRequest: PostChannelJoinDto = {
+          userId: user.id,
+          channelId: basicChannel.id,
+          password: null,
+        };
 
-    //     await service.postChannelJoin(joinChannelRequest);
+        await service.postChannelJoin(joinChannelRequest);
 
-    //     const savedChannelFt: ChannelModel = channelFactory.findByChannelName(
-    //       basicChannel.name,
-    //     );
+        const savedChannelUserDb: ChannelUser =
+          await channelUserRepository.findOne({
+            where: {
+              user: { id: user.id },
+              channel: { id: basicChannel.id },
+              isDeleted: false,
+            },
+          });
 
-    //     expect(savedChannelFt.users.size).toBe(basicChannel.users.size + 1);
-    //   });
-    //   it('[Valid Case] protected 채팅방 입장', async () => {
-    //     await testData.createBasicChannels();
-    //     const user: UserModel = await testData.createBasicUser();
-    //     const basicChannel: ChannelModel =
-    //       await testData.createProtectedChannel();
-    //     const joinChannelRequest: PostChannelJoinDto = {
-    //       userId: user.id,
-    //       channelId: basicChannel.id,
-    //       password: 'password',
-    //     };
+        expect(savedChannelUserDb.user.id).toBe(user.id);
 
-    //     await service.postChannelJoin(joinChannelRequest);
+        const savedChannelFt: ChannelModel = channelFactory.findByChannelName(
+          basicChannel.name,
+        );
 
-    //     const savedChannelFt: ChannelModel = channelFactory.findByChannelName(
-    //       basicChannel.name,
-    //     );
+        const savedUserFt: UserModel = userFactory.findById(user.id);
 
-    //     expect(savedChannelFt.users.size).toBe(basicChannel.users.size + 1);
-    //   });
-    //   it('[Valid Case] 초대가 와있는데 초대 수락 안하고 입장해버린 경우', async () => {
-    //     await testData.createBasicChannels();
-    //     const user: UserModel = await testData.createInvitePendingUser();
-    //     const basicChannel: ChannelModel =
-    //       await testData.createProtectedChannel();
-    //     const joinChannelRequest: PostChannelJoinDto = {
-    //       userId: user.id,
-    //       channelId: basicChannel.id,
-    //       password: 'password',
-    //     };
+        expect(savedChannelFt.users.size).toBe(6);
+        expect(savedUserFt.joinedChannel).toBe(savedChannelFt.id);
+      });
 
-    //     await service.postChannelJoin(joinChannelRequest);
+      it('[Valid Case] protected 채팅방 입장', async () => {
+        const user: UserModel = await testData.createBasicUser('user');
+        const basicChannel: ChannelModel =
+          await testData.createProtectedChannel('protected', 6);
+        const joinChannelRequest: PostChannelJoinDto = {
+          userId: user.id,
+          channelId: basicChannel.id,
+          password: 'password',
+        };
 
-    //     const savedChannelFt: ChannelModel = channelFactory.findByChannelName(
-    //       basicChannel.name,
-    //     );
+        await service.postChannelJoin(joinChannelRequest);
 
-    //     const savedUserFt: UserModel = userFactory.findById(user.id);
-    //     expect(savedChannelFt.users.size).toBe(basicChannel.users.size + 1);
-    //     expect(savedUserFt.inviteList.size).toBe(0);
-    //   });
-    //   it('[Error Case] protected 채팅방 입장시 비밀번호가 잘못된 경우', async () => {
-    //     await testData.createBasicChannels();
-    //     const user: UserModel = await testData.createInvitePendingUser();
-    //     const basicChannel: ChannelModel =
-    //       await testData.createProtectedChannel();
-    //     const joinChannelRequest: PostChannelJoinDto = {
-    //       userId: user.id,
-    //       channelId: basicChannel.id,
-    //       password: 'wrongPassword',
-    //     };
+        const savedChannelUserDb: ChannelUser =
+          await channelUserRepository.findOne({
+            where: {
+              user: { id: user.id },
+              channel: { id: basicChannel.id },
+              isDeleted: false,
+            },
+          });
 
-    //     await expect(
-    //       service.postChannelJoin(joinChannelRequest),
-    //     ).rejects.toThrow(new BadRequestException());
-    //   });
-    //   it('[Error Case] private 채팅방 입장', async () => {
-    //     await testData.createBasicChannels();
-    //     const user: UserModel = await testData.createInvitePendingUser();
-    //     const basicChannel: ChannelModel =
-    //       await testData.createPrivateChannel();
-    //     const joinChannelRequest: PostChannelJoinDto = {
-    //       userId: user.id,
-    //       channelId: basicChannel.id,
-    //       password: null,
-    //     };
+        expect(savedChannelUserDb.user.id).toBe(user.id);
 
-    //     await expect(
-    //       service.postChannelJoin(joinChannelRequest),
-    //     ).rejects.toThrow(new BadRequestException());
-    //   });
-    //   it('[Error Case] Ban되어 있는 경우', async () => {
-    //     await testData.createBasicChannels();
-    //     const user: UserModel = await testData.createInvitePendingUser();
-    //     const basicChannel: ChannelModel = await testData.createBasicChannel();
-    //     basicChannel.banList.push(user.id);
-    //     const joinChannelRequest: PostChannelJoinDto = {
-    //       userId: user.id,
-    //       channelId: basicChannel.id,
-    //       password: null,
-    //     };
+        const savedChannelFt: ChannelModel = channelFactory.findByChannelName(
+          basicChannel.name,
+        );
 
-    //     await expect(
-    //       service.postChannelJoin(joinChannelRequest),
-    //     ).rejects.toThrow(new BadRequestException());
-    //   });
-    // });
+        expect(savedChannelFt.users.size).toBe(7);
+      });
+
+      it('[Valid Case] 초대가 와있는데 초대 수락 안하고 입장해버린 경우', async () => {
+        const user: UserModel = await testData.createInvitePendingUser();
+        const basicChannel: ChannelModel =
+          await testData.createProtectedChannel('protected', 6);
+        const joinChannelRequest: PostChannelJoinDto = {
+          userId: user.id,
+          channelId: basicChannel.id,
+          password: 'password',
+        };
+
+        await service.postChannelJoin(joinChannelRequest);
+        const savedChannelUserDb: ChannelUser =
+          await channelUserRepository.findOne({
+            where: {
+              user: { id: user.id },
+              channel: { id: basicChannel.id },
+              isDeleted: false,
+            },
+          });
+
+        expect(savedChannelUserDb.user.id).toBe(user.id);
+
+        const savedChannelFt: ChannelModel = channelFactory.findByChannelName(
+          basicChannel.name,
+        );
+
+        const savedUserFt: UserModel = userFactory.findById(user.id);
+
+        expect(savedChannelFt.users.size).toBe(7);
+        expect(savedUserFt.inviteList.size).toBe(user.inviteList.size);
+      });
+
+      it('[Error Case] protected 채팅방 입장시 비밀번호가 잘못된 경우', async () => {
+        const user: UserModel = await testData.createBasicUser('user');
+        const basicChannel: ChannelModel =
+          await testData.createProtectedChannel('protected', 6);
+        const joinChannelRequest: PostChannelJoinDto = {
+          userId: user.id,
+          channelId: basicChannel.id,
+          password: 'wrongPassword',
+        };
+
+        await expect(
+          service.postChannelJoin(joinChannelRequest),
+        ).rejects.toThrow(new BadRequestException('Password is wrong'));
+      });
+
+      it('[Error Case] private 채팅방 입장', async () => {
+        const user: UserModel = await testData.createBasicUser('user');
+        const basicChannel: ChannelModel = await testData.createPrivateChannel(
+          'private',
+          6,
+        );
+        const joinChannelRequest: PostChannelJoinDto = {
+          userId: user.id,
+          channelId: basicChannel.id,
+          password: null,
+        };
+
+        await expect(() =>
+          service.postChannelJoin(joinChannelRequest),
+        ).rejects.toThrow(new BadRequestException('Channel is private'));
+      });
+
+      it('[Error Case] Ban되어 있는 경우', async () => {
+        const user: UserModel = await testData.createBasicUser('user');
+        const basicChannel: ChannelModel = await testData.createBannedChannel(
+          user,
+        );
+        const joinChannelRequest: PostChannelJoinDto = {
+          userId: user.id,
+          channelId: basicChannel.id,
+          password: null,
+        };
+
+        await expect(() =>
+          service.postChannelJoin(joinChannelRequest),
+        ).rejects.toThrow(new BadRequestException('You are banned'));
+      });
+    });
 
     // describe('채팅방 초대', () => {
     //   it('[Valid Case] 일반 유저 초대', async () => {
