@@ -9,7 +9,6 @@ import { User } from 'src/domain/user/user.entity';
 import { ProfileImage } from 'src/domain/profile-image/profile-image.entity';
 import { ChannelMessage } from 'src/domain/channel-message/channel-message.entity';
 import { ChannelModel } from 'src/domain/factory/model/channel.model';
-import { v4 as uuid } from 'uuid';
 import {
   CHANNEL_PRIVATE,
   CHANNEL_PROTECTED,
@@ -50,6 +49,7 @@ export class TestService {
       operator: { id: owner.id },
       name: name,
       maxHeadCount: 10,
+      headCount: 1,
       password: type === CHANNEL_PROTECTED ? 'password' : null,
       type: type,
     });
@@ -91,6 +91,10 @@ export class TestService {
         user: user,
         channel: channel,
       });
+      await this.channelRepository.update(
+        { id: channel.id },
+        { headCount: i + 1 },
+      );
     }
     return this.channelFactory.findById(channel.id);
   }
@@ -112,6 +116,10 @@ export class TestService {
         user: user,
         channel: channel,
       });
+      await this.channelRepository.update(
+        { id: channel.id },
+        { headCount: i + 1 },
+      );
     }
     return this.channelFactory.findById(channel.id);
   }
@@ -130,6 +138,10 @@ export class TestService {
         user: user,
         channel: channel,
       });
+      await this.channelRepository.update(
+        { id: channel.id },
+        { headCount: i + 1 },
+      );
     }
     return this.channelFactory.findById(channel.id);
   }
@@ -144,8 +156,11 @@ export class TestService {
     return await this.createUser(nickname);
   }
 
-  async createChannelWithAdmins(): Promise<ChannelModel> {
-    const channel: ChannelModel = await this.createBasicChannel('admins', 9);
+  async createChannelWithAdmins(userNum: number): Promise<ChannelModel> {
+    const channel: ChannelModel = await this.createBasicChannel(
+      'admins',
+      userNum,
+    );
     channel.users.forEach((userId) => {
       if (channel.ownerId !== userId) {
         this.channelFactory.setAdmin(userId, channel.id);
@@ -183,8 +198,11 @@ export class TestService {
     return this.userFactory.findById(user.id);
   }
 
-  async createUserInChannel(): Promise<UserModel> {
-    const channel: ChannelModel = await this.createBasicChannel('channel', 9);
+  async createUserInChannel(userNum: number): Promise<UserModel> {
+    const channel: ChannelModel = await this.createBasicChannel(
+      'channel',
+      userNum,
+    );
     channel.users.values().next();
     const user: UserModel = this.userFactory.findById(
       channel.users.values().next().value,
@@ -192,7 +210,7 @@ export class TestService {
     return user;
   }
 
-  async createMutedUserInChannel(): Promise<UserModel> {
+  async createMutedUserInChannel(userNum: number): Promise<UserModel> {
     const channel: ChannelModel = await this.createBasicChannel('channel', 9);
     channel.users.values().next();
     const user: UserModel = this.userFactory.findById(

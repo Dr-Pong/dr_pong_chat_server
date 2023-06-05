@@ -262,7 +262,7 @@ describe('ChannelUserService', () => {
         expect(participants).toHaveProperty('maxCount');
       });
       it('[Valid Case] 채팅방 참여자 목록 조회 (심화)', async () => {
-        const channel: ChannelModel = await testData.createChannelWithAdmins();
+        const channel: ChannelModel = await testData.createChannelWithAdmins(9);
         const user: UserModel = userFactory.findById(
           channel.users.values().next().value,
         );
@@ -472,6 +472,7 @@ describe('ChannelUserService', () => {
           });
 
         expect(savedChannelUserDb.user.id).toBe(user.id);
+        expect(savedChannelUserDb.channel.headCount).toBe(6);
 
         const savedChannelFt: ChannelModel = channelFactory.findByChannelName(
           basicChannel.name,
@@ -505,6 +506,7 @@ describe('ChannelUserService', () => {
           });
 
         expect(savedChannelUserDb.user.id).toBe(user.id);
+        expect(savedChannelUserDb.channel.headCount).toBe(7);
 
         const savedChannelFt: ChannelModel = channelFactory.findByChannelName(
           basicChannel.name,
@@ -534,6 +536,7 @@ describe('ChannelUserService', () => {
           });
 
         expect(savedChannelUserDb.user.id).toBe(user.id);
+        expect(savedChannelUserDb.channel.headCount).toBe(7);
 
         const savedChannelFt: ChannelModel = channelFactory.findByChannelName(
           basicChannel.name,
@@ -812,7 +815,7 @@ describe('ChannelUserService', () => {
 
     describe('채팅 전송', () => {
       it('[Valid Case] 채팅 전송', async () => {
-        const user: UserModel = await testData.createUserInChannel();
+        const user: UserModel = await testData.createUserInChannel(9);
         const postMessageRequest: PostChannelMessageDto = {
           userId: user.id,
           channelId: user.joinedChannel,
@@ -833,7 +836,7 @@ describe('ChannelUserService', () => {
         expect(savedMessage.content).toBe('hi');
       });
       it('[Error Case] 채팅 전송(Mute된 경우)', async () => {
-        const user: UserModel = await testData.createMutedUserInChannel();
+        const user: UserModel = await testData.createMutedUserInChannel(9);
         const postMessageRequest: PostChannelMessageDto = {
           userId: user.id,
           channelId: user.joinedChannel,
@@ -857,7 +860,7 @@ describe('ChannelUserService', () => {
 
     describe('채팅방 퇴장', () => {
       it('[Valid Case] 일반 유저가 퇴장하는 경우', async () => {
-        const user: UserModel = await testData.createUserInChannel();
+        const user: UserModel = await testData.createUserInChannel(9);
         const channel: ChannelModel = channelFactory.findById(
           user.joinedChannel,
         );
@@ -873,11 +876,11 @@ describe('ChannelUserService', () => {
           where: {
             user: { id: user.id },
             channel: { id: channel.id },
-            isDeleted: false,
           },
         });
 
-        expect(channelUserDb).toBe(null);
+        expect(channelUserDb.isDeleted).toBe(true);
+        expect(channelUserDb.channel.headCount).toBe(8);
 
         const savedChannelFt: ChannelModel = channelFactory.findById(
           channel.id,
@@ -901,11 +904,11 @@ describe('ChannelUserService', () => {
           where: {
             user: { id: channel.ownerId },
             channel: { id: channel.id },
-            isDeleted: false,
           },
         });
 
-        expect(channelUserDb).toBe(null);
+        expect(channelUserDb.isDeleted).toBe(true);
+        expect(channelUserDb.channel.headCount).toBe(4);
 
         const savedChannelFt: ChannelModel = channelFactory.findById(
           channel.id,
@@ -916,7 +919,7 @@ describe('ChannelUserService', () => {
       });
 
       it('[Valid Case] admin이 퇴장하는 경우', async () => {
-        const channel: ChannelModel = await testData.createChannelWithAdmins();
+        const channel: ChannelModel = await testData.createChannelWithAdmins(9);
         const admin: UserModel = userFactory.findById(
           channel.adminList.values().next().value,
         );
@@ -931,11 +934,11 @@ describe('ChannelUserService', () => {
           where: {
             user: { id: admin.id },
             channel: { id: channel.id },
-            isDeleted: false,
           },
         });
 
-        expect(channelUserDb).toBe(null);
+        expect(channelUserDb.isDeleted).toBe(true);
+        expect(channelUserDb.channel.headCount).toBe(8);
 
         const savedChannelFt: ChannelModel = channelFactory.findById(
           channel.id,
@@ -945,7 +948,7 @@ describe('ChannelUserService', () => {
         expect(savedChannelFt.users.size).toBe(8);
       });
       it('[Valid Case] mute 된 유저가 퇴장하는 경우(mute 상태 유지)', async () => {
-        const user: UserModel = await testData.createMutedUserInChannel();
+        const user: UserModel = await testData.createMutedUserInChannel(9);
         const channel: ChannelModel = channelFactory.findById(
           user.joinedChannel,
         );
@@ -960,11 +963,11 @@ describe('ChannelUserService', () => {
           where: {
             user: { id: channel.ownerId },
             channel: { id: channel.id },
-            isDeleted: false,
           },
         });
 
-        expect(channelUserDb).toBe(null);
+        expect(channelUserDb.isDeleted).toBe(true);
+        expect(channelUserDb.channel.headCount).toBe(8);
 
         const savedChannelFt: ChannelModel = channelFactory.findById(
           channel.id,
