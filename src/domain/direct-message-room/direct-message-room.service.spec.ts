@@ -74,7 +74,7 @@ describe('DmLogService', () => {
     describe('진행중인 DirectMessageRoom 목록 조회', () => {
       it('[Valid Case] 대화방의 형식 확인 (이미지, 닉네임, 새채팅의 수)', async () => {
         await testData.createDirectMessageToUser1(10);
-        await testData.createDirectMessageRoom();
+        await testData.createDirectMessageRoomToUser1();
 
         const directMessageRoomsDto: GetDirectMessageRoomsDto = {
           userId: testData.users[0].id,
@@ -91,7 +91,7 @@ describe('DmLogService', () => {
 
       it('[Valid Case] 현재 진행중인 DM목록 반환', async () => {
         await testData.createDirectMessageToUser1(10);
-        await testData.createDirectMessageRoom();
+        await testData.createDirectMessageRoomToUser1();
         await testData.createDirectMessageToUser2(10);
         await testData.createDirectMessageRoomToUser2();
 
@@ -136,7 +136,7 @@ describe('DmLogService', () => {
     describe('진행중인 DirectMessage 목록 삭제', () => {
       it('[Valid Case] DM 목록에서 삭제', async () => {
         await testData.createDirectMessageToUser1(10);
-        await testData.createDirectMessageRoom();
+        await testData.createDirectMessageRoomToUser1();
         await testData.createDirectMessageToUser2(10);
         await testData.createDirectMessageRoomToUser2();
 
@@ -157,91 +157,87 @@ describe('DmLogService', () => {
       });
     });
 
-    // describe('진행중인 DirectMessage 알람 받기', () => {
-    //   it('[Valid Case] 대화방의 새로운 알람 수령', async () => {
-    //     await testData.createDirectMessage(10);
-    //     await testData.createDirectMessageRooms();
+    describe('진행중인 DirectMessage 알람 받기', () => {
+      it('[Valid Case] 대화방의 새로운 알람 수령', async () => {
+        await testData.createDirectMessageToUser1(10);
+        await testData.createDirectMessageRoomToUser1();
 
-    //     const getDirectMessageRoomsNotificationDto: GetDirectMessageRoomsNotificationDto =
-    //       {
-    //         userId: testData.users[0].id,
-    //       };
+        const getDirectMessageRoomsNotificationDto: GetDirectMessageRoomsNotificationDto =
+          {
+            userId: testData.users[0].id,
+          };
 
-    //     const getDirectMessageRoomsNotificationResponse: DirectMessageRoomsNotificationDto =
-    //       await service.getDirectMessageRoomsNotification(
-    //         getDirectMessageRoomsNotificationDto,
-    //       );
+        const getDirectMessageRoomsNotificationResponse: DirectMessageRoomsNotificationDto =
+          await service.getDirectMessageRoomsNotification(
+            getDirectMessageRoomsNotificationDto,
+          );
 
-    //     expect(getDirectMessageRoomsNotificationResponse).toHaveProperty(
-    //       'hasNewChat',
-    //     );
-    //     expect(getDirectMessageRoomsNotificationResponse.hasNewChat).toBe(
-    //       'true',
-    //     );
-    //   });
+        expect(getDirectMessageRoomsNotificationResponse).toHaveProperty(
+          'hasNewChat',
+        );
+        expect(getDirectMessageRoomsNotificationResponse.hasNewChat).toBe(true);
+      });
 
-    //   it('[Valid Case] 대화방이 없을때', async () => {
-    //     const getDirectMessageRoomsNotificationDto: GetDirectMessageRoomsNotificationDto =
-    //       {
-    //         userId: testData.users[0].id,
-    //       };
+      it('[Valid Case] 대화방이 없을때', async () => {
+        const getDirectMessageRoomsNotificationDto: GetDirectMessageRoomsNotificationDto =
+          {
+            userId: testData.users[0].id,
+          };
 
-    //     const getDirectMessageRoomsNotificationResponse: DirectMessageRoomsNotificationDto =
-    //       await service.getDirectMessageRoomsNotification(
-    //         getDirectMessageRoomsNotificationDto,
-    //       );
+        const getDirectMessageRoomsNotificationResponse: DirectMessageRoomsNotificationDto =
+          await service.getDirectMessageRoomsNotification(
+            getDirectMessageRoomsNotificationDto,
+          );
 
-    //     expect(getDirectMessageRoomsNotificationResponse).toHaveProperty(
-    //       'hasNewChat',
-    //     );
-    //     expect(getDirectMessageRoomsNotificationResponse.hasNewChat).toBe(
-    //       'false',
-    //     );
-    //   });
+        expect(getDirectMessageRoomsNotificationResponse).toHaveProperty(
+          'hasNewChat',
+        );
+        expect(getDirectMessageRoomsNotificationResponse.hasNewChat).toBe(
+          false,
+        );
+      });
 
-    //   it('[Valid Case] 대화방의 모든 DM 알람 읽음 ', async () => {
-    //     await testData.createDirectMessage(10);
-    //     await testData.createDirectMessageRooms();
+      it('[Valid Case] 대화방의 모든 DM 알람 읽음 ', async () => {
+        await testData.createDirectMessageToUser1(10);
+        await testData.createAllReadDirectMessageRoomToUser1();
 
-    //     const getDirectMessageRoomsNotificationDto: GetDirectMessageRoomsNotificationDto =
-    //       {
-    //         userId: testData.users[0].id,
-    //       };
+        const getDirectMessageRoomsNotificationDto: GetDirectMessageRoomsNotificationDto =
+          {
+            userId: testData.users[0].id,
+          };
 
-    //     const getDirectMessageRoomsNotificationResponse: DirectMessageRoomsNotificationDto =
-    //       await service.getDirectMessageRoomsNotification(
-    //         getDirectMessageRoomsNotificationDto,
-    //       );
+        const getDirectMessageRoomsNotificationResponse: DirectMessageRoomsNotificationDto =
+          await service.getDirectMessageRoomsNotification(
+            getDirectMessageRoomsNotificationDto,
+          );
 
-    //     expect(getDirectMessageRoomsNotificationResponse).toHaveProperty(
-    //       'hasNewChat',
-    //     );
-    //     expect(getDirectMessageRoomsNotificationResponse.hasNewChat).toBe(
-    //       'true',
-    //     );
-    //   });
+        expect(getDirectMessageRoomsNotificationResponse).toHaveProperty(
+          'hasNewChat',
+        );
+        expect(getDirectMessageRoomsNotificationResponse.hasNewChat).toBe(
+          false,
+        );
+      });
 
-    //   it('[Valid Case] 대화방의 모든 DM 알람 안 읽음 ', async () => {
-    //     await testData.createDirectMessage(10);
-    //     await testData.createHalfReadDirectMessageRooms();
+      it('[Valid Case] 대화방의 모든 DM 알람 안 읽음 ', async () => {
+        await testData.createDirectMessageToUser1(10);
+        await testData.createHalfReadDirectMessageRoomToUser1();
 
-    //     const getDirectMessageRoomsNotificationDto: GetDirectMessageRoomsNotificationDto =
-    //       {
-    //         userId: testData.users[0].id,
-    //       };
+        const getDirectMessageRoomsNotificationDto: GetDirectMessageRoomsNotificationDto =
+          {
+            userId: testData.users[0].id,
+          };
 
-    //     const getDirectMessageRoomsNotificationResponse: DirectMessageRoomsNotificationDto =
-    //       await service.getDirectMessageRoomsNotification(
-    //         getDirectMessageRoomsNotificationDto,
-    //       );
+        const getDirectMessageRoomsNotificationResponse: DirectMessageRoomsNotificationDto =
+          await service.getDirectMessageRoomsNotification(
+            getDirectMessageRoomsNotificationDto,
+          );
 
-    //     expect(getDirectMessageRoomsNotificationResponse).toHaveProperty(
-    //       'hasNewChat',
-    //     );
-    //     expect(getDirectMessageRoomsNotificationResponse.hasNewChat).toBe(
-    //       'false',
-    //     );
-    //   });
-    // });
+        expect(getDirectMessageRoomsNotificationResponse).toHaveProperty(
+          'hasNewChat',
+        );
+        expect(getDirectMessageRoomsNotificationResponse.hasNewChat).toBe(true);
+      });
+    });
   });
 });
