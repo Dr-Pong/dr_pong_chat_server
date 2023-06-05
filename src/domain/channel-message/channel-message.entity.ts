@@ -1,9 +1,16 @@
 import { BaseTimeEntity } from 'src/global/base-entity/base-time.entity';
 import { ChatType } from 'src/global/type/type.chat';
-import { Column, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { User } from '../user/user.entity';
 import { Channel } from '../channel/channel.entity';
 
+@Entity()
 export class ChannelMessage extends BaseTimeEntity {
   @PrimaryGeneratedColumn()
   id: number;

@@ -1,13 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ChannelUserService } from './channel-user.service';
-import { ChannelFactory } from '../channel/channel.factory';
-import { UserFactory } from '../user/user.factory';
+import { ChannelFactory } from '../factory/channel.factory';
+import { UserFactory } from '../factory/user.factory';
 import { Repository } from 'typeorm';
 import { Channel } from 'diagnostics_channel';
 import { ChannelUserModule } from './channel-user.module';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { ChannelModel } from '../channel/channel.model';
-import { UserModel } from '../user/user.model';
+import { ChannelModel } from '../factory/model/channel.model';
+import { UserModel } from '../factory/model/user.model';
 import { BadRequestException } from '@nestjs/common';
 import { CHANNEL_PROTECTED } from 'src/global/type/type.channel';
 import { CHANNEL_PRIVATE } from 'src/global/type/type.channel';
@@ -50,7 +50,7 @@ describe('ChannelUserService', () => {
         };
 
         await service.postChannelAdmin(postAdminRequest);
-        const savedChannelFt: ChannelModel = channelFactory.findChannelById(
+        const savedChannelFt: ChannelModel = channelFactory.findById(
           channel.id,
         );
 
@@ -69,7 +69,7 @@ describe('ChannelUserService', () => {
 
         await service.deleteChannelAdmin(deleteAdminRequest);
 
-        const savedChannelFt: ChannelModel = channelFactory.findChannelById(
+        const savedChannelFt: ChannelModel = channelFactory.findById(
           channel.id,
         );
 
@@ -90,7 +90,7 @@ describe('ChannelUserService', () => {
 
         await service.deleteChannelKick(deleteUserInChannelRequest);
 
-        const savedChannelFt: ChannelModel = channelFactory.findChannelById(
+        const savedChannelFt: ChannelModel = channelFactory.findById(
           channel.id,
         );
         const savedUserFt: UserModel = userFactory.findUserById(user.id);
@@ -108,7 +108,7 @@ describe('ChannelUserService', () => {
         };
 
         await service.deleteChannelKick(deleteUserInChannelRequest);
-        const savedChannelFt: ChannelModel = channelFactory.findChannelById(
+        const savedChannelFt: ChannelModel = channelFactory.findById(
           channel.id,
         );
         const savedUserFt: UserModel = userFactory.findUserById(user.id);
@@ -130,7 +130,7 @@ describe('ChannelUserService', () => {
         await expect(
           service.deleteChannelKick(deleteUserInChannelRequest),
         ).rejects.toThrow(new BadRequestException());
-        const savedChannelFt: ChannelModel = channelFactory.findChannelById(
+        const savedChannelFt: ChannelModel = channelFactory.findById(
           channel.id,
         );
         const savedUserFt: UserModel = userFactory.findUserById(user.id);
@@ -153,7 +153,7 @@ describe('ChannelUserService', () => {
         };
 
         await service.postChannelBan(postChannelBanRequest);
-        const savedChannelFt: ChannelModel = channelFactory.findChannelById(
+        const savedChannelFt: ChannelModel = channelFactory.findById(
           channel.id,
         );
         const savedUserFt: UserModel = userFactory.findUserById(user.id);
@@ -175,7 +175,7 @@ describe('ChannelUserService', () => {
 
         await service.postChannelBan(postChannelBanRequest);
 
-        const savedChannelFt: ChannelModel = channelFactory.findChannelById(
+        const savedChannelFt: ChannelModel = channelFactory.findById(
           channel.id,
         );
         const savedUserFt: UserModel = userFactory.findUserById(user.id);
@@ -197,7 +197,7 @@ describe('ChannelUserService', () => {
 
         await service.postChannelBan(postChannelBanRequest);
 
-        const savedChannelFt: ChannelModel = channelFactory.findChannelById(
+        const savedChannelFt: ChannelModel = channelFactory.findById(
           channel.id,
         );
         const savedUserFt: UserModel = userFactory.findUserById(user.id);
@@ -220,7 +220,7 @@ describe('ChannelUserService', () => {
         };
 
         await service.postChannelMute(postChannelMuteRequest);
-        const savedChannelFt: ChannelModel = channelFactory.findChannelById(
+        const savedChannelFt: ChannelModel = channelFactory.findById(
           channel.id,
         );
 
@@ -241,7 +241,7 @@ describe('ChannelUserService', () => {
         await expect(
           service.postChannelMute(postChannelMuteRequest),
         ).rejects.toThrow(new BadRequestException());
-        const savedChannelFt: ChannelModel = channelFactory.findChannelById(
+        const savedChannelFt: ChannelModel = channelFactory.findById(
           channel.id,
         );
 
@@ -262,7 +262,7 @@ describe('ChannelUserService', () => {
         };
 
         await service.deleteChannelMute(deleteChannelMuteRequest);
-        const savedChannelFt: ChannelModel = channelFactory.findChannelById(
+        const savedChannelFt: ChannelModel = channelFactory.findById(
           channel.id,
         );
 
@@ -284,7 +284,7 @@ describe('ChannelUserService', () => {
         await expect(
           service.deleteChannelMute(deleteChannelMuteRequest),
         ).rejects.toThrow(new BadRequestException());
-        const savedChannelFt: ChannelModel = channelFactory.findChannelById(
+        const savedChannelFt: ChannelModel = channelFactory.findById(
           channel.id,
         );
 
@@ -304,7 +304,7 @@ describe('ChannelUserService', () => {
         };
 
         await service.deleteChannel(deleteChannelRequest);
-        const savedChannelFt: ChannelModel = channelFactory.findChannelById(
+        const savedChannelFt: ChannelModel = channelFactory.findById(
           channel.id,
         );
 
@@ -325,7 +325,7 @@ describe('ChannelUserService', () => {
         };
 
         await service.patchChannel(patchChannelRequest);
-        const savedChannelFt: ChannelModel = channelFactory.findChannelById(
+        const savedChannelFt: ChannelModel = channelFactory.findById(
           channel.id,
         );
 
@@ -343,7 +343,7 @@ describe('ChannelUserService', () => {
         };
 
         await service.patchChannel(patchChannelRequest);
-        const savedChannelFt: ChannelModel = channelFactory.findChannelById(
+        const savedChannelFt: ChannelModel = channelFactory.findById(
           channel.id,
         );
 
@@ -361,7 +361,7 @@ describe('ChannelUserService', () => {
         };
 
         await service.patchChannel(patchChannelRequest);
-        const savedChannelFt: ChannelModel = channelFactory.findChannelById(
+        const savedChannelFt: ChannelModel = channelFactory.findById(
           channel.id,
         );
 
@@ -378,7 +378,7 @@ describe('ChannelUserService', () => {
         };
 
         await service.patchChannel(patchChannelRequest);
-        const savedChannelFt: ChannelModel = channelFactory.findChannelById(
+        const savedChannelFt: ChannelModel = channelFactory.findById(
           channel.id,
         );
 
@@ -396,7 +396,7 @@ describe('ChannelUserService', () => {
         };
 
         await service.patchChannel(patchChannelRequest);
-        const savedChannelFt: ChannelModel = channelFactory.findChannelById(
+        const savedChannelFt: ChannelModel = channelFactory.findById(
           channel.id,
         );
 
@@ -414,7 +414,7 @@ describe('ChannelUserService', () => {
         };
 
         await service.patchChannel(patchChannelRequest);
-        const savedChannelFt: ChannelModel = channelFactory.findChannelById(
+        const savedChannelFt: ChannelModel = channelFactory.findById(
           channel.id,
         );
 

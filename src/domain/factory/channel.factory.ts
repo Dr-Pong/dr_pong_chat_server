@@ -14,11 +14,11 @@ export class ChannelFactory {
   }
 
   findByChannelName(name: string): ChannelModel {
-    this.channels.forEach((channel) => {
+    for (const channel of this.channels.values()) {
       if (channel.name === name) {
         return channel;
       }
-    });
+    }
     return null;
   }
 
@@ -128,6 +128,7 @@ export class ChannelFactory {
     if (channel.users.has(userId)) {
       channel.adminList.set(userId, userId);
       this.channels.set(channel.id, channel);
+      this.userFactory.setAdmin(userId);
       return true;
     }
     return false;

@@ -49,7 +49,6 @@ import { DeleteChannelUserDto } from './dto/delete.channel.user.dto';
 import { ChannelMessageRepository } from '../channel-message/channel-message.repository';
 import { SaveChannelMessageDto } from '../channel-message/save.channel-message.dto';
 import { PostChannelMessageDto } from '../channel-message/post.channel-message.dto';
-import { ChannelMessage } from '../channel-message/channel-message.entity';
 import { ChatGateWay } from 'src/gateway/chat.gateway';
 import { MessageDto } from 'src/gateway/dto/message.dto';
 
@@ -85,6 +84,8 @@ export class ChannelUserService {
         responseDto.participants.push(ChannelParticipantDto.fromModel(user));
       }
     });
+    responseDto.headCount = channel.users.size;
+    responseDto.maxCount = channel.maxHeadCount;
     return responseDto;
   }
 
@@ -145,7 +146,7 @@ export class ChannelUserService {
       SaveChannelMessageDto.fromMessageDto(message),
     );
 
-    runOnTransactionRollback(async () => {
+    runOnTransactionRollback(() => {
       //에러 메시지 전송
     });
   }
@@ -157,12 +158,11 @@ export class ChannelUserService {
   async getChannelPages(getDto: GetChannelPageDto): Promise<ChannelPageDtos> {
     let channels: Page<Channel[]>;
     if (getDto.orderBy === 'popular') {
-      channels =
-        await this.channelRepository.findChannelByPagesOrderByHeadCount(
-          FindChannelPageDto.fromGetDto(getDto),
-        );
+      channels = await this.channelRepository.findPageByKeywordOrderByHeadCount(
+        FindChannelPageDto.fromGetDto(getDto),
+      );
     } else {
-      channels = await this.channelRepository.findChannelByPagesOrderByCreateAt(
+      channels = await this.channelRepository.findPageByKeywordOrderByCreateAt(
         FindChannelPageDto.fromGetDto(getDto),
       );
     }
@@ -271,7 +271,7 @@ export class ChannelUserService {
       );
     }
 
-    this.joinChannel(
+    await this.joinChannel(
       new ChannelJoinDto(
         postDto.userId,
         postDto.channelId,
@@ -295,7 +295,7 @@ export class ChannelUserService {
   @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
   async deleteChannelUser(deleteDto: DeleteChannelUserDto): Promise<void> {
     const channelUser: ChannelUser =
-      await this.channelUserRepository.findByUserIdAndChannelId(
+      await this.channelUserRepository.findByUserIdAndChannelIdAndIsDelFalse(
         deleteDto.userId,
         deleteDto.channelId,
       );
