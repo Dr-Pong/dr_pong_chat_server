@@ -114,7 +114,7 @@ export class ChannelRepository {
         id: updateDto.channelId,
       },
       {
-        headCount: Number(() => `head_count + ${updateDto.headCount}`),
+        headCount: () => `headcount + ${updateDto.headCount}`,
       },
     );
   }
