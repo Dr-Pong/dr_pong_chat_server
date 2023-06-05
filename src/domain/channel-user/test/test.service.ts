@@ -17,7 +17,11 @@ import {
 } from 'src/global/type/type.channel';
 import { UserModel } from 'src/domain/factory/model/user.model';
 import { InviteModel } from 'src/domain/factory/model/invite.model';
-import { PENALTY_BANNED } from 'src/global/type/type.channel-user';
+import {
+  PENALTY_BANNED,
+  PENALTY_MUTED,
+} from 'src/global/type/type.channel-user';
+import { CHAT_MUTE } from 'src/global/type/type.chat';
 
 @Injectable()
 export class TestService {
@@ -224,5 +228,40 @@ export class TestService {
       this.userFactory.invite(user.id, invite);
     }
     return this.userFactory.findById(user.id);
+  }
+
+  async createUserInChannel(): Promise<UserModel> {
+    const channel: ChannelModel = await this.createBasicChannel('channel', 9);
+    channel.users.values().next();
+    const user: UserModel = this.userFactory.findById(
+      channel.users.values().next().value,
+    );
+    return user;
+  }
+
+  async createMutedUserInChannel(): Promise<UserModel> {
+    const channel: ChannelModel = await this.createBasicChannel('channel', 9);
+    channel.users.values().next();
+    const user: UserModel = this.userFactory.findById(
+      channel.users.values().next().value,
+    );
+    this.channelFactory.setMute(user.id, channel.id);
+    await this.channelUserRepository.update(
+      {
+        user: { id: user.id },
+        channel: { id: channel.id },
+      },
+      {
+        penalty: PENALTY_MUTED,
+      },
+    );
+    await this.messageRepository.save({
+      user: { id: user.id },
+      channel: { id: channel.id },
+      content: 'muted',
+      time: new Date(),
+      type: CHAT_MUTE,
+    });
+    return user;
   }
 }

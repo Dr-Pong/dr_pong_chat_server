@@ -38,6 +38,9 @@ import {
   ORDER_CHANNEL_RESENT,
 } from 'src/global/type/type.order.channel';
 import { DeleteChannelInviteDto } from './dto/delete.channel.invite.dto';
+import { PostChannelMessageDto } from '../channel-message/post.channel-message.dto';
+import { CHAT_MESSAGE } from 'src/global/type/type.chat';
+import { ChannelMessage } from '../channel-message/channel-message.entity';
 
 describe('ChannelUserService', () => {
   let service: ChannelUserService;
@@ -47,6 +50,7 @@ describe('ChannelUserService', () => {
   let dataSource: DataSource;
   let channelRepository: Repository<Channel>;
   let channelUserRepository: Repository<ChannelUser>;
+  let channelMessageRepository: Repository<ChannelMessage>;
 
   initializeTransactionalContext();
   beforeAll(async () => {
@@ -78,6 +82,10 @@ describe('ChannelUserService', () => {
           provide: getRepositoryToken(ChannelUser),
           useClass: Repository,
         },
+        {
+          provide: getRepositoryToken(ChannelMessage),
+          useClass: Repository,
+        },
       ],
     }).compile();
 
@@ -91,6 +99,9 @@ describe('ChannelUserService', () => {
     );
     channelUserRepository = module.get<Repository<ChannelUser>>(
       getRepositoryToken(ChannelUser),
+    );
+    channelMessageRepository = module.get<Repository<ChannelMessage>>(
+      getRepositoryToken(ChannelMessage),
     );
     await dataSource.synchronize(true);
   });
@@ -799,14 +810,50 @@ describe('ChannelUserService', () => {
       });
     });
 
-    // describe('채팅 전송', () => {
-    //   it('[Valid Case] 채팅 전송', async () => {
-    //     // expect(service).toBeDefined();
-    //   });
-    //   it('[Error Case] 채팅 전송(Mute된 경우)', async () => {
-    //     // expect(service).toBeDefined();
-    //   });
-    // });
+    describe('채팅 전송', () => {
+      it('[Valid Case] 채팅 전송', async () => {
+        const user: UserModel = await testData.createUserInChannel();
+        const postMessageRequest: PostChannelMessageDto = {
+          userId: user.id,
+          channelId: user.joinedChannel,
+          type: CHAT_MESSAGE,
+          content: 'hi',
+        };
+
+        await service.postChannelMessage(postMessageRequest);
+
+        const savedMessage: ChannelMessage =
+          await channelMessageRepository.findOne({
+            where: {
+              user: { id: user.id },
+              channel: { id: user.joinedChannel },
+              type: CHAT_MESSAGE,
+            },
+          });
+        expect(savedMessage.content).toBe('hi');
+      });
+      it('[Error Case] 채팅 전송(Mute된 경우)', async () => {
+        const user: UserModel = await testData.createMutedUserInChannel();
+        const postMessageRequest: PostChannelMessageDto = {
+          userId: user.id,
+          channelId: user.joinedChannel,
+          type: CHAT_MESSAGE,
+          content: 'hi',
+        };
+
+        await service.postChannelMessage(postMessageRequest);
+
+        const savedMessage: ChannelMessage =
+          await channelMessageRepository.findOne({
+            where: {
+              user: { id: user.id },
+              channel: { id: user.joinedChannel },
+              type: CHAT_MESSAGE,
+            },
+          });
+        expect(savedMessage).toBe(null);
+      });
+    });
 
     // describe('채팅방 퇴장', () => {
     //   it('[Valid Case] 일반 유저가 퇴장하는 경우', async () => {
