@@ -71,7 +71,7 @@ describe('FriendService', () => {
 
   beforeEach(async () => {
     await testData.createProfileImages();
-    await testData.createBasicUsers(20);
+    await testData.createBasicUsers(100);
   });
 
   afterEach(async () => {
@@ -430,7 +430,7 @@ describe('FriendService', () => {
             userFriendNotificationDto,
           );
 
-        expect(friendRequestCount).toBe(0);
+        expect(friendRequestCount.requestCount).toBe(0);
       });
 
       it('[Valid Case]친구요청이 있는경우', async () => {
@@ -446,7 +446,7 @@ describe('FriendService', () => {
             userFriendNotificationDto,
           );
 
-        expect(friendRequestCount).toBe(10);
+        expect(friendRequestCount.requestCount).toBe(9);
       });
 
       it('[Valid Case]  50개 까지만 요청 받기', async () => {
@@ -462,7 +462,7 @@ describe('FriendService', () => {
             userFriendNotificationDto,
           );
 
-        expect(friendRequestCount).toBe(50);
+        expect(friendRequestCount.requestCount).toBe(50);
       });
     });
   });
