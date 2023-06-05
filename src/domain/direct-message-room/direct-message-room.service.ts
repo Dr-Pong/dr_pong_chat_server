@@ -9,6 +9,7 @@ import {
   DirectMessageRoomsDto,
 } from './dto/direct-message-rooms.dto';
 import { DirectMessageRoom } from './direct-message-room.entity';
+import { DeleteDirectMessageRoomDto } from './dto/delete.direct-message-room.dto';
 
 @Injectable()
 export class DirectMessageRoomService {
@@ -43,5 +44,16 @@ export class DirectMessageRoomService {
     }
 
     return responseDto;
+  }
+
+  @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
+  async deleteDirectMessageRoom(deleteDto: DeleteDirectMessageRoomDto) {
+    const directMessageRoom: DirectMessageRoom =
+      await this.directMessageRoomRepository.findByUserIdAndFriendId(
+        deleteDto.userId,
+        deleteDto.friendId,
+      );
+
+    await this.directMessageRoomRepository.delete(directMessageRoom);
   }
 }
