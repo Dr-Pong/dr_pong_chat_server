@@ -26,12 +26,13 @@ export class DirectMessageService {
   async getDirectMessagesHistory(
     getDto: GetDirectMessageHistoryDto,
   ): Promise<GetDirectMessageHistoryResponseDto> {
+    const { userId, friendId, offset, count } = getDto;
     const directMessagesHistory: DirectMessage[] =
       await this.directRepository.findAllByUserIdAndFriendId(
-        getDto.userId,
-        getDto.friendId,
-        getDto.offset,
-        getDto.count,
+        userId,
+        friendId,
+        offset,
+        count,
       );
 
     let lastPage = false;
@@ -59,49 +60,46 @@ export class DirectMessageService {
 
   @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
   async postDirectMessage(postDto: PostDirectMessageDto): Promise<void> {
+    const { userId, friendId, message } = postDto;
     const userFriends: Friend[] =
       await this.friendRepository.findFriendsByUserId(postDto.userId);
 
     for (const friend of userFriends) {
-      if (
-        friend.status === FRIENDSTATUS_FRIEND &&
-        (friend.sender.id === postDto.friendId ||
-          friend.receiver.id === postDto.friendId)
-      ) {
-        await this.directRepository.save(
-          postDto.userId,
-          postDto.friendId,
-          postDto.message,
-        );
+      if (this.isValidFriend(friend, postDto.friendId)) {
+        await this.directRepository.save(userId, friendId, message);
         const directMessageRoom: DirectMessageRoom =
           await this.directMessageRoomRepository.findByUserIdAndFriendId(
-            postDto.userId,
-            postDto.friendId,
+            userId,
+            friendId,
           );
         if (!directMessageRoom) {
-          await this.directMessageRoomRepository.save(
-            postDto.userId,
-            postDto.friendId,
-          );
+          await this.directMessageRoomRepository.save(userId, friendId);
         } else {
           if (!directMessageRoom.isDisplay) {
             await this.directMessageRoomRepository.updateIsDisplayByUserIdAndFriendId(
-              postDto.userId,
-              postDto.friendId,
+              userId,
+              friendId,
             );
           }
           const lastmessage: DirectMessage =
             await this.directRepository.findByUserIdAndFriendIdOrderByIdDesc(
-              postDto.userId,
-              postDto.friendId,
+              userId,
+              friendId,
             );
           await this.directMessageRoomRepository.updateLastMessageIdByUserIdAndFriendId(
-            postDto.userId,
-            postDto.friendId,
+            userId,
+            friendId,
             lastmessage,
           );
         }
       }
     }
+  }
+
+  private isValidFriend(friend: Friend, friendId: number): boolean {
+    return (
+      friend.status === FRIENDSTATUS_FRIEND &&
+      (friend.sender.id === friendId || friend.receiver.id === friendId)
+    );
   }
 }
