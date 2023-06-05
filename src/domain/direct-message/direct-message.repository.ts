@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { DirectMessage } from './direct-message.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { MoreThan, Repository } from 'typeorm';
 import { FriendChatManager } from 'src/global/utils/generate.room.id';
 
 @Injectable()
@@ -59,5 +59,20 @@ export class DirectMessageRepository {
       },
     });
     return directMessage;
+  }
+
+  async countAllUnreadChatByRoomId(
+    roomId: string,
+    lastMessageId: number,
+  ): Promise<number> {
+    if (lastMessageId === null) lastMessageId = 0;
+    const unreadChats: number = await this.repository.count({
+      where: {
+        roomId: roomId,
+        id: MoreThan(lastMessageId),
+      },
+    });
+
+    return unreadChats;
   }
 }
