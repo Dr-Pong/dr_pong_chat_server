@@ -149,7 +149,7 @@ export class ChannelUserService {
       SaveChannelMessageDto.fromMessageDto(message),
     );
 
-    runOnTransactionRollback(async () => {
+    runOnTransactionRollback(() => {
       //에러 메시지 전송
     });
   }
@@ -244,7 +244,7 @@ export class ChannelUserService {
     );
 
     /** 트랜잭션이 성공하면 Factory에도 결과를 반영한다 */
-    runOnTransactionComplete(async () => {
+    runOnTransactionComplete(() => {
       const userModel: UserModel = this.userFactory.findById(postDto.userId);
       if (userModel.joinedChannel) {
         this.channelFactory.leave(userModel.id, userModel.joinedChannel);
@@ -284,7 +284,7 @@ export class ChannelUserService {
     );
 
     /** 트랜잭션이 성공하면 Factory에도 결과를 반영한다 */
-    runOnTransactionComplete(async () => {
+    runOnTransactionComplete(() => {
       const userModel: UserModel = this.userFactory.findById(postDto.userId);
       if (userModel.joinedChannel) {
         this.channelFactory.leave(userModel.id, userModel.joinedChannel);
@@ -311,7 +311,7 @@ export class ChannelUserService {
     );
 
     /** 트랜잭션이 성공하면 Factory에도 결과를 반영한다 */
-    runOnTransactionComplete(async () => {
+    runOnTransactionComplete(() => {
       const userModel: UserModel = this.userFactory.findById(deleteDto.userId);
       this.channelFactory.leave(userModel.id, deleteDto.channelId);
     });
