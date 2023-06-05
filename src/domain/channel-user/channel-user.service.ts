@@ -51,6 +51,7 @@ import { SaveChannelMessageDto } from '../channel-message/save.channel-message.d
 import { PostChannelMessageDto } from '../channel-message/post.channel-message.dto';
 import { ChatGateWay } from 'src/gateway/chat.gateway';
 import { MessageDto } from 'src/gateway/dto/message.dto';
+import { DeleteChannelInviteDto } from './dto/delete.channel.invite.dto';
 
 @Injectable()
 export class ChannelUserService {
@@ -127,13 +128,15 @@ export class ChannelUserService {
     this.userFactory.invite(target.id, invite);
   }
 
+  @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
   async postChannelMessage(postDto: PostChannelMessageDto): Promise<void> {
     const channel: ChannelModel = this.channelFactory.findById(
       postDto.channelId,
     );
-    checkChannelExist(channel);
     const user: UserModel = this.userFactory.findById(postDto.userId);
+    checkChannelExist(channel);
     checkUserInChannel(channel, user.id);
+    if (user.isMuted) return;
 
     const message: MessageDto = MessageDto.fromPostDto(postDto);
     this.chatGateway.sendMessageToChannel(
@@ -312,6 +315,11 @@ export class ChannelUserService {
       const userModel: UserModel = this.userFactory.findById(deleteDto.userId);
       this.channelFactory.leave(userModel.id, deleteDto.channelId);
     });
+  }
+
+  async deleteChannelInvite(deleteDto: DeleteChannelInviteDto): Promise<void> {
+    const user: UserModel = this.userFactory.findById(deleteDto.userId);
+    this.userFactory.deleteInvite(user.id, deleteDto.channelId);
   }
 
   /**
