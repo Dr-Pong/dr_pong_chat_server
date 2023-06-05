@@ -51,6 +51,7 @@ import { SaveChannelMessageDto } from '../channel-message/save.channel-message.d
 import { PostChannelMessageDto } from '../channel-message/post.channel-message.dto';
 import { ChatGateWay } from 'src/gateway/chat.gateway';
 import { MessageDto } from 'src/gateway/dto/message.dto';
+import { DeleteChannelInviteDto } from './dto/delete.channel.invite.dto';
 
 @Injectable()
 export class ChannelUserService {
@@ -312,6 +313,11 @@ export class ChannelUserService {
       const userModel: UserModel = this.userFactory.findById(deleteDto.userId);
       this.channelFactory.leave(userModel.id, deleteDto.channelId);
     });
+  }
+
+  async deleteChannelInvite(deleteDto: DeleteChannelInviteDto): Promise<void> {
+    const user: UserModel = this.userFactory.findById(deleteDto.userId);
+    this.userFactory.deleteInvite(user.id, deleteDto.channelId);
   }
 
   /**
