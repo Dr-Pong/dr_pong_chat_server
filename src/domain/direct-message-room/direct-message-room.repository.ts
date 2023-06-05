@@ -25,6 +25,13 @@ export class DirectMessageRoomRepository {
     return directMessageRoom;
   }
 
+  async findAllByUserId(userId: number): Promise<DirectMessageRoom[]> {
+    const directMessageRooms: DirectMessageRoom[] = await this.repository.find({
+      where: { userId: { id: userId } },
+    });
+    return directMessageRooms;
+  }
+
   async save(userId: number, friendId: number): Promise<DirectMessageRoom> {
     const directMessageRoom: DirectMessageRoom = await this.repository.create({
       userId: { id: userId },
@@ -39,7 +46,23 @@ export class DirectMessageRoomRepository {
     return await this.repository.save(directMessageRoom);
   }
 
-  async updateIsDisplayByUserIdAndFriendId(userId: number, friendId: number) {
+  async updateIsDisplayFalseByUserIdAndFriendId(
+    userId: number,
+    friendId: number,
+  ) {
+    await this.repository.update(
+      {
+        userId: { id: userId },
+        friendId: { id: friendId },
+      },
+      { isDisplay: false },
+    );
+  }
+
+  async updateIsDisplayTrueByUserIdAndFriendId(
+    userId: number,
+    friendId: number,
+  ) {
     await this.repository.update(
       {
         userId: { id: userId },
