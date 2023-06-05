@@ -133,28 +133,29 @@ describe('DmLogService', () => {
       });
     });
 
-    // describe('진행중인 DirectMessage 목록 삭제', () => {
-    //   it('[Valid Case] DM 목록에서 삭제', async () => {
-    //     await testData.createDirectMessage(10);
-    //     await testData.createDirectMessageRooms();
+    describe('진행중인 DirectMessage 목록 삭제', () => {
+      it('[Valid Case] DM 목록에서 삭제', async () => {
+        await testData.createDirectMessageToUser1(10);
+        await testData.createDirectMessageRoom();
+        await testData.createDirectMessageToUser2(10);
+        await testData.createDirectMessageRoomToUser2();
 
-    //     const deleteDirectMessageRoomDto: DeleteDirectMessageRoomDto = {
-    //       userId: testData.users[0].id,
-    //       friendId: testData.users[1].id,
-    //     };
+        const deleteDirectMessageRoomDto: DeleteDirectMessageRoomDto = {
+          userId: testData.users[0].id,
+          friendId: testData.users[1].id,
+        };
 
-    //     await service.deleteDirectMessageRoom(deleteDirectMessageRoomDto);
+        await service.deleteDirectMessageRoom(deleteDirectMessageRoomDto);
 
-    //     expect(
-    //       await directMessageRoomRepository.find({
-    //         where: {
-    //           userId: { id: testData.users[0].id },
-    //           isDisplay: true,
-    //         },
-    //       }),
-    //     ).toHaveLength(9);
-    //   });
-    // });
+        const CurrentDMRoom = await directMessageRoomRepository.find({
+          where: {
+            userId: { id: deleteDirectMessageRoomDto.userId },
+            isDisplay: true,
+          },
+        });
+        expect(CurrentDMRoom.length).toBe(1);
+      });
+    });
 
     // describe('진행중인 DirectMessage 알람 받기', () => {
     //   it('[Valid Case] 대화방의 새로운 알람 수령', async () => {
