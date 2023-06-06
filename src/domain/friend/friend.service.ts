@@ -123,13 +123,13 @@ export class FriendService {
    */
   @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
   async postUserFriendAccept(postDto: PostUserFriendAcceptDto): Promise<void> {
-    const friendTables: Friend[] =
+    const friendRequestTable: Friend[] =
       await this.friendRepository.findAllFriendRequestsByUserIdAndFriendId(
         postDto.userId,
         postDto.friendId,
       );
 
-    if (friendTables) {
+    if (friendRequestTable) {
       await this.friendRepository.updateFriendRequestStatusFriendByUserIdAndFriendId(
         postDto.userId,
         postDto.friendId,
@@ -202,10 +202,9 @@ export class FriendService {
   async getUserFriendNotificationCount(
     getDto: GetUserFriendNotificationsRequestDto,
   ): Promise<UserFriendNotificationsDto> {
-    const userFriends: Friend[] =
-      await this.friendRepository.findFriendRequestingsByUserId(getDto.userId);
+    let friendsCount: number =
+      await this.friendRepository.countFriendRequestingsByUserId(getDto.userId);
 
-    let friendsCount = userFriends.length;
     if (friendsCount > 50) {
       friendsCount = 50;
     }

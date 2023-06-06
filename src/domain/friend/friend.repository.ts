@@ -41,6 +41,19 @@ export class FriendRepository {
     return friends;
   }
 
+  /**친구 요청 목록
+   * 사용자의 친구 요청목록을 가져옵니다.
+   * */
+  async countFriendRequestingsByUserId(userId: number): Promise<number> {
+    const friendCount: number = await this.repository.count({
+      where: [
+        { sender: { id: userId }, status: FRIENDSTATUS_REQUESTING },
+        { receiver: { id: userId }, status: FRIENDSTATUS_REQUESTING },
+      ],
+    });
+    return friendCount;
+  }
+
   /**delete가 아닌 친구 테이블 목록
    * 유저와 친구의 id로 둘이 테이블에 delete가 아닌 Frined[]를 반환합니다.
    */
