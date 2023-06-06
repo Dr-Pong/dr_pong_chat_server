@@ -15,6 +15,7 @@ import { DirectMessageRoomModule } from './domain/direct-message-room/direct-mes
 import { DirectMessageModule } from './domain/direct-message/direct-message.module';
 import { FriendModule } from './domain/friend/friend.module';
 import { AuthModule } from './domain/auth/auth.module';
+import { FriendTestModule } from "./domain/friend/test/friend.test.module";
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { AuthModule } from './domain/auth/auth.module';
       },
     }),
     FriendModule,
+    FriendTestModule,
     UserModule,
     ProfileImageModule,
     BlockModule,
