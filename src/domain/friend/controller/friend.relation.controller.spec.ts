@@ -56,7 +56,7 @@ describe('FriendController - Relation', () => {
           expect(user).toHaveProperty('nickname');
           expect(user).toHaveProperty('imgUrl');
         }
-        expect(result.users.flatMap((user) => user.nickname)).toEqual(
+        expect(result.users).toEqual(
           result.users.sort((a, b) => a.nickname.localeCompare(b.nickname)),
         );
       });
@@ -85,7 +85,7 @@ describe('FriendController - Relation', () => {
           expect(user).toHaveProperty('nickname');
           expect(user).toHaveProperty('imgUrl');
         }
-        expect(result.users.flatMap((user) => user.nickname)).toEqual(
+        expect(result.users).toEqual(
           result.users.sort((a, b) => a.nickname.localeCompare(b.nickname)),
         );
       });
