@@ -1,14 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { FriendController } from './friend.controller';
 import { INestApplication } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import * as request from 'supertest';
-import { FriendTestService } from 'src/domain/friend/test/friend.test.service';
-import { FriendService } from 'src/domain/friend/friend.service';
 import { initializeTransactionalContext } from 'typeorm-transactional';
-import { TestService } from 'src/domain/channel-user/test/test.service';
-import { DirectMessageTestService } from 'src/domain/direct-message/test/direct-message.test.service';
 import { FriendDirectMessageTestService } from 'src/domain/direct-message-room/test/direct-message-room.test.service';
+import { AppModule } from '../../../app.module';
 
 describe('FriendController - Chat', () => {
   let app: INestApplication;
@@ -18,7 +14,7 @@ describe('FriendController - Chat', () => {
   beforeAll(async () => {
     initializeTransactionalContext();
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [FriendController],
+      imports: [AppModule],
     }).compile();
 
     app = module.createNestApplication();
