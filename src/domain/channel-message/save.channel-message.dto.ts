@@ -1,4 +1,5 @@
 import {
+  CHAT_BAN,
   CHAT_JOIN,
   CHAT_KICK,
   CHAT_LEAVE,
@@ -12,6 +13,7 @@ import { DeleteChannelUserDto } from '../channel-user/dto/delete.channel.user.dt
 import { PostChannelAdminDto } from '../channel-user/dto/post.channel.admin.dto';
 import { DeleteChannelAdminDto } from '../channel-user/dto/delete.channel.admin.dto';
 import { DeleteChannelKickDto } from '../channel-user/dto/delete.channel.kick.dto';
+import { PostChannelBanDto } from '../channel-user/dto/post.channel.ban.dto';
 
 export class SaveChannelMessageDto {
   userId: number;
@@ -54,6 +56,17 @@ export class SaveChannelMessageDto {
       channelId,
       CHAT_KICK,
       'is kicked',
+      new Date(),
+    );
+  }
+
+  static fromBanDto(banDto: PostChannelBanDto): SaveChannelMessageDto {
+    const { targetUserId: userId, channelId } = banDto;
+    return new SaveChannelMessageDto(
+      userId,
+      channelId,
+      CHAT_BAN,
+      'is banned',
       new Date(),
     );
   }
