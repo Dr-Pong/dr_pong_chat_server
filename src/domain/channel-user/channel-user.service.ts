@@ -69,6 +69,8 @@ export class ChannelUserService {
 
   /**
    * 채널의 참여자 목록을 조회하는 함수
+   * 채널에 참여한 유저가 아니면 조회할 수 없다
+   * ChannelFactory에서 채널을 조회하고 그 채널의 참여자 목록을 조회한다
    * Factory를 사용하기 때문에 비동기로 처리하지 않는다
    */
   getChannelParticipants(
@@ -95,6 +97,7 @@ export class ChannelUserService {
 
   /**
    * 유저가 참여한 채널을 조회하는 함수
+   * 참여한 채널이 없으면 null이 반환된다
    * Factory를 사용하기 때문에 비동기로 처리하지 않는다
    */
   getChannelMy(getDto: GetChannelMyDto): ChannelMeDto {
@@ -108,6 +111,7 @@ export class ChannelUserService {
 
   /**
    * 유저를 채널에 초대하는 함수
+   * 이미 초대된 유저라면 아무 일도 일어나지 않는다
    * UserModel의 inviteList에 추가해준다
    * Factory를 사용하기 때문에 비동기로 처리하지 않는다
    */
@@ -131,6 +135,14 @@ export class ChannelUserService {
     this.userFactory.invite(target.id, invite);
   }
 
+  /**
+   * 채널에 메시지를 전송하는 함수
+   * 채널에 참여한 유저가 아니면 메시지를 전송할 수 없다
+   * 채널에 참여한 유저가 뮤트 상태라면 메시지를 전송할 수 없다
+   * 채널에 메시지를 전송하면 채널의 참여자들에게 메시지를 전송한다
+   * 차단된 유저들에게는 메시지를 전송하지 않는다
+   * 전송한 메시지를 DB에 저장한다
+   */
   @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
   async postChannelMessage(postDto: PostChannelMessageDto): Promise<void> {
     const channel: ChannelModel = this.channelFactory.findById(
@@ -160,6 +172,9 @@ export class ChannelUserService {
   /**
    * 채널 목록을 조회하는 함수
    * 생성 순, 참여자 순으로 정렬할 수 있다
+   * keyword가 주어지면 채널 이름에 keyword가 포함된 채널을 조회한다
+   * keyword가 주어지지 않으면 모든 채널을 조회한다
+   * 채널이 없으면 빈 배열이 반환된다
    */
   async getChannelPages(getDto: GetChannelPageDto): Promise<ChannelPageDtos> {
     let channels: Page<Channel[]>;
@@ -297,7 +312,11 @@ export class ChannelUserService {
     });
   }
 
-  /** 유저가 채널에서 나가는 함수 */
+  /**
+   * 유저가 채널에서 나가는 함수
+   * 관리자가 퇴장할 경우 관리자 권한이 없어진다
+   * mute 상태인 유저가 퇴장할 경우 mute 상태가 유지된다 (mute 상태는 관리자가 풀어줘야 한다)
+   * */
   @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
   async deleteChannelUser(deleteDto: DeleteChannelUserDto): Promise<void> {
     const channelUser: ChannelUser =
@@ -320,7 +339,12 @@ export class ChannelUserService {
     });
   }
 
-  /** 유저를 관리자로 임명하는 함수 */
+  /**
+   * 유저를 관리자로 임명하는 함수
+   * 채널의 소유자만 가능하다
+   * 채널에 속한 유저만 관리자로 임명 가능하다
+   * 이미 관리자인 경우 아무런 동작을 하지 않는다
+   * */
   @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
   async postChannelAdmin(postDto: PostChannelAdminDto): Promise<void> {
     const channel: ChannelModel = this.channelFactory.findById(
@@ -353,7 +377,12 @@ export class ChannelUserService {
     });
   }
 
-  /** 유저를 관리자로 임명하는 함수 */
+  /**
+   * 유저를 관리자에서 해제하는 함수
+   * 채널의 소유자만 가능하다
+   * 채널에 있는 유저만 관리자에서 해제 가능하다
+   * 이미 관리자가 아닌 경우 아무런 동작을 하지 않는다
+   * */
   @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
   async deleteChannelAdmin(deleteDto: PostChannelAdminDto): Promise<void> {
     const channel: ChannelModel = this.channelFactory.findById(
@@ -389,6 +418,10 @@ export class ChannelUserService {
     });
   }
 
+  /**
+   * 채널 초대를 거절하는 함수
+   * userModel의 invite에서 해당 채널을 삭제한다
+   * */
   async deleteChannelInvite(deleteDto: DeleteChannelInviteDto): Promise<void> {
     const user: UserModel = this.userFactory.findById(deleteDto.userId);
     this.userFactory.deleteInvite(user.id, deleteDto.channelId);
@@ -398,6 +431,9 @@ export class ChannelUserService {
    * 채널입장 처리하는 함수
    * 에러 처리, DB save, update 처리용 함수
    * 에러 케이스 - 채널이 없는 경우, 비밀번호가 틀린 경우, 인원이 꽉 찬 경우, 채널에서 BAN된 경우
+   * channelUser - 유저가 채널에 입장한 것을 저장한다
+   * channel - 채널의 인원수를 업데이트한다
+   * message - 채널 입장 메시지를 저장한다
    * */
   private async joinChannel(dto: ChannelJoinDto): Promise<void> {
     await validateChannelJoin(dto, this.channelRepository, this.channelFactory);
@@ -413,7 +449,10 @@ export class ChannelUserService {
 
   /**
    * 채널퇴장 처리하는 함수
-   * 에러 처리, DB delete, update 처리용 함수
+   * DB delete, update 처리용 함수
+   * channelUser - 유저가 채널에 퇴장한 것을 저장한다
+   * channel - 채널의 인원수를 업데이트한다
+   * message - 채널 퇴장 메시지를 저장한다
    * */
   private async exitChannel(dto: ChannelExitDto): Promise<void> {
     await this.channelUserRepository.deleteChannelUser(
