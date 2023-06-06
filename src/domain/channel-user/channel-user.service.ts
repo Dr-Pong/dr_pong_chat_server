@@ -39,6 +39,7 @@ import {
   checkUserIsOwner,
   validateChannelJoin,
   isUserAdmin,
+  validateChannelAdmin,
 } from './channel-user.error';
 import { PostInviteDto } from './dto/post.invite.dto';
 import { InviteModel } from '../factory/model/invite.model';
@@ -55,6 +56,9 @@ import { ChatGateWay } from 'src/gateway/chat.gateway';
 import { MessageDto } from 'src/gateway/dto/message.dto';
 import { DeleteChannelInviteDto } from './dto/delete.channel.invite.dto';
 import { PostChannelAdminDto } from './dto/post.channel.admin.dto';
+import { DeleteChannelKickDto } from './dto/delete.channel.kick.dto';
+import { ChannelAdminCommandDto } from './dto/channel.admin.command.dto';
+import { PostChannelBanDto } from './dto/post.channel.ban.dto';
 
 @Injectable()
 export class ChannelUserService {
@@ -140,7 +144,7 @@ export class ChannelUserService {
    * 채널에 참여한 유저가 아니면 메시지를 전송할 수 없다
    * 채널에 참여한 유저가 뮤트 상태라면 메시지를 전송할 수 없다
    * 채널에 메시지를 전송하면 채널의 참여자들에게 메시지를 전송한다
-   * 차단된 유저들에게는 메시지를 전송하지 않는다
+   * Ban된 유저들에게는 메시지를 전송하지 않는다
    * 전송한 메시지를 DB에 저장한다
    */
   @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
@@ -415,6 +419,83 @@ export class ChannelUserService {
         deleteDto.targetUserId,
         deleteDto.channelId,
       );
+    });
+  }
+
+  /**
+   * 유저를 채널에서 추방하는 함수
+   * 채널의 소유자 또는 관리자만 가능하다
+   * 채널에 속해 있지 않은 유저를 추방하려하면 아무런 동작을 하지 않는다
+   * 채널의 소유자나 관리자끼리는 추방할 수 없다
+   * 추방된 유저는 채널에 다시 들어올 수 있다
+   * */
+  @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
+  async deleteChannelKick(deleteDto: DeleteChannelKickDto): Promise<void> {
+    const dto: ChannelAdminCommandDto = deleteDto;
+    const channel: ChannelModel = this.channelFactory.findById(
+      deleteDto.channelId,
+    );
+    checkChannelExist(channel);
+    validateChannelAdmin(dto, this.channelFactory, this.userFactory);
+
+    const targetUser: ChannelUser =
+      await this.channelUserRepository.findByUserIdAndChannelIdAndIsDelFalse(
+        deleteDto.targetUserId,
+        deleteDto.channelId,
+      );
+    if (!targetUser) {
+      return;
+    }
+
+    await this.exitChannel(new ChannelExitDto(targetUser.user.id, channel.id));
+
+    await this.messageRepository.save(
+      SaveChannelMessageDto.fromKickDto(deleteDto),
+    );
+
+    /** 트랜잭션이 성공하면 Factory에도 결과를 반영한다 */
+    runOnTransactionComplete(() => {
+      this.channelFactory.leave(targetUser.user.id, deleteDto.channelId);
+    });
+  }
+
+  /**
+   * 유저를 채널에서 Ban하는 함수
+   * 채널의 소유자 또는 관리자만 가능하다
+   * 채널에 속해 있지 않은 유저를 Ban해도 Ban 목록에 추가된다
+   * 채널의 관리자끼리는 Ban할 수 없다
+   * 채널의 소유자는 관리자를 Ban할 수 있다
+   * Ban된 유저는 채널에 다시 들어올 수 없다
+   * */
+  @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
+  async postChannelBan(postDto: PostChannelBanDto): Promise<void> {
+    const dto: ChannelAdminCommandDto = postDto;
+    const channel: ChannelModel = this.channelFactory.findById(
+      postDto.channelId,
+    );
+
+    checkChannelExist(channel);
+    validateChannelAdmin(dto, this.channelFactory, this.userFactory);
+
+    const targetUser: ChannelUser =
+      await this.channelUserRepository.findByUserIdAndChannelIdAndIsDelFalse(
+        postDto.targetUserId,
+        postDto.channelId,
+      );
+    if (!targetUser) {
+      return;
+    }
+
+    await this.exitChannel(new ChannelExitDto(targetUser.user.id, channel.id));
+
+    await this.messageRepository.save(
+      SaveChannelMessageDto.fromBanDto(postDto),
+    );
+
+    /** 트랜잭션이 성공하면 Factory에도 결과를 반영한다 */
+    runOnTransactionComplete(() => {
+      this.channelFactory.setBan(targetUser.user.id, postDto.channelId);
+      this.channelFactory.leave(targetUser.user.id, postDto.channelId);
     });
   }
 

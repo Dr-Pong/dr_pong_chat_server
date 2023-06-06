@@ -24,8 +24,15 @@ import {
   addTransactionalDataSource,
   initializeTransactionalContext,
 } from 'typeorm-transactional';
-import { CHAT_SETADMIN, CHAT_UNSETADMIN } from 'src/global/type/type.chat';
+import {
+  CHAT_BAN,
+  CHAT_KICK,
+  CHAT_SETADMIN,
+  CHAT_UNSETADMIN,
+} from 'src/global/type/type.chat';
 import { ChannlUserTestModule } from './test/channel-user.test.module';
+import { DeleteChannelKickDto } from './dto/delete.channel.kick.dto';
+import { PostChannelBanDto } from './dto/post.channel.ban.dto';
 
 describe('ChannelUserService', () => {
   let service: ChannelUserService;
@@ -167,8 +174,10 @@ describe('ChannelUserService', () => {
 
     describe('KICK TEST', () => {
       it('[Valid Case] 일반 유저 강퇴', async () => {
-        const channel: ChannelModel = await testData.createBasicChannel();
-        const user: UserModel = userFactory.users.get(channel.users[1]);
+        const user: UserModel = await testData.createUserInChannel(9);
+        const channel: ChannelModel = channelFactory.findById(
+          user.joinedChannel,
+        );
 
         const deleteUserInChannelRequest: DeleteChannelKickDto = {
           requestUserId: channel.ownerId,
@@ -177,17 +186,29 @@ describe('ChannelUserService', () => {
         };
 
         await service.deleteChannelKick(deleteUserInChannelRequest);
+        const savedMessage: ChannelMessage =
+          await channelMessageRepository.findOne({
+            where: {
+              channel: { id: channel.id },
+              user: { id: user.id },
+              type: CHAT_KICK,
+            },
+          });
+
+        expect(savedMessage.content).toBe('is kicked');
 
         const savedChannelFt: ChannelModel = channelFactory.findById(
           channel.id,
         );
-        const savedUserFt: UserModel = userFactory.findUserById(user.id);
+        const savedUserFt: UserModel = userFactory.findById(user.id);
         expect(savedChannelFt.users).not.toContain(user.id);
         expect(savedUserFt.joinedChannel).toBeNull();
       });
       it('[Valid Case] owner가 관리자를 강퇴', async () => {
-        const channel: ChannelModel = await testData.createChannelWithAdmins();
-        const user: UserModel = userFactory.users.get(channel.users[1]);
+        const channel: ChannelModel = await testData.createChannelWithAdmins(7);
+        const iterator = channel.adminList.values();
+        iterator.next();
+        const user: UserModel = userFactory.findById(iterator.next().value);
 
         const deleteUserInChannelRequest: DeleteChannelKickDto = {
           requestUserId: channel.ownerId,
@@ -196,43 +217,61 @@ describe('ChannelUserService', () => {
         };
 
         await service.deleteChannelKick(deleteUserInChannelRequest);
+        const savedMessage: ChannelMessage =
+          await channelMessageRepository.findOne({
+            where: {
+              channel: { id: channel.id },
+              user: { id: user.id },
+              type: CHAT_KICK,
+            },
+          });
+
+        expect(savedMessage.content).toBe('is kicked');
+
         const savedChannelFt: ChannelModel = channelFactory.findById(
           channel.id,
         );
-        const savedUserFt: UserModel = userFactory.findUserById(user.id);
+        const savedUserFt: UserModel = userFactory.findById(user.id);
 
-        expect(savedChannelFt.users).not.toContain(user.id);
-        expect(savedChannelFt.adminList).not.toContain(user.id);
+        expect(savedChannelFt.users.has(user.id)).toBe(false);
+        expect(savedChannelFt.adminList.has(user.id)).toBe(false);
         expect(savedUserFt.joinedChannel).toBeNull();
       });
+
       it('[Error Case] 관리자가 관리자를 강퇴', async () => {
-        const channel: ChannelModel = await testData.createChannelWithAdmins();
-        const user: UserModel = userFactory.users.get(channel.users[2]);
+        const channel: ChannelModel = await testData.createChannelWithAdmins(7);
+        const iterator = channel.adminList.values();
+        iterator.next();
+        const user: UserModel = userFactory.findById(iterator.next().value);
 
         const deleteUserInChannelRequest: DeleteChannelKickDto = {
-          requestUserId: channel.users[1],
+          requestUserId: iterator.next().value,
           channelId: channel.id,
           targetUserId: user.id,
         };
 
         await expect(
           service.deleteChannelKick(deleteUserInChannelRequest),
-        ).rejects.toThrow(new BadRequestException());
+        ).rejects.toThrow(
+          new BadRequestException('You cannot access to same role'),
+        );
         const savedChannelFt: ChannelModel = channelFactory.findById(
           channel.id,
         );
-        const savedUserFt: UserModel = userFactory.findUserById(user.id);
+        const savedUserFt: UserModel = userFactory.findById(user.id);
 
-        expect(savedChannelFt.users).toContain(user.id);
-        expect(savedChannelFt.adminList).toContain(user.id);
-        expect(savedUserFt.joinedChannel).toBe(channel.id);
+        expect(savedChannelFt.users.has(user.id)).toBe(true);
+        expect(savedChannelFt.adminList.has(user.id)).toBe(true);
+        expect(savedUserFt.joinedChannel).not.toBeNull();
       });
     });
 
     describe('BAN TEST', () => {
       it('[Valid Case] 일반 유저 BAN', async () => {
-        const channel: ChannelModel = await testData.createBasicChannel();
-        const user: UserModel = userFactory.users.get(channel.users[1]);
+        const user: UserModel = await testData.createUserInChannel(9);
+        const channel: ChannelModel = channelFactory.findById(
+          user.joinedChannel,
+        );
 
         const postChannelBanRequest: PostChannelBanDto = {
           requestUserId: channel.ownerId,
@@ -241,19 +280,31 @@ describe('ChannelUserService', () => {
         };
 
         await service.postChannelBan(postChannelBanRequest);
+        const savedMessage: ChannelMessage =
+          await channelMessageRepository.findOne({
+            where: {
+              channel: { id: channel.id },
+              user: { id: user.id },
+              type: CHAT_BAN,
+            },
+          });
+
+        expect(savedMessage.content).toBe('is banned');
         const savedChannelFt: ChannelModel = channelFactory.findById(
           channel.id,
         );
-        const savedUserFt: UserModel = userFactory.findUserById(user.id);
+        const savedUserFt: UserModel = userFactory.findById(user.id);
 
-        expect(savedChannelFt.users).not.toContain(user.id);
-        expect(savedChannelFt.adminList).not.toContain(user.id);
-        expect(savedChannelFt.banList).toContain(user.id);
+        expect(savedChannelFt.users.has(user.id)).toBe(false);
+        expect(savedChannelFt.adminList.has(user.id)).toBe(false);
+        expect(savedChannelFt.banList.has(user.id)).toBe(true);
         expect(savedUserFt.joinedChannel).toBeNull();
       });
       it('[Valid Case] owner가 admin을 BAN', async () => {
-        const channel: ChannelModel = await testData.createChannelWithAdmins();
-        const user: UserModel = userFactory.users.get(channel.users[1]);
+        const channel: ChannelModel = await testData.createChannelWithAdmins(9);
+        const iterator = channel.adminList.values();
+        iterator.next();
+        const user: UserModel = userFactory.findById(iterator.next().value);
 
         const postChannelBanRequest: PostChannelBanDto = {
           requestUserId: channel.ownerId,
@@ -262,20 +313,31 @@ describe('ChannelUserService', () => {
         };
 
         await service.postChannelBan(postChannelBanRequest);
+        const savedMessage: ChannelMessage =
+          await channelMessageRepository.findOne({
+            where: {
+              channel: { id: channel.id },
+              user: { id: user.id },
+              type: CHAT_BAN,
+            },
+          });
 
+        expect(savedMessage.content).toBe('is banned');
         const savedChannelFt: ChannelModel = channelFactory.findById(
           channel.id,
         );
-        const savedUserFt: UserModel = userFactory.findUserById(user.id);
-        expect(savedChannelFt.users).not.toContain(user.id);
-        expect(savedChannelFt.adminList).not.toContain(user.id);
-        expect(savedChannelFt.banList).toContain(user.id);
+        const savedUserFt: UserModel = userFactory.findById(user.id);
+        expect(savedChannelFt.users.has(user.id)).toBe(false);
+        expect(savedChannelFt.adminList.has(user.id)).toBe(false);
+        expect(savedChannelFt.banList.has(user.id)).toBe(true);
         expect(savedUserFt.joinedChannel).toBeNull();
       });
       it('[Error Case] 관리자가 관리자를 강퇴', async () => {
-        const channel: ChannelModel = await testData.createChannelWithAdmins();
-        const admin: UserModel = userFactory.users.get(channel.users[1]);
-        const user: UserModel = userFactory.users.get(channel.users[2]);
+        const channel: ChannelModel = await testData.createChannelWithAdmins(7);
+        const iterator = channel.adminList.values();
+        iterator.next();
+        const admin: UserModel = userFactory.findById(iterator.next().value);
+        const user: UserModel = userFactory.findById(iterator.next().value);
 
         const postChannelBanRequest: PostChannelBanDto = {
           requestUserId: admin.id,
@@ -283,16 +345,20 @@ describe('ChannelUserService', () => {
           targetUserId: user.id,
         };
 
-        await service.postChannelBan(postChannelBanRequest);
+        await expect(
+          service.postChannelBan(postChannelBanRequest),
+        ).rejects.toThrow(
+          new BadRequestException('You cannot access to same role'),
+        );
 
         const savedChannelFt: ChannelModel = channelFactory.findById(
           channel.id,
         );
-        const savedUserFt: UserModel = userFactory.findUserById(user.id);
-        expect(savedChannelFt.users).not.toContain(user.id);
-        expect(savedChannelFt.adminList).not.toContain(user.id);
-        expect(savedChannelFt.banList).toContain(user.id);
-        expect(savedUserFt.joinedChannel).toBeNull();
+        const savedUserFt: UserModel = userFactory.findById(user.id);
+        expect(savedChannelFt.users.has(user.id)).toBe(true);
+        expect(savedChannelFt.adminList.has(user.id)).toBe(true);
+        expect(savedChannelFt.banList.has(user.id)).toBe(false);
+        expect(savedUserFt.joinedChannel).not.toBeNull();
       });
     });
 
