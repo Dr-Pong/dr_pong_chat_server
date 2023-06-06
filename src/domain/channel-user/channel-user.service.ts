@@ -34,9 +34,11 @@ import { PostChannelJoinDto } from './dto/post.channel.join.dto';
 import {
   checkUserInChannel,
   checkUserExist,
-  validateChannelJoin,
-  checkUserIsInvited,
   checkChannelExist,
+  checkUserIsInvited,
+  checkUserIsOwner,
+  validateChannelJoin,
+  isUserAdmin,
 } from './channel-user.error';
 import { PostInviteDto } from './dto/post.invite.dto';
 import { InviteModel } from '../factory/model/invite.model';
@@ -52,6 +54,7 @@ import { PostChannelMessageDto } from '../channel-message/post.channel-message.d
 import { ChatGateWay } from 'src/gateway/chat.gateway';
 import { MessageDto } from 'src/gateway/dto/message.dto';
 import { DeleteChannelInviteDto } from './dto/delete.channel.invite.dto';
+import { PostChannelAdminDto } from './dto/post.channel.admin.dto';
 
 @Injectable()
 export class ChannelUserService {
@@ -317,6 +320,75 @@ export class ChannelUserService {
     });
   }
 
+  /** 유저를 관리자로 임명하는 함수 */
+  @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
+  async postChannelAdmin(postDto: PostChannelAdminDto): Promise<void> {
+    const channel: ChannelModel = this.channelFactory.findById(
+      postDto.channelId,
+    );
+    checkChannelExist(channel);
+
+    const requestUser: UserModel = this.userFactory.findById(
+      postDto.requestUserId,
+    );
+    const targetUser: UserModel = this.userFactory.findById(
+      postDto.targetUserId,
+    );
+
+    checkUserInChannel(channel, requestUser.id);
+    checkUserInChannel(channel, targetUser.id);
+
+    checkUserIsOwner(channel, postDto.requestUserId);
+    if (isUserAdmin(channel, postDto.targetUserId)) {
+      return;
+    }
+
+    await this.messageRepository.save(
+      SaveChannelMessageDto.fromPostAdminDto(postDto),
+    );
+
+    /** 트랜잭션이 성공하면 Factory에도 결과를 반영한다 */
+    runOnTransactionComplete(() => {
+      this.channelFactory.setAdmin(postDto.targetUserId, postDto.channelId);
+    });
+  }
+
+  /** 유저를 관리자로 임명하는 함수 */
+  @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
+  async deleteChannelAdmin(deleteDto: PostChannelAdminDto): Promise<void> {
+    const channel: ChannelModel = this.channelFactory.findById(
+      deleteDto.channelId,
+    );
+    checkChannelExist(channel);
+
+    const requestUser: UserModel = this.userFactory.findById(
+      deleteDto.requestUserId,
+    );
+    const targetUser: UserModel = this.userFactory.findById(
+      deleteDto.targetUserId,
+    );
+
+    checkUserInChannel(channel, requestUser.id);
+    checkUserInChannel(channel, targetUser.id);
+
+    checkUserIsOwner(channel, deleteDto.requestUserId);
+    if (!isUserAdmin(channel, deleteDto.targetUserId)) {
+      return;
+    }
+
+    await this.messageRepository.save(
+      SaveChannelMessageDto.fromDeleteAdminDto(deleteDto),
+    );
+
+    /** 트랜잭션이 성공하면 Factory에도 결과를 반영한다 */
+    runOnTransactionComplete(() => {
+      this.channelFactory.unsetAdmin(
+        deleteDto.targetUserId,
+        deleteDto.channelId,
+      );
+    });
+  }
+
   async deleteChannelInvite(deleteDto: DeleteChannelInviteDto): Promise<void> {
     const user: UserModel = this.userFactory.findById(deleteDto.userId);
     this.userFactory.deleteInvite(user.id, deleteDto.channelId);
@@ -328,11 +400,7 @@ export class ChannelUserService {
    * 에러 케이스 - 채널이 없는 경우, 비밀번호가 틀린 경우, 인원이 꽉 찬 경우, 채널에서 BAN된 경우
    * */
   private async joinChannel(dto: ChannelJoinDto): Promise<void> {
-    await validateChannelJoin(
-      dto,
-      this.channelRepository,
-      this.channelUserRepository,
-    );
+    await validateChannelJoin(dto, this.channelRepository, this.channelFactory);
 
     await this.channelUserRepository.saveChannelUser(
       new SaveChannelUserDto(dto.userId, dto.channelId),

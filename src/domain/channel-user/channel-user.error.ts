@@ -7,11 +7,15 @@ import {
 } from 'src/global/type/type.channel';
 import { ChannelRepository } from '../channel/channel.repository';
 import { ChannelJoinDto } from './dto/channel.join.dto';
-import { ChannelUserRepository } from './channel-user.repository';
-import { ChannelUser } from './channel-user.entity';
-import { PENALTY_BANNED } from 'src/global/type/type.channel-user';
 import { UserModel } from '../factory/model/user.model';
 import { User } from '../user/user.entity';
+import { ChannelAdminCommandDto } from './dto/channel.admin.command.dto';
+import { ChannelFactory } from '../factory/channel.factory';
+import { UserFactory } from '../factory/user.factory';
+import {
+  CHANNEL_PARTICIPANT_ADMIN,
+  CHANNEL_PARTICIPANT_OWNER,
+} from 'src/global/type/type.channel-participant';
 
 export function checkUserInChannel(
   channel: ChannelModel,
@@ -51,25 +55,21 @@ export function checkChannelPassword(channel: Channel, password: string): void {
   }
 }
 
-export function checkUserIsBanned(channelUser: ChannelUser): void {
-  if (channelUser && channelUser.penalty === PENALTY_BANNED)
+export function checkUserIsBanned(channel: ChannelModel, userId: number): void {
+  if (channel.banList.has(userId)) {
     throw new BadRequestException('You are banned');
+  }
 }
 
 export async function validateChannelJoin(
   dto: ChannelJoinDto,
   channelRepository: ChannelRepository,
-  channelUserRepository: ChannelUserRepository,
+  channelFactory: ChannelFactory,
 ): Promise<void> {
   const channel: Channel = await channelRepository.findById(dto.channelId);
-  const channelUser: ChannelUser =
-    await channelUserRepository.findByUserIdAndChannelId(
-      dto.userId,
-      dto.channelId,
-    );
   checkChannelExist(channel);
   checkChannelIsFull(channel);
-  checkUserIsBanned(channelUser);
+  checkUserIsBanned(channelFactory.findById(channel.id), dto.userId);
 
   if (dto.joinType === 'join') {
     checkChannelIsPrivate(channel);
@@ -82,4 +82,56 @@ export function checkUserIsInvited(user: UserModel, channelId: string): void {
   if (!user.inviteList.has(channelId)) {
     throw new BadRequestException('You are not invited');
   }
+}
+
+function checkIfAccessToOwner(
+  targetUser: UserModel,
+  channel: ChannelModel,
+): void {
+  if (targetUser.id === channel.ownerId) {
+    throw new BadRequestException('You cannot access to owner');
+  }
+}
+
+function checkUserHaveAuthority(requestUser: UserModel): void {
+  if (
+    requestUser.roleType !== CHANNEL_PARTICIPANT_ADMIN &&
+    requestUser.roleType !== CHANNEL_PARTICIPANT_OWNER
+  ) {
+    throw new BadRequestException('You are not admin');
+  }
+}
+
+function checkAccessToSameRoleType(
+  requestUser: UserModel,
+  targetUser: UserModel,
+): void {
+  if (requestUser.roleType === targetUser.roleType) {
+    throw new BadRequestException('You cannot access to same role');
+  }
+}
+
+export function validateChannelAdmin(
+  dto: ChannelAdminCommandDto,
+  channelFactory: ChannelFactory,
+  userFactory: UserFactory,
+): void {
+  const requestUser: UserModel = userFactory.findById(dto.requestUserId);
+  const targetUser: UserModel = userFactory.findById(dto.targetUserId);
+  const channel: ChannelModel = channelFactory.findById(dto.channelId);
+
+  checkUserInChannel(channel, requestUser.id);
+  checkUserHaveAuthority(requestUser);
+  checkIfAccessToOwner(targetUser, channel);
+  checkAccessToSameRoleType(requestUser, targetUser);
+}
+
+export function checkUserIsOwner(channel: ChannelModel, userId: number): void {
+  if (userId !== channel.ownerId) {
+    throw new BadRequestException('You are not owner');
+  }
+}
+
+export function isUserAdmin(channel: ChannelModel, userId: number): boolean {
+  return channel.adminList.has(userId);
 }

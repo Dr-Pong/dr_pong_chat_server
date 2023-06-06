@@ -5,6 +5,8 @@ export const CHAT_KICK = 'kick' as const;
 export const CHAT_BAN = 'ban' as const;
 export const CHAT_MUTE = 'mute' as const;
 export const CHAT_UNMUTE = 'unmute' as const;
+export const CHAT_UNSETADMIN = 'unsetadmin' as const;
+export const CHAT_SETADMIN = 'setadmin' as const;
 
 export type ChatType =
   | 'message'
@@ -13,4 +15,6 @@ export type ChatType =
   | 'kick'
   | 'ban'
   | 'mute'
-  | 'unmute';
+  | 'unmute'
+  | 'unsetadmin'
+  | 'setadmin';
