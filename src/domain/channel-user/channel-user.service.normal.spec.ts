@@ -41,6 +41,7 @@ import { DeleteChannelInviteDto } from './dto/delete.channel.invite.dto';
 import { PostChannelMessageDto } from '../channel-message/post.channel-message.dto';
 import { CHAT_MESSAGE } from 'src/global/type/type.chat';
 import { ChannelMessage } from '../channel-message/channel-message.entity';
+import { TestModule } from './test/test.module';
 
 describe('ChannelUserService', () => {
   let service: ChannelUserService;
@@ -56,6 +57,7 @@ describe('ChannelUserService', () => {
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [
+        TestModule,
         FactoryModule,
         GatewayModule,
         TypeOrmModule.forRootAsync({
