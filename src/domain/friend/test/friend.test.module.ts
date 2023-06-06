@@ -7,6 +7,9 @@ import { Block } from 'src/domain/block/block.entity';
 import { ProfileImage } from 'src/domain/profile-image/profile-image.entity';
 import { ProfileImageRepository } from 'src/domain/profile-image/profile-image.repository';
 import { AuthModule } from '../../auth/auth.module';
+import { FriendDirectMessageTestService } from '../../direct-message-room/test/direct-message-room.test.service';
+import { DirectMessage } from '../../direct-message/direct-message.entity';
+import { DirectMessageRoom } from '../../direct-message-room/direct-message-room.entity';
 
 @Module({
   imports: [
@@ -16,19 +19,12 @@ import { AuthModule } from '../../auth/auth.module';
       Block,
       ProfileImageRepository,
       ProfileImage,
+      DirectMessage,
+      DirectMessageRoom,
     ]),
     AuthModule,
   ],
-  providers: [FriendTestService],
-  exports: [
-    FriendTestService,
-    TypeOrmModule.forFeature([
-      User,
-      Friend,
-      Block,
-      ProfileImage,
-      ProfileImageRepository,
-    ]),
-  ],
+  providers: [FriendTestService, FriendDirectMessageTestService],
+  exports: [FriendTestService, FriendDirectMessageTestService],
 })
-export class TestModule {}
+export class FriendTestModule {}
