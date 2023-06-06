@@ -37,7 +37,7 @@ import {
   validateChannelJoin,
   checkUserIsInvited,
   checkChannelExist,
-  validateChannelAdmin,
+  checkUserIsOwner,
 } from './channel-user.error';
 import { PostInviteDto } from './dto/post.invite.dto';
 import { InviteModel } from '../factory/model/invite.model';
@@ -323,8 +323,6 @@ export class ChannelUserService {
   /** 유저를 관리자로 임명하는 함수 */
   @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
   async postChannelAdmin(postDto: PostChannelAdminDto): Promise<void> {
-    const adminCommandDto: ChannelAdminCommandDto = postDto;
-
     const channelUser: ChannelUser =
       await this.channelUserRepository.findByUserIdAndChannelIdAndIsDelFalse(
         postDto.targetUserId,
@@ -334,11 +332,7 @@ export class ChannelUserService {
       throw new BadRequestException('User is not joined channel');
     }
 
-    validateChannelAdmin(
-      adminCommandDto,
-      this.channelFactory,
-      this.userFactory,
-    );
+    checkUserIsOwner(postDto.requestUserId, channelUser.channel);
 
     await this.messageRepository.save(
       SaveChannelMessageDto.fromPostAdminDto(postDto),
@@ -353,8 +347,6 @@ export class ChannelUserService {
   /** 유저를 관리자로 임명하는 함수 */
   @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
   async deleteChannelAdmin(deleteDto: PostChannelAdminDto): Promise<void> {
-    const adminCommandDto: ChannelAdminCommandDto = deleteDto;
-
     const channelUser: ChannelUser =
       await this.channelUserRepository.findByUserIdAndChannelIdAndIsDelFalse(
         deleteDto.targetUserId,
@@ -364,11 +356,7 @@ export class ChannelUserService {
       throw new BadRequestException('User is not joined channel');
     }
 
-    validateChannelAdmin(
-      adminCommandDto,
-      this.channelFactory,
-      this.userFactory,
-    );
+    checkUserIsOwner(deleteDto.requestUserId, channelUser.channel);
 
     await this.messageRepository.save(
       SaveChannelMessageDto.fromDeleteAdminDto(deleteDto),
