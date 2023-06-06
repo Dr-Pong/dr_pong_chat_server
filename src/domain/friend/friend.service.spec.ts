@@ -7,7 +7,7 @@ import {
   addTransactionalDataSource,
   initializeTransactionalContext,
 } from 'typeorm-transactional';
-import { TestModule } from './test/friend.test.module';
+import { FriendTestModule } from './test/friend.test.module';
 import { Test, TestingModule } from '@nestjs/testing';
 import { GetUserFriendDto as GetUserFriendDto } from './dto/get.user.friend.dto';
 import { UserFriendsDto } from './dto/user.friends.dto';
@@ -51,7 +51,7 @@ describe('FriendService', () => {
           },
         }),
         FriendModule,
-        TestModule,
+        FriendTestModule,
       ],
       providers: [
         {
