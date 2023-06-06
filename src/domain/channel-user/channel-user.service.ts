@@ -421,6 +421,13 @@ export class ChannelUserService {
     });
   }
 
+  /**
+   * 유저를 채널에서 추방하는 함수
+   * 채널의 소유자 또는 관리자만 가능하다
+   * 채널에 속해 있지 않은 유저를 추방하려하면 아무런 동작을 하지 않는다
+   * 채널의 소유자나 관리자끼리는 추방할 수 없다
+   * 추방된 유저는 채널에 다시 들어올 수 있다
+   * */
   @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
   async deleteChannelKick(deleteDto: DeleteChannelKickDto): Promise<void> {
     const dto: ChannelAdminCommandDto = deleteDto;
