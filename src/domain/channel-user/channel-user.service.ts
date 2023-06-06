@@ -34,10 +34,11 @@ import { PostChannelJoinDto } from './dto/post.channel.join.dto';
 import {
   checkUserInChannel,
   checkUserExist,
-  validateChannelJoin,
-  checkUserIsInvited,
   checkChannelExist,
+  checkUserIsInvited,
   checkUserIsOwner,
+  validateChannelJoin,
+  isUserAdmin,
 } from './channel-user.error';
 import { PostInviteDto } from './dto/post.invite.dto';
 import { InviteModel } from '../factory/model/invite.model';
@@ -54,7 +55,6 @@ import { ChatGateWay } from 'src/gateway/chat.gateway';
 import { MessageDto } from 'src/gateway/dto/message.dto';
 import { DeleteChannelInviteDto } from './dto/delete.channel.invite.dto';
 import { PostChannelAdminDto } from './dto/post.channel.admin.dto';
-import { ChannelAdminCommandDto } from './dto/channel.admin.command.dto';
 
 @Injectable()
 export class ChannelUserService {
@@ -323,16 +323,25 @@ export class ChannelUserService {
   /** 유저를 관리자로 임명하는 함수 */
   @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
   async postChannelAdmin(postDto: PostChannelAdminDto): Promise<void> {
-    const channelUser: ChannelUser =
-      await this.channelUserRepository.findByUserIdAndChannelIdAndIsDelFalse(
-        postDto.targetUserId,
-        postDto.channelId,
-      );
-    if (!channelUser) {
-      throw new BadRequestException('User is not joined channel');
-    }
+    const channel: ChannelModel = this.channelFactory.findById(
+      postDto.channelId,
+    );
+    checkChannelExist(channel);
 
-    checkUserIsOwner(postDto.requestUserId, channelUser.channel);
+    const requestUser: UserModel = this.userFactory.findById(
+      postDto.requestUserId,
+    );
+    const targetUser: UserModel = this.userFactory.findById(
+      postDto.targetUserId,
+    );
+
+    checkUserInChannel(channel, requestUser.id);
+    checkUserInChannel(channel, targetUser.id);
+
+    checkUserIsOwner(channel, postDto.requestUserId);
+    if (isUserAdmin(channel, postDto.targetUserId)) {
+      return;
+    }
 
     await this.messageRepository.save(
       SaveChannelMessageDto.fromPostAdminDto(postDto),
@@ -347,16 +356,25 @@ export class ChannelUserService {
   /** 유저를 관리자로 임명하는 함수 */
   @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
   async deleteChannelAdmin(deleteDto: PostChannelAdminDto): Promise<void> {
-    const channelUser: ChannelUser =
-      await this.channelUserRepository.findByUserIdAndChannelIdAndIsDelFalse(
-        deleteDto.targetUserId,
-        deleteDto.channelId,
-      );
-    if (!channelUser) {
-      throw new BadRequestException('User is not joined channel');
-    }
+    const channel: ChannelModel = this.channelFactory.findById(
+      deleteDto.channelId,
+    );
+    checkChannelExist(channel);
 
-    checkUserIsOwner(deleteDto.requestUserId, channelUser.channel);
+    const requestUser: UserModel = this.userFactory.findById(
+      deleteDto.requestUserId,
+    );
+    const targetUser: UserModel = this.userFactory.findById(
+      deleteDto.targetUserId,
+    );
+
+    checkUserInChannel(channel, requestUser.id);
+    checkUserInChannel(channel, targetUser.id);
+
+    checkUserIsOwner(channel, deleteDto.requestUserId);
+    if (!isUserAdmin(channel, deleteDto.targetUserId)) {
+      return;
+    }
 
     await this.messageRepository.save(
       SaveChannelMessageDto.fromDeleteAdminDto(deleteDto),
@@ -382,11 +400,7 @@ export class ChannelUserService {
    * 에러 케이스 - 채널이 없는 경우, 비밀번호가 틀린 경우, 인원이 꽉 찬 경우, 채널에서 BAN된 경우
    * */
   private async joinChannel(dto: ChannelJoinDto): Promise<void> {
-    await validateChannelJoin(
-      dto,
-      this.channelRepository,
-      this.channelUserRepository,
-    );
+    await validateChannelJoin(dto, this.channelRepository, this.channelFactory);
 
     await this.channelUserRepository.saveChannelUser(
       new SaveChannelUserDto(dto.userId, dto.channelId),

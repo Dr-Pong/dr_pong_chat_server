@@ -7,9 +7,6 @@ import {
 } from 'src/global/type/type.channel';
 import { ChannelRepository } from '../channel/channel.repository';
 import { ChannelJoinDto } from './dto/channel.join.dto';
-import { ChannelUserRepository } from './channel-user.repository';
-import { ChannelUser } from './channel-user.entity';
-import { PENALTY_BANNED } from 'src/global/type/type.channel-user';
 import { UserModel } from '../factory/model/user.model';
 import { User } from '../user/user.entity';
 import { ChannelAdminCommandDto } from './dto/channel.admin.command.dto';
@@ -58,25 +55,21 @@ export function checkChannelPassword(channel: Channel, password: string): void {
   }
 }
 
-export function checkUserIsBanned(channelUser: ChannelUser): void {
-  if (channelUser && channelUser.penalty === PENALTY_BANNED)
+export function checkUserIsBanned(channel: ChannelModel, userId: number): void {
+  if (channel.banList.has(userId)) {
     throw new BadRequestException('You are banned');
+  }
 }
 
 export async function validateChannelJoin(
   dto: ChannelJoinDto,
   channelRepository: ChannelRepository,
-  channelUserRepository: ChannelUserRepository,
+  channelFactory: ChannelFactory,
 ): Promise<void> {
   const channel: Channel = await channelRepository.findById(dto.channelId);
-  const channelUser: ChannelUser =
-    await channelUserRepository.findByUserIdAndChannelId(
-      dto.userId,
-      dto.channelId,
-    );
   checkChannelExist(channel);
   checkChannelIsFull(channel);
-  checkUserIsBanned(channelUser);
+  checkUserIsBanned(channelFactory.findById(channel.id), dto.userId);
 
   if (dto.joinType === 'join') {
     checkChannelIsPrivate(channel);
@@ -133,8 +126,12 @@ export function validateChannelAdmin(
   checkAccessToSameRoleType(requestUser, targetUser);
 }
 
-export function checkUserIsOwner(userId: number, channel: Channel): void {
-  if (userId !== channel.operator.id) {
+export function checkUserIsOwner(channel: ChannelModel, userId: number): void {
+  if (userId !== channel.ownerId) {
     throw new BadRequestException('You are not owner');
   }
+}
+
+export function isUserAdmin(channel: ChannelModel, userId: number): boolean {
+  return channel.adminList.has(userId);
 }
