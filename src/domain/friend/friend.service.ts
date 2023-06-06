@@ -26,8 +26,6 @@ export class FriendService {
    * 사용자의 친구 목록을 nickname을 기준으로 오름차순으로 정렬합니다
    * @param getDto - 사용자의 친구 목록을 가져오기 위한 DTO
    * @returns Promise<UserFriendsDto> - 사용자의 친구 목록을 담은 DTO를 Promise로 반환합니다.
-   *
-   * @todo 친구 목록을 가져올 때, status가 친구인경우만 추가합니다..filter사용해서 추가해주세요
    */
   @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
   async getUserFriends(getDto: GetUserFriendDto): Promise<UserFriendsDto> {
@@ -97,16 +95,13 @@ export class FriendService {
    * 사용자의 친구 요청 목록을 nickname을 기준으로 오름차순으로 정렬합니다.
    * @param getDto - 사용자의 친구 요청 목록을 가져오기 위한 DTO (Data Transfer Object)
    * @returns Promise<UserPendingFriendsDto> - 사용자의 친구 요청 목록을 담은 DTO를 Promise로 반환합니다.
-   * @todo findFriendsByUserId 이함수 사용해주시고.filter사용해서 추가해주세요
    */
   @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
   async getUserPendingFriendRequests(
     getDto: GetUserPendingFriendDto,
   ): Promise<UserPendingFriendsDto> {
     const userFriends: Friend[] =
-      await this.friendRepository.findAllFriendsStatusPendingByUserId(
-        getDto.userId,
-      );
+      await this.friendRepository.findFriendRequestingsByUserId(getDto.userId);
 
     const friends: FriendDto[] = userFriends.map((friend) => {
       if (friend.receiver.id === getDto.userId) {
@@ -240,16 +235,13 @@ export class FriendService {
    * 사용자의 친구 요청 개수를 반환합니다.
    * @param getDto - 사용자의 친구 요청 개수를 가져오기 위한 DTO
    * @returns Promise<UserFriendNotificationsDto> - 사용자의 친구 요청 개수를 담은 DTO를 Promise로 반환합니다.
-   * @todo findFriendsByUserId 이함수 사용하고 pending인지 filter사용해서 수정
    */
   @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
   async getUserFriendNotificationCount(
     getDto: GetUserFriendNotificationsRequestDto,
   ): Promise<UserFriendNotificationsDto> {
     const userFriends: Friend[] =
-      await this.friendRepository.findAllFriendsStatusPendingByUserId(
-        getDto.userId,
-      );
+      await this.friendRepository.findFriendRequestingsByUserId(getDto.userId);
 
     let friendsCount = userFriends.length;
     if (friendsCount > 50) {
