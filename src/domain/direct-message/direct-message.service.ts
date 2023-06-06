@@ -23,11 +23,7 @@ export class DirectMessageService {
   ) {}
 
   /** DirectMessage 히스토리조회
-   * 사용자 간의 DirectMessage 히스토리를 조회합니다.
-   *
-   * @param getDto - 직접 메시지 히스토리 조회를 위한 DTO
-   * @param getDto.userId - 사용자 ID
-   * @param getDto.friendId - 친구 ID
+   * offset과 count 를 이용해서 사용자 간의 DirectMessage 히스토리를 조회합니다.
    * @param getDto.offset - 히스토리 조회의 시작 오프셋
    * @param getDto.count - 조회할 메시지의 개수
    * @returns Promise<GetDirectMessageHistoryResponseDto> - 직접 메시지 히스토리를 담은 Promise를 반환합니다.
@@ -71,12 +67,6 @@ export class DirectMessageService {
   /**
    * 주어진 `postDto.userId`, `postDto.friendId`, `postDto.message`를 사용하여
    * 사용자 간의 직접 메시지를 전송합니다.
-   *
-   * @param postDto - 직접 메시지 전송을 위한 DTO (Data Transfer Object)
-   * @param postDto.userId - 보내는 사용자의 ID
-   * @param postDto.friendId - 메시지를 받을 친구의 ID
-   * @param postDto.message - 전송할 메시지 내용
-   * @returns Promise<void> - Promise를 반환하며, 성공적으로 메시지를 전송한 경우에는 아무 값도 반환하지 않습니다.
    */
   @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
   async postDirectMessage(postDto: PostDirectMessageDto): Promise<void> {
@@ -129,9 +119,6 @@ export class DirectMessageService {
 
   /**
    * 주어진 친구와 friendId가 유효한 친구인지 확인합니다.
-   *
-   * @param friend - 확인할 친구 객체
-   * @param friendId - 메시지를 받을 친구의 ID
    * @returns boolean - 유효한 친구인 경우 true를 반환하고, 그렇지 않은 경우 false를 반환합니다.
    */
   private isValidFriend(friend: Friend, friendId: number): boolean {
