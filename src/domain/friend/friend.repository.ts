@@ -17,39 +17,102 @@ export class FriendRepository {
 
   /**친구 목록
    * 사용자의 친구 목록을 가져옵니다.
-   * 주의: 친구 status구분 안하고 그냥 다가져옵니다.
-   * @param userId - 사용자의 id
-   * @returns Promise<Friend[]> - 사용자의 친구 목록을 담은 DTO를 Promise로 반환합니다.
    * */
   async findFriendsByUserId(userId: number): Promise<Friend[]> {
     const friends: Friend[] = await this.repository.find({
-      where: [{ sender: { id: userId } }, { receiver: { id: userId } }],
+      where: [
+        { sender: { id: userId }, status: FRIENDSTATUS_FRIEND },
+        { receiver: { id: userId }, status: FRIENDSTATUS_FRIEND },
+      ],
     });
     return friends;
   }
 
-  /**친구 목록
-   * 유저와 친구의 id로 둘이 테이블에 존재하는지 가져옵니다
-   * 주의: 친구 status구분 안하고 그냥 다가져옵니다.
-   * @param userId - 사용자의 id
-   * @param friendId - 친구의 id
-   * @returns Promise<Friend[]> - 사용자의 친구 목록을 담은 DTO를 Promise로 반환합니다.
-   * @todo 친구 삭제, 추가, 수락, 요청에 다사용하니까 변수명 수정해주세요 friendLogs가 어떨까요?
+  /**친구 요청 목록
+   * 사용자의 친구 요청목록을 가져옵니다.
+   * */
+  async findFriendRequestingsByUserId(userId: number): Promise<Friend[]> {
+    const friends: Friend[] = await this.repository.find({
+      where: [
+        { sender: { id: userId }, status: FRIENDSTATUS_REQUESTING },
+        { receiver: { id: userId }, status: FRIENDSTATUS_REQUESTING },
+      ],
+    });
+    return friends;
+  }
+
+  /**친구 요청 목록
+   * 사용자의 친구 요청목록을 가져옵니다.
+   * */
+  async countFriendRequestingsByUserId(userId: number): Promise<number> {
+    const friendCount: number = await this.repository.count({
+      where: [
+        { sender: { id: userId }, status: FRIENDSTATUS_REQUESTING },
+        { receiver: { id: userId }, status: FRIENDSTATUS_REQUESTING },
+      ],
+    });
+    return friendCount;
+  }
+
+  /**delete가 아닌 친구 테이블 목록
+   * 유저와 친구의 id로 둘이 테이블에 delete가 아닌 Frined[]를 반환합니다.
+   */
+  async findAllNotDeletedFriendsByUserIdAndFriendId(
+    userId: number,
+    friendId: number,
+  ): Promise<Friend[]> {
+    const friendLogs: Friend[] = await this.repository.find({
+      where: [
+        {
+          sender: { id: userId },
+          receiver: { id: friendId },
+          status: In([FRIENDSTATUS_FRIEND, FRIENDSTATUS_REQUESTING]),
+        },
+      ],
+    });
+    return friendLogs;
+  }
+
+  /**친구 requesting 테이블 목록
+   * 유저와 친구의 id로 둘이 테이블에 requesting인 Frined[]를 반환합니다.
+   */
+  async findAllFriendRequestsByUserIdAndFriendId(
+    userId: number,
+    friendId: number,
+  ): Promise<Friend[]> {
+    const friendLogs: Friend[] = await this.repository.find({
+      where: [
+        {
+          sender: { id: userId },
+          receiver: { id: friendId },
+          status: FRIENDSTATUS_REQUESTING,
+        },
+      ],
+    });
+    return friendLogs;
+  }
+
+  /**친구 테이블 목록
+   * 유저와 친구의 id로 둘이 테이블에 friend인 Frined[]를 반환합니다.
    */
   async findAllFriendsByUserIdAndFriendId(
     userId: number,
     friendId: number,
   ): Promise<Friend[]> {
-    const deletedFriends: Friend[] = await this.repository.find({
-      where: [{ sender: { id: userId }, receiver: { id: friendId } }],
+    const friendLogs: Friend[] = await this.repository.find({
+      where: [
+        {
+          sender: { id: userId },
+          receiver: { id: friendId },
+          status: FRIENDSTATUS_FRIEND,
+        },
+      ],
     });
-    return deletedFriends;
+    return friendLogs;
   }
 
   /** 친구요청
    * 친구 요청을 보냅니다. 테이블에 생성하는 부분
-   * @param userId - 사용자의 id
-   * @param friendId - 친구의 id
    */
   async saveFriendStatusRequestingByUserIdAndFriendId(
     userId: number,
@@ -62,18 +125,8 @@ export class FriendRepository {
     });
   }
 
-  //이함수 삭제해주세요 findFriendsByUserId 와 같습니다.
-  async findAllFriendsStatusPendingByUserId(userId: number): Promise<Friend[]> {
-    const pendingFriends: Friend[] = await this.repository.find({
-      where: [{ sender: { id: userId } }, { receiver: { id: userId } }],
-    });
-    return pendingFriends;
-  }
-
   /** 친구수락
    * 친구 요청을 수락합니다. 테이블에 업데이트하는 부분
-   * @param userId - 사용자의 id
-   * @param friendId - 친구의 id
    */
   async updateFriendRequestStatusFriendByUserIdAndFriendId(
     userId: number,
@@ -90,8 +143,6 @@ export class FriendRepository {
 
   /** 친구삭제및 거절
    * 친구 요청을 거절합니다. 테이블에 업데이트하는 부분
-   * @param userId - 사용자의 id
-   * @param friendId - 친구의 id
    */
   async updateFriendRequestStatusDeletedByUserIdAndFriendId(
     userId: number,
