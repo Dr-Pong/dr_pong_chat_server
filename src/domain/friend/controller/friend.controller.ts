@@ -37,7 +37,9 @@ export class FriendController {
    * */
   @Get('/users/friends')
   async friendListGet(): Promise<FriendListResponseDto> {
-    const friendList: FriendListResponseDto = {};
+    const friendList: FriendListResponseDto = {
+      users: [],
+    };
     return friendList;
   }
 
@@ -49,7 +51,9 @@ export class FriendController {
    * } // 요청을 둘다 보냈을 경우 친구 수락
    * */
   @Post('/users/friends/pendings/:nickname')
-  async friendPendingPost(@Param('nickname') nickname: string): Promise<void> {}
+  async friendPendingPost(@Param('nickname') nickname: string): Promise<void> {
+    return;
+  }
 
   /* 친구 요청 목록 조회 (pending list)
    * GET /users/friends/pendings
@@ -67,7 +71,9 @@ export class FriendController {
    * */
   @Get('/users/friends/pendings')
   async friendPendingListGet(): Promise<FriendPendingListResponseDto> {
-    const friendPendingList: FriendPendingListResponseDto = {};
+    const friendPendingList: FriendPendingListResponseDto = {
+      users: [],
+    };
     return friendPendingList;
   }
 
@@ -78,7 +84,9 @@ export class FriendController {
    * }
    * */
   @Post('/users/friends/:nickname')
-  async friendAcceptPost(@Param('nickname') nickname: string): Promise<void> {}
+  async friendAcceptPost(@Param('nickname') nickname: string): Promise<void> {
+    return;
+  }
 
   /* 친구 요청 거절
    * DELETE /users/friends/pendings/{ nickname };
@@ -87,9 +95,9 @@ export class FriendController {
    * }
    * */
   @Delete('/users/friends/pendings/:nickname')
-  async friendRejectDelete(
-    @Param('nickname') nickname: string,
-  ): Promise<void> {}
+  async friendRejectDelete(@Param('nickname') nickname: string): Promise<void> {
+    return;
+  }
 
   /* 친구 삭제
    * DELETE /users/friends/{nickname}
@@ -98,7 +106,9 @@ export class FriendController {
    * }
    * */
   @Delete('/users/friends/:nickname')
-  async friendDelete(@Param('nickname') nickname: string): Promise<void> {}
+  async friendDelete(@Param('nickname') nickname: string): Promise<void> {
+    return;
+  }
 
   /* DM 대화 내역
    * GET /users/friends/{nickname}/chats?offset={offset}&count={count}
@@ -123,7 +133,11 @@ export class FriendController {
     @Query('count', new DefaultValuePipe(40), ParseIntPipe) count: number,
     @Query('offset', new DefaultValuePipe(0), ParseIntPipe) offset: number,
   ): Promise<FriendDirectMessageChatListResponseDto> {
-    const friendDirectMessageChatList: FriendDirectMessageChatListResponseDto = {};
+    const friendDirectMessageChatList: FriendDirectMessageChatListResponseDto =
+      {
+        chatList: [],
+        isLastPage: true,
+      };
     return friendDirectMessageChatList;
   }
 
@@ -142,12 +156,14 @@ export class FriendController {
   async friendChatPost(
     @Param('nickname') nickname: string,
     @Body() postFriendChatRequestDto: PostFriendChatRequestDto,
-  ): Promise<void> {}
+  ): Promise<void> {
+    return;
+  }
 
   /* 진행 중인 DM 목록 받기
    * GET /users/friends/chatlist
    * response body {
-   * 	 chatList: [
+   * 	 dmList: [
    *     {
    *       nickname: string;
    *       imgUrl: string;
@@ -159,7 +175,10 @@ export class FriendController {
 
   @Get('/users/friends/chatlist')
   async friendDmListGet(): Promise<FriendDirectMessageRoomListResponseDto> {
-    const friendDirectMessageRoomList: FriendDirectMessageRoomListResponseDto = {};
+    const friendDirectMessageRoomList: FriendDirectMessageRoomListResponseDto =
+      {
+        dmList: [],
+      };
     return friendDirectMessageRoomList;
   }
 
@@ -170,7 +189,11 @@ export class FriendController {
    * }
    * */
   @Delete('/users/friends/chats/:nickname')
-  async friendDirectMessageDelete(@Param('nickname') nickname: string): Promise<void> {}
+  async friendDirectMessageDelete(
+    @Param('nickname') nickname: string,
+  ): Promise<void> {
+    return;
+  }
 
   /* 새로운 DM 유무 확인
    *
@@ -181,7 +204,9 @@ export class FriendController {
    * */
   @Get('/users/friends/chats/new')
   async friendDirectMessageNewGet(): Promise<FriendDirectMessageNewResponseDto> {
-    const friendDirectMessageNew: FriendDirectMessageNewResponseDto = {};
+    const friendDirectMessageNew: FriendDirectMessageNewResponseDto = {
+      hasNewChat: true,
+    };
     return friendDirectMessageNew;
   }
 }
