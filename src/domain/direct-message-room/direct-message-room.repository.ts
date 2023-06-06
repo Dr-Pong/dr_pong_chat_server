@@ -68,7 +68,7 @@ export class DirectMessageRoomRepository {
         userId: { id: userId },
         friendId: { id: friendId },
       },
-      { isDisplay: false },
+      { isDisplay: true },
     );
   }
 
