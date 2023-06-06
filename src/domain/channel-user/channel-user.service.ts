@@ -39,6 +39,7 @@ import {
   checkUserIsOwner,
   validateChannelJoin,
   isUserAdmin,
+  validateChannelAdmin,
 } from './channel-user.error';
 import { PostInviteDto } from './dto/post.invite.dto';
 import { InviteModel } from '../factory/model/invite.model';
@@ -55,6 +56,8 @@ import { ChatGateWay } from 'src/gateway/chat.gateway';
 import { MessageDto } from 'src/gateway/dto/message.dto';
 import { DeleteChannelInviteDto } from './dto/delete.channel.invite.dto';
 import { PostChannelAdminDto } from './dto/post.channel.admin.dto';
+import { DeleteChannelKickDto } from './dto/delete.channel.kick.dto';
+import { ChannelAdminCommandDto } from './dto/channel.admin.command.dto';
 
 @Injectable()
 export class ChannelUserService {
@@ -416,6 +419,33 @@ export class ChannelUserService {
         deleteDto.channelId,
       );
     });
+  }
+
+  @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
+  async deleteChannelKick(deleteDto: DeleteChannelKickDto): Promise<void> {
+    const dto: ChannelAdminCommandDto = deleteDto;
+    const channel: ChannelModel = this.channelFactory.findById(
+      deleteDto.channelId,
+    );
+    checkChannelExist(channel);
+    validateChannelAdmin(dto, this.channelFactory, this.userFactory);
+
+    const targetUser: ChannelUser =
+      await this.channelUserRepository.findByUserIdAndChannelIdAndIsDelFalse(
+        deleteDto.targetUserId,
+        deleteDto.channelId,
+      );
+    if (!targetUser) {
+      return;
+    }
+
+    await this.exitChannel(new ChannelExitDto(targetUser.user.id, channel.id));
+
+    await this.messageRepository.save(
+      SaveChannelMessageDto.fromExitDto(deleteDto),
+    );
+
+    /** 트랜잭션이 성공하면 Factory에도 결과를 반영한다 */
   }
 
   /**
