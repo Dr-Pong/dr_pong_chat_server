@@ -11,7 +11,6 @@ describe('FriendController - Relation', () => {
   let app: INestApplication;
   let dataSources: DataSource;
   let friendTestService: FriendTestService;
-  let friendService: FriendService;
 
   beforeAll(async () => {
     initializeTransactionalContext();
@@ -22,7 +21,6 @@ describe('FriendController - Relation', () => {
     app = module.createNestApplication();
     await app.init();
     friendTestService = module.get<FriendTestService>(FriendTestService);
-    friendService = module.get<FriendService>(FriendService);
     dataSources = module.get<DataSource>(DataSource);
     await dataSources.synchronize(true);
   });

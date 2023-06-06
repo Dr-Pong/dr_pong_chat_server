@@ -10,7 +10,7 @@ import { TestService } from 'src/domain/channel-user/test/test.service';
 import { DirectMessageTestService } from 'src/domain/direct-message/test/direct-message.test.service';
 import { FriendDirectMessageTestService } from 'src/domain/direct-message-room/test/direct-message-room.test.service';
 
-describe('FriendController', () => {
+describe('FriendController - Chat', () => {
   let app: INestApplication;
   let dataSources: DataSource;
   let friendTestService: FriendTestService;
@@ -18,9 +18,9 @@ describe('FriendController', () => {
   let directMessageTestService: DirectMessageTestService;
   let directMessageRoomTestService: FriendDirectMessageTestService;
   let friendService: FriendService;
-  initializeTransactionalContext();
 
-  beforeEach(async () => {
+  beforeAll(async () => {
+    initializeTransactionalContext();
     const module: TestingModule = await Test.createTestingModule({
       controllers: [FriendController],
     }).compile();
