@@ -46,7 +46,7 @@ describe('FriendController - Chat', () => {
 
   describe('[GET]', () => {
     describe('/users/friends/{nickname}/chats', () => {
-      it('DM 대화 내역 정상 조회', async () => {
+      it('DM 대화 내역 조회', async () => {
         const user = testService.users[0];
         const sender = testService.users[1];
         await testService.createDirectMessageToUser0(30);
@@ -129,7 +129,7 @@ describe('FriendController - Chat', () => {
     });
 
     describe('/users/friends/chatlist', () => {
-      it('진행 중인 DM 목록 정상 조회', async () => {
+      it('진행 중인 DM 목록 조회', async () => {
         const user = testService.users[0];
         const token = await testService.giveTokenToUser(user);
         await testService.createDirectMessageToUser0(30);
@@ -188,7 +188,7 @@ describe('FriendController - Chat', () => {
 
   describe('[POST]', () => {
     describe('/users/friends/{nickname}/chats', () => {
-      it('DM 전송 정상 요청', async () => {
+      it('DM 전송 성공', async () => {
         const user = testService.users[0];
         const token = await testService.giveTokenToUser(user);
         const receiver = testService.users[1];
@@ -203,7 +203,7 @@ describe('FriendController - Chat', () => {
         );
         expect(response.status).toBe(200);
       });
-      it('DM 전송 실패 요청(안친구)', async () => {
+      it('DM 전송 실패(안친구)', async () => {
         const user = testService.users[0];
         const token = await testService.giveTokenToUser(user);
         const receiver = testService.users[77];
@@ -218,7 +218,7 @@ describe('FriendController - Chat', () => {
         );
         expect(response.status).toBe(400);
       });
-      it('DM 전송 실패 요청(없는사람)', async () => {
+      it('DM 전송 실패(없는사람)', async () => {
         const user = testService.users[0];
         const token = await testService.giveTokenToUser(user);
         const receiver = 'nobody';
@@ -238,7 +238,7 @@ describe('FriendController - Chat', () => {
 
   describe('[DELETE]', () => {
     describe('/users/friends/chats/{nickname}', () => {
-      it('DM 리스트에서 방 삭제 정상 요청', async () => {
+      it('DM 리스트에서 방 삭제 성공', async () => {
         const user = testService.users[0];
         const token = await testService.giveTokenToUser(user);
         await testService.createDirectMessageToUser0(30);
@@ -251,7 +251,7 @@ describe('FriendController - Chat', () => {
         );
         expect(response.status).toBe(200);
       });
-      it('DM 리스트에서 방 삭제 실패 요청(없는방)', async () => {
+      it('DM 리스트에서 방 삭제 실패(없는방)', async () => {
         const user = testService.users[0];
         const token = await testService.giveTokenToUser(user);
         await testService.createDirectMessageToUser0(30);
