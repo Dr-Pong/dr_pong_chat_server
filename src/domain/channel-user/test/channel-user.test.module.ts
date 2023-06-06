@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { TestService } from './test.service';
+import { ChannelUserTestService } from './channel-user.test.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from 'src/domain/user/user.entity';
 import { ChannelUser } from '../channel-user.entity';
@@ -19,6 +19,6 @@ import { Channel } from 'src/domain/channel/channel.entity';
     ]),
     FactoryModule,
   ],
-  providers: [TestService],
+  providers: [ChannelUserTestService],
 })
-export class TestModule {}
+export class ChannlUserTestModule {}
