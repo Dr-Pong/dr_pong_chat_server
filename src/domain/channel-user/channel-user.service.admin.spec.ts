@@ -2,30 +2,74 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ChannelUserService } from './channel-user.service';
 import { ChannelFactory } from '../factory/channel.factory';
 import { UserFactory } from '../factory/user.factory';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { Channel } from 'diagnostics_channel';
 import { ChannelUserModule } from './channel-user.module';
-import { getRepositoryToken } from '@nestjs/typeorm';
+import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
 import { ChannelModel } from '../factory/model/channel.model';
 import { UserModel } from '../factory/model/user.model';
 import { BadRequestException } from '@nestjs/common';
 import { CHANNEL_PROTECTED } from 'src/global/type/type.channel';
 import { CHANNEL_PRIVATE } from 'src/global/type/type.channel';
 import { CHANNEL_PUBLIC } from 'src/global/type/type.channel';
+import { PostChannelAdminDto } from './dto/post.channel.admin.dto';
+import { DeleteChannelAdminDto } from './dto/delete.channel.admin.dto';
+import { TestService } from './test/test.service';
+import { ChannelUser } from './channel-user.entity';
+import { ChannelMessage } from './channel-message.entity';
+import { FactoryModule } from '../factory/factory.module';
+import { GatewayModule } from 'src/gateway/gateway.module';
+import { typeORMConfig } from 'src/configs/typeorm.config';
+import {
+  addTransactionalDataSource,
+  initializeTransactionalContext,
+} from 'typeorm-transactional';
+import { CHAT_SETADMIN, CHAT_UNSETADMIN } from 'src/global/type/type.chat';
+import { TestModule } from './test/test.module';
 
 describe('ChannelUserService', () => {
   let service: ChannelUserService;
   let channelFactory: ChannelFactory;
   let userFactory: UserFactory;
+  let testData: TestService;
+  let dataSource: DataSource;
   let channelRepository: Repository<Channel>;
-  let testData: ChannelTestService;
+  let channelUserRepository: Repository<ChannelUser>;
+  let channelMessageRepository: Repository<ChannelMessage>;
 
-  beforeEach(async () => {
+  initializeTransactionalContext();
+  beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      imports: [ChannelUserModule],
+      imports: [
+        TestModule,
+        FactoryModule,
+        GatewayModule,
+        TypeOrmModule.forRootAsync({
+          useFactory() {
+            return typeORMConfig;
+          },
+          async dataSourceFactory(options) {
+            if (!options) {
+              throw new Error('Invalid options passed');
+            }
+            return addTransactionalDataSource({
+              dataSource: new DataSource(options),
+            });
+          },
+        }),
+        ChannelUserModule,
+      ],
       providers: [
         {
           provide: getRepositoryToken(Channel),
+          useClass: Repository,
+        },
+        {
+          provide: getRepositoryToken(ChannelUser),
+          useClass: Repository,
+        },
+        {
+          provide: getRepositoryToken(ChannelMessage),
           useClass: Repository,
         },
       ],
@@ -34,14 +78,37 @@ describe('ChannelUserService', () => {
     service = module.get<ChannelUserService>(ChannelUserService);
     channelFactory = module.get<ChannelFactory>(ChannelFactory);
     userFactory = module.get<UserFactory>(UserFactory);
-    channelRepository = module.get<Repository<Channel>>(Repository);
+    testData = module.get<TestService>(TestService);
+    dataSource = module.get<DataSource>(DataSource);
+    channelRepository = module.get<Repository<Channel>>(
+      getRepositoryToken(Channel),
+    );
+    channelUserRepository = module.get<Repository<ChannelUser>>(
+      getRepositoryToken(ChannelUser),
+    );
+    channelMessageRepository = module.get<Repository<ChannelMessage>>(
+      getRepositoryToken(ChannelMessage),
+    );
+    await dataSource.synchronize(true);
+  });
+
+  afterEach(async () => {
+    await dataSource.synchronize(true);
+    userFactory.users.clear();
+    channelFactory.channels.clear();
+  });
+
+  afterAll(async () => {
+    await dataSource.destroy();
   });
 
   describe('관리자 기능', () => {
     describe('관리자 임명 / 해제', () => {
       it('[Valid Case] 관리자 임명', async () => {
-        const channel: ChannelModel = await testData.createBasicChannel();
-        const user: UserModel = userFactory.users.get(channel.users[1]);
+        const user: UserModel = await testData.createUserInChannel(9);
+        const channel: ChannelModel = channelFactory.findById(
+          user.joinedChannel,
+        );
 
         const postAdminRequest: PostChannelAdminDto = {
           requestUserId: channel.ownerId,
@@ -50,16 +117,28 @@ describe('ChannelUserService', () => {
         };
 
         await service.postChannelAdmin(postAdminRequest);
+        const savedMessage: ChannelMessage =
+          await channelMessageRepository.findOne({
+            where: {
+              channel: { id: channel.id },
+              user: { id: user.id },
+              type: CHAT_SETADMIN,
+            },
+          });
+
+        expect(savedMessage.content).toBe('is admin now');
         const savedChannelFt: ChannelModel = channelFactory.findById(
           channel.id,
         );
 
-        expect(savedChannelFt.adminList).toContain(user.id);
+        expect(savedChannelFt.adminList.has(user.id)).toBe(true);
       });
 
       it('[Valid Case] 관리자 해제', async () => {
-        const channel: ChannelModel = await testData.createChannelWithAdmins();
-        const user: UserModel = userFactory.users.get(channel.users[1]);
+        const channel: ChannelModel = await testData.createChannelWithAdmins(9);
+        const iteratror = channel.users.values();
+        iteratror.next();
+        const user: UserModel = userFactory.findById(iteratror.next().value);
 
         const deleteAdminRequest: DeleteChannelAdminDto = {
           requestUserId: channel.ownerId,
@@ -68,6 +147,15 @@ describe('ChannelUserService', () => {
         };
 
         await service.deleteChannelAdmin(deleteAdminRequest);
+        const savedMessage: ChannelMessage =
+          await channelMessageRepository.findOne({
+            where: {
+              channel: { id: channel.id },
+              user: { id: user.id },
+              type: CHAT_UNSETADMIN,
+            },
+          });
+        expect(savedMessage.content).toBe('is not admin anymore');
 
         const savedChannelFt: ChannelModel = channelFactory.findById(
           channel.id,

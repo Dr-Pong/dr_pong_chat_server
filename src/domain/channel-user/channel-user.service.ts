@@ -37,6 +37,7 @@ import {
   validateChannelJoin,
   checkUserIsInvited,
   checkChannelExist,
+  validateChannelAdmin,
 } from './channel-user.error';
 import { PostInviteDto } from './dto/post.invite.dto';
 import { InviteModel } from '../factory/model/invite.model';
@@ -52,6 +53,8 @@ import { PostChannelMessageDto } from '../channel-message/post.channel-message.d
 import { ChatGateWay } from 'src/gateway/chat.gateway';
 import { MessageDto } from 'src/gateway/dto/message.dto';
 import { DeleteChannelInviteDto } from './dto/delete.channel.invite.dto';
+import { PostChannelAdminDto } from './dto/post.channel.admin.dto';
+import { ChannelAdminCommandDto } from './dto/channel.admin.command.dto';
 
 @Injectable()
 export class ChannelUserService {
@@ -314,6 +317,69 @@ export class ChannelUserService {
     runOnTransactionComplete(() => {
       const userModel: UserModel = this.userFactory.findById(deleteDto.userId);
       this.channelFactory.leave(userModel.id, deleteDto.channelId);
+    });
+  }
+
+  /** 유저를 관리자로 임명하는 함수 */
+  @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
+  async postChannelAdmin(postDto: PostChannelAdminDto): Promise<void> {
+    const adminCommandDto: ChannelAdminCommandDto = postDto;
+
+    const channelUser: ChannelUser =
+      await this.channelUserRepository.findByUserIdAndChannelIdAndIsDelFalse(
+        postDto.targetUserId,
+        postDto.channelId,
+      );
+    if (!channelUser) {
+      throw new BadRequestException('User is not joined channel');
+    }
+
+    validateChannelAdmin(
+      adminCommandDto,
+      this.channelFactory,
+      this.userFactory,
+    );
+
+    await this.messageRepository.save(
+      SaveChannelMessageDto.fromPostAdminDto(postDto),
+    );
+
+    /** 트랜잭션이 성공하면 Factory에도 결과를 반영한다 */
+    runOnTransactionComplete(() => {
+      this.channelFactory.setAdmin(postDto.targetUserId, postDto.channelId);
+    });
+  }
+
+  /** 유저를 관리자로 임명하는 함수 */
+  @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
+  async deleteChannelAdmin(deleteDto: PostChannelAdminDto): Promise<void> {
+    const adminCommandDto: ChannelAdminCommandDto = deleteDto;
+
+    const channelUser: ChannelUser =
+      await this.channelUserRepository.findByUserIdAndChannelIdAndIsDelFalse(
+        deleteDto.targetUserId,
+        deleteDto.channelId,
+      );
+    if (!channelUser) {
+      throw new BadRequestException('User is not joined channel');
+    }
+
+    validateChannelAdmin(
+      adminCommandDto,
+      this.channelFactory,
+      this.userFactory,
+    );
+
+    await this.messageRepository.save(
+      SaveChannelMessageDto.fromDeleteAdminDto(deleteDto),
+    );
+
+    /** 트랜잭션이 성공하면 Factory에도 결과를 반영한다 */
+    runOnTransactionComplete(() => {
+      this.channelFactory.unsetAdmin(
+        deleteDto.targetUserId,
+        deleteDto.channelId,
+      );
     });
   }
 
