@@ -501,6 +501,12 @@ export class ChannelUserService {
     });
   }
 
+  /**
+   * 유저를 채널에서 mute하는 함수
+   * 채널의 소유자 또는 관리자만 가능하다
+   * 채널에 속해 있지 않은 유저를 mute해도 정상 동작한다
+   * 채널의 관리자끼리는 mute할 수 없다
+   * */
   @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
   async postChannelMute(postDto: PostChannelMuteDto): Promise<void> {
     const dto: ChannelAdminCommandDto = postDto;
@@ -530,6 +536,12 @@ export class ChannelUserService {
     });
   }
 
+  /**
+   * 유저를 채널에서 Unmute하는 함수
+   * 채널의 소유자 또는 관리자만 가능하다
+   * 채널에 속해 있지 않은 유저를 Unmute해도 정상 동작한다
+   * 채널의 관리자끼리는 Unmute할 수 없다
+   * */
   @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
   async deleteChannelMute(deleteDto: DeleteChannelMuteDto): Promise<void> {
     const dto: ChannelAdminCommandDto = deleteDto;
