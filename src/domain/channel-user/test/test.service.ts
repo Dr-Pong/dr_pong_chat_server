@@ -17,10 +17,6 @@ import {
 } from 'src/global/type/type.channel';
 import { UserModel } from 'src/domain/factory/model/user.model';
 import { InviteModel } from 'src/domain/factory/model/invite.model';
-import {
-  PENALTY_BANNED,
-  PENALTY_MUTED,
-} from 'src/global/type/type.channel-user';
 import { CHAT_MUTE } from 'src/global/type/type.chat';
 
 @Injectable()
@@ -176,7 +172,6 @@ export class TestService {
       user: { id: user.id },
       channel: { id: channel.id },
       isDeleted: true,
-      penalty: PENALTY_BANNED,
     });
     return this.channelFactory.findById(channel.id);
   }
@@ -219,15 +214,6 @@ export class TestService {
       channel.users.values().next().value,
     );
     this.channelFactory.setMute(user.id, channel.id);
-    await this.channelUserRepository.update(
-      {
-        user: { id: user.id },
-        channel: { id: channel.id },
-      },
-      {
-        penalty: PENALTY_MUTED,
-      },
-    );
     await this.messageRepository.save({
       user: { id: user.id },
       channel: { id: channel.id },
