@@ -36,8 +36,8 @@ export class DirectMessageRoomService {
 
     for (const directMessageRoom of directMessageRooms) {
       const directMessageRoomInfo: DirectMessageRoomInfoDto = {
-        nickname: directMessageRoom.friendId.nickname,
-        imgUrl: directMessageRoom.friendId.image.url,
+        nickname: directMessageRoom.friend.nickname,
+        imgUrl: directMessageRoom.friend.image.url,
         newChat: await this.directRepository.countAllUnreadChatByRoomId(
           directMessageRoom.roomId,
           directMessageRoom.lastReadMessageId,

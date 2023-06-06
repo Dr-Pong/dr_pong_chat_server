@@ -21,8 +21,8 @@ export class DirectMessageRoomRepository {
   ): Promise<DirectMessageRoom> {
     const directMessageRoom: DirectMessageRoom = await this.repository.findOne({
       where: {
-        userId: { id: userId },
-        friendId: { id: friendId },
+        user: { id: userId },
+        friend: { id: friendId },
       },
     });
     return directMessageRoom;
@@ -33,7 +33,7 @@ export class DirectMessageRoomRepository {
    */
   async findAllByUserId(userId: number): Promise<DirectMessageRoom[]> {
     const directMessageRooms: DirectMessageRoom[] = await this.repository.find({
-      where: { userId: { id: userId } },
+      where: { user: { id: userId } },
     });
     return directMessageRooms;
   }
@@ -43,8 +43,8 @@ export class DirectMessageRoomRepository {
    */
   async save(userId: number, friendId: number): Promise<DirectMessageRoom> {
     const directMessageRoom: DirectMessageRoom = await this.repository.create({
-      userId: { id: userId },
-      friendId: { id: friendId },
+      user: { id: userId },
+      friend: { id: friendId },
       roomId: FriendChatManager.generateRoomId(
         userId.toString(),
         friendId.toString(),
@@ -65,8 +65,8 @@ export class DirectMessageRoomRepository {
   ) {
     await this.repository.update(
       {
-        userId: { id: userId },
-        friendId: { id: friendId },
+        user: { id: userId },
+        friend: { id: friendId },
       },
       { isDisplay: false },
     );
@@ -82,8 +82,8 @@ export class DirectMessageRoomRepository {
   ) {
     await this.repository.update(
       {
-        userId: { id: userId },
-        friendId: { id: friendId },
+        user: { id: userId },
+        friend: { id: friendId },
       },
       { isDisplay: true },
     );
@@ -99,8 +99,8 @@ export class DirectMessageRoomRepository {
   ) {
     await this.repository.update(
       {
-        userId: { id: userId },
-        friendId: { id: friendId },
+        user: { id: userId },
+        friend: { id: friendId },
       },
       { lastReadMessageId: lastmessage.id },
     );

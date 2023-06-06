@@ -149,7 +149,7 @@ describe('DmLogService', () => {
 
         const CurrentDMRoom = await directMessageRoomRepository.find({
           where: {
-            userId: { id: deleteDirectMessageRoomDto.userId },
+            user: { id: deleteDirectMessageRoomDto.userId },
             isDisplay: true,
           },
         });
