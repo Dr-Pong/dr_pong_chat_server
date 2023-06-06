@@ -9,7 +9,7 @@ import {
   initializeTransactionalContext,
 } from 'typeorm-transactional';
 import { DirectMessageRoomModule } from './direct-message-room.module';
-import { FriendDirectMessageTestService } from './test/direct-message-room.test.service';
+import { DirectMessageRoomTestService } from './test/direct-message-room.test.service';
 import { TestModule } from './test/direct-message-room.test.module';
 import { GetDirectMessageRoomsDto } from './dto/get.direct-message-rooms.dto';
 import { DeleteDirectMessageRoomDto } from './dto/delete.direct-message-room.dto';
@@ -19,7 +19,7 @@ import { DirectMessageRoomsNotificationDto } from './dto/direct-message-rooms.no
 
 describe('DmLogService', () => {
   let service: DirectMessageRoomService;
-  let testData: FriendDirectMessageTestService;
+  let testData: DirectMessageRoomTestService;
   let dataSources: DataSource;
   let directMessageRoomRepository: Repository<DirectMessageRoom>;
 
@@ -46,8 +46,8 @@ describe('DmLogService', () => {
     }).compile();
 
     service = module.get<DirectMessageRoomService>(DirectMessageRoomService);
-    testData = module.get<FriendDirectMessageTestService>(
-      FriendDirectMessageTestService,
+    testData = module.get<DirectMessageRoomTestService>(
+      DirectMessageRoomTestService,
     );
     dataSources = module.get<DataSource>(DataSource);
     directMessageRoomRepository = module.get<Repository<DirectMessageRoom>>(
@@ -149,7 +149,7 @@ describe('DmLogService', () => {
 
         const CurrentDMRoom = await directMessageRoomRepository.find({
           where: {
-            userId: { id: deleteDirectMessageRoomDto.userId },
+            user: { id: deleteDirectMessageRoomDto.userId },
             isDisplay: true,
           },
         });

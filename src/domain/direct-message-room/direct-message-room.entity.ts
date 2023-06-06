@@ -15,11 +15,11 @@ export class DirectMessageRoom extends BaseTimeEntity {
 
   @ManyToOne(() => User, { eager: true })
   @JoinColumn({ name: 'user_id' })
-  userId: User;
+  user: User;
 
   @ManyToOne(() => User, { eager: true })
   @JoinColumn({ name: 'friend_id' })
-  friendId: User;
+  friend: User;
 
   @Column({ name: 'room_id', nullable: false })
   roomId: string;

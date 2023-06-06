@@ -14,7 +14,7 @@ import { DirectMessageRoom } from 'src/domain/direct-message-room/direct-message
 import { DirectMessage } from 'src/domain/direct-message/direct-message.entity';
 
 @Injectable()
-export class FriendDirectMessageTestService {
+export class DirectMessageRoomTestService {
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,
@@ -147,8 +147,8 @@ export class FriendDirectMessageTestService {
     const friendDirectMessages: DirectMessageRoom[] = [];
 
     const friendDirectMessage = await this.directMessageRoomRepository.save({
-      userId: this.users[0],
-      friendId: this.users[1],
+      user: this.users[0],
+      friend: this.users[1],
       roomId: FriendChatManager.generateRoomId(
         this.users[0].id.toString(),
         this.users[1].id.toString(),
@@ -164,8 +164,8 @@ export class FriendDirectMessageTestService {
     const friendDirectMessages: DirectMessageRoom[] = [];
 
     const friendDirectMessage = await this.directMessageRoomRepository.save({
-      userId: this.users[0],
-      friendId: this.users[1],
+      user: this.users[0],
+      friend: this.users[1],
       roomId: FriendChatManager.generateRoomId(
         this.users[0].id.toString(),
         this.users[1].id.toString(),
@@ -181,8 +181,8 @@ export class FriendDirectMessageTestService {
     const friendDirectMessages: DirectMessageRoom[] = [];
 
     const friendDirectMessage = await this.directMessageRoomRepository.save({
-      userId: this.users[0],
-      friendId: this.users[1],
+      user: this.users[0],
+      friend: this.users[1],
       roomId: FriendChatManager.generateRoomId(
         this.users[0].id.toString(),
         this.users[1].id.toString(),
@@ -213,8 +213,8 @@ export class FriendDirectMessageTestService {
     const friendDirectMessages: DirectMessageRoom[] = [];
 
     const friendDirectMessage = await this.directMessageRoomRepository.save({
-      userId: this.users[0],
-      friendId: this.users[2],
+      user: this.users[0],
+      friend: this.users[2],
       roomId: FriendChatManager.generateRoomId(
         this.users[0].id.toString(),
         this.users[2].id.toString(),
