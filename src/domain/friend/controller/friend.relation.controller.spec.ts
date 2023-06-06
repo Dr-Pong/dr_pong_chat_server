@@ -4,7 +4,6 @@ import { INestApplication } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import * as request from 'supertest';
 import { FriendTestService } from 'src/domain/friend/test/friend.test.service';
-import { FriendService } from 'src/domain/friend/friend.service';
 import { initializeTransactionalContext } from 'typeorm-transactional';
 
 describe('FriendController - Relation', () => {
