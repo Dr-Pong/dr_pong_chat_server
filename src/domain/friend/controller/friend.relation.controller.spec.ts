@@ -5,6 +5,7 @@ import { DataSource } from 'typeorm';
 import * as request from 'supertest';
 import { FriendTestService } from 'src/domain/friend/test/friend.test.service';
 import { initializeTransactionalContext } from 'typeorm-transactional';
+import {AppModule} from "../../../app.module";
 
 describe('FriendController - Relation', () => {
   let app: INestApplication;
@@ -14,7 +15,7 @@ describe('FriendController - Relation', () => {
   beforeAll(async () => {
     initializeTransactionalContext();
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [FriendController],
+      imports: [AppModule],
     }).compile();
 
     app = module.createNestApplication();
@@ -43,7 +44,7 @@ describe('FriendController - Relation', () => {
 
   describe('[GET]', () => {
     describe('/users/friends', () => {
-      it('친구 목록 정상 조회', async () => {
+      it('친구 목록 조회', async () => {
         await friendTestService.createUserFriends(50);
         const user = friendTestService.users[0];
         const token = await friendTestService.giveTokenToUser(user);
@@ -60,10 +61,19 @@ describe('FriendController - Relation', () => {
           result.users.sort((a, b) => a.nickname.localeCompare(b.nickname)),
         );
       });
+      it('친구 목록 조회(나는 친구가 없다)', async () => {
+        const user = friendTestService.users[0];
+        const token = await friendTestService.giveTokenToUser(user);
+        const response = await req(token, 'GET', '/users/friends');
+        const result = response.body;
+        expect(response.status).toBe(200);
+        expect(result).toHaveProperty('users');
+        expect(result.users.length).toBe(0);
+      });
     });
 
     describe('/users/friends/pendings', () => {
-      it('친구 요청 목록 정상 조회', async () => {
+      it('친구 요청 목록 조회', async () => {
         await friendTestService.createUserRequesting(50);
         const user = friendTestService.users[0];
         const token = await friendTestService.giveTokenToUser(user);
@@ -80,12 +90,21 @@ describe('FriendController - Relation', () => {
           result.users.sort((a, b) => a.nickname.localeCompare(b.nickname)),
         );
       });
+      it('친구 요청 목록 조회(나와 친구가 되려는 이가 없다)', async () => {
+        const user = friendTestService.users[0];
+        const token = await friendTestService.giveTokenToUser(user);
+        const response = await req(token, 'GET', `/users/friends/pendings`);
+        const result = response.body;
+        expect(response.status).toBe(200);
+        expect(result).toHaveProperty('users');
+        expect(result.users.length).toBe(0);
+      });
     });
   });
 
   describe('[POST]', () => {
     describe('/users/friends/pendings/{nickname}', () => {
-      it('친구 요청 정상 전송', async () => {
+      it('친구 요청 성공', async () => {
         const user = friendTestService.users[0];
         const receiver = friendTestService.users[1];
         const token = await friendTestService.giveTokenToUser(user);
@@ -96,10 +115,33 @@ describe('FriendController - Relation', () => {
         );
         expect(response.status).toBe(200);
       });
+      it('친구 요청 실패(없는 아이디)', async () => {
+        const user = friendTestService.users[0];
+        const receiver = 'nobody';
+        const token = await friendTestService.giveTokenToUser(user);
+        const response = await req(
+          token,
+          'POST',
+          `/users/friends/pendings/${receiver}`,
+        );
+        expect(response.status).toBe(400);
+      });
+      it('친구 요청 실패(이미 친구)', async () => {
+        const user = friendTestService.users[0];
+        const receiver = friendTestService.users[1];
+        await friendTestService.createUser0ToFriends(receiver.id);
+        const token = await friendTestService.giveTokenToUser(user);
+        const response = await req(
+          token,
+          'POST',
+          `/users/friends/pendings/${receiver.nickname}`,
+        );
+        expect(response.status).toBe(400);
+      });
     });
 
     describe('/users/friends/{nickname}', () => {
-      it('친구 요청 정상 수락', async () => {
+      it('친구 요청 수락 성공', async () => {
         const user = friendTestService.users[0];
         const sender = friendTestService.users[1];
         await friendTestService.createUser0ToRequesting(sender.id);
@@ -111,12 +153,47 @@ describe('FriendController - Relation', () => {
         );
         expect(response.status).toBe(200);
       });
+      it('친구 요청 수락 실패(이미 친구)', async () => {
+        const user = friendTestService.users[0];
+        const alreadyFriend = friendTestService.users[1];
+        await friendTestService.createUser0ToRequesting(alreadyFriend.id);
+        await friendTestService.createUser0ToFriends(alreadyFriend.id);
+        const token = await friendTestService.giveTokenToUser(user);
+        const response = await req(
+          token,
+          'POST',
+          `/users/friends/${alreadyFriend.nickname}`,
+        );
+        expect(response.status).toBe(400);
+      });
+      it('친구 요청 수락 실패(없는 아이디)', async () => {
+        const user = friendTestService.users[0];
+        const nobody = 'nobody';
+        const token = await friendTestService.giveTokenToUser(user);
+        const response = await req(
+          token,
+          'POST',
+          `/users/friends/${nobody}`,
+        );
+        expect(response.status).toBe(400);
+      });
+      it('친구 요청 수락 실패(아이디는 있는데 요청이 없음)', async () => {
+        const user = friendTestService.users[0];
+        const notSender = friendTestService.users[15];
+        const token = await friendTestService.giveTokenToUser(user);
+        const response = await req(
+          token,
+          'POST',
+          `/users/friends/${notSender.nickname}`,
+        );
+        expect(response.status).toBe(400);
+      });
     });
   });
 
   describe('[DELETE]', () => {
     describe('/users/friends/pendings/{nickname}', () => {
-      it('친구 요청 정상 거절', async () => {
+      it('친구 요청 거절 성공', async () => {
         const user = friendTestService.users[0];
         const sender = friendTestService.users[1];
         await friendTestService.createUser0ToRequesting(sender.id);
@@ -128,10 +205,32 @@ describe('FriendController - Relation', () => {
         );
         expect(response.status).toBe(200);
       });
+      it('친구 요청 거절 실패(없는 아이디)', async () => {
+        const user = friendTestService.users[0];
+        const nobody = 'nobody';
+        const token = await friendTestService.giveTokenToUser(user);
+        const response = await req(
+          token,
+          'DELETE',
+          `/users/friends/pendings/${nobody}`,
+        );
+        expect(response.status).toBe(400);
+      });
+      it('친구 요청 거절 실패(없는 요청)', async () => {
+        const user = friendTestService.users[0];
+        const noRequest = friendTestService.users[12];
+        const token = await friendTestService.giveTokenToUser(user);
+        const response = await req(
+          token,
+          'DELETE',
+          `/users/friends/pendings/${noRequest.nickname}`,
+        );
+        expect(response.status).toBe(400);
+      });
     });
 
     describe('/users/friends/{nickname}', () => {
-      it('친구 정상 삭제', async () => {
+      it('친구 삭제 성공', async () => {
         const user = friendTestService.users[0];
         const friend = friendTestService.users[1];
         await friendTestService.createUser0ToFriends(friend.id);
@@ -142,6 +241,28 @@ describe('FriendController - Relation', () => {
           `/users/friends/${friend.nickname}`,
         );
         expect(response.status).toBe(200);
+      });
+      it('친구 삭제 실패(없는 아이디)', async () => {
+        const user = friendTestService.users[0];
+        const nobody = 'nobody';
+        const token = await friendTestService.giveTokenToUser(user);
+        const response = await req(
+          token,
+          'DELETE',
+          `/users/friends/${nobody}`,
+        );
+        expect(response.status).toBe(400);
+      });
+      it('친구 삭제 실패(친구 아님)', async () => {
+        const user = friendTestService.users[0];
+        const friend = friendTestService.users[1];
+        const token = await friendTestService.giveTokenToUser(user);
+        const response = await req(
+          token,
+          'DELETE',
+          `/users/friends/${friend.nickname}`,
+        );
+        expect(response.status).toBe(400);
       });
     });
   });
