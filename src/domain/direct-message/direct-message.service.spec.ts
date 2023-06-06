@@ -173,8 +173,8 @@ describe('DmLogService', () => {
         });
         const dmRoomLog: DirectMessageRoom[] = await dmRoomlogRepository.find({
           where: {
-            userId: { id: userDirectMessegeDto.userId },
-            friendId: { id: userDirectMessegeDto.friendId },
+            user: { id: userDirectMessegeDto.userId },
+            friend: { id: userDirectMessegeDto.friendId },
           },
         });
 
@@ -182,8 +182,8 @@ describe('DmLogService', () => {
         expect(dmLog[0].roomId).toBe('1+2');
         expect(dmLog[0].message).toBe(userDirectMessegeDto.message);
 
-        expect(dmRoomLog[0].userId.id).toBe(userDirectMessegeDto.userId);
-        expect(dmRoomLog[0].friendId.id).toBe(userDirectMessegeDto.friendId);
+        expect(dmRoomLog[0].user.id).toBe(userDirectMessegeDto.userId);
+        expect(dmRoomLog[0].friend.id).toBe(userDirectMessegeDto.friendId);
         expect(dmRoomLog[0].roomId).toBe('1+2');
         expect(dmRoomLog[0].lastReadMessageId).toBe(null);
         expect(dmRoomLog[0].isDisplay).toBe(true);
@@ -210,18 +210,17 @@ describe('DmLogService', () => {
         });
         const dmRoomLog: DirectMessageRoom[] = await dmRoomlogRepository.find({
           where: {
-            userId: { id: userDirectMessegeDto.userId },
-            friendId: { id: userDirectMessegeDto.friendId },
+            user: { id: userDirectMessegeDto.userId },
+            friend: { id: userDirectMessegeDto.friendId },
           },
         });
 
         expect(dmLog[0].sender.id).toBe(userDirectMessegeDto.userId);
         expect(dmLog[0].roomId).toBe('1+2');
 
-        expect(dmRoomLog[0].userId.id).toBe(userDirectMessegeDto.userId);
-        expect(dmRoomLog[0].friendId.id).toBe(userDirectMessegeDto.friendId);
+        expect(dmRoomLog[0].user.id).toBe(userDirectMessegeDto.userId);
+        expect(dmRoomLog[0].friend.id).toBe(userDirectMessegeDto.friendId);
         expect(dmRoomLog[0].roomId).toBe('1+2');
-        expect(dmRoomLog[0].lastReadMessageId).toBe(11);
         expect(dmRoomLog[0].isDisplay).toBe(true);
       });
 

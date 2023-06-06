@@ -22,6 +22,9 @@ export class DirectMessageService {
     private directMessageRoomRepository: DirectMessageRoomRepository,
   ) {}
 
+  /** DirectMessage 히스토리조회
+   * offset과 count 를 이용해서 사용자 간의 DirectMessage 히스토리를 조회합니다.
+   */
   @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
   async getDirectMessagesHistory(
     getDto: GetDirectMessageHistoryDto,
@@ -58,29 +61,44 @@ export class DirectMessageService {
     return responseDto;
   }
 
+  /**
+   * 주어진 `postDto.userId`, `postDto.friendId`, `postDto.message`를 사용하여
+   * 사용자 간의 직접 메시지를 전송합니다.
+   */
   @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
   async postDirectMessage(postDto: PostDirectMessageDto): Promise<void> {
     const { userId, friendId, message } = postDto;
+
+    // 보내는 사용자의 친구 목록 조회
     const userFriends: Friend[] =
       await this.friendRepository.findFriendsByUserId(userId);
 
     for (const friend of userFriends) {
+      // 메시지를 받을 친구와 유효한 친구인지 확인
       if (this.isValidFriend(friend, friendId)) {
+        // 메시지 저장
         await this.directRepository.save(userId, friendId, message);
+
+        // 대화방 확인
         const directMessageRoom: DirectMessageRoom =
           await this.directMessageRoomRepository.findByUserIdAndFriendId(
             userId,
             friendId,
           );
+
         if (!directMessageRoom) {
+          // 대화방이 존재하지 않는 경우 새로 생성
           await this.directMessageRoomRepository.save(userId, friendId);
         } else {
           if (!directMessageRoom.isDisplay) {
+            // 대화방이 표시되지 않는 경우 표시 여부 업데이트
             await this.directMessageRoomRepository.updateIsDisplayTrueByUserIdAndFriendId(
               userId,
               friendId,
             );
           }
+
+          // 가장 최근 메시지 업데이트
           const lastmessage: DirectMessage =
             await this.directRepository.findByUserIdAndFriendIdOrderByIdDesc(
               userId,
@@ -89,13 +107,17 @@ export class DirectMessageService {
           await this.directMessageRoomRepository.updateLastMessageIdByUserIdAndFriendId(
             userId,
             friendId,
-            lastmessage,
+            lastmessage.id,
           );
         }
       }
     }
   }
 
+  /**
+   * 주어진 친구와 friendId가 유효한 친구인지 확인합니다.
+   * @returns boolean - 유효한 친구인 경우 true를 반환하고, 그렇지 않은 경우 false를 반환합니다.
+   */
   private isValidFriend(friend: Friend, friendId: number): boolean {
     return (
       friend.status === FRIENDSTATUS_FRIEND &&
