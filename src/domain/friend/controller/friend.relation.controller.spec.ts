@@ -41,12 +41,6 @@ describe('FriendController - Relation', () => {
     await dataSources.synchronize(true);
   });
 
-  afterEach(async () => {
-    friendTestService.clear();
-    jest.resetAllMocks();
-    await dataSources.synchronize(true);
-  });
-
   describe('[GET]', () => {
     describe('/users/friends', () => {
       it('친구 목록 정상 조회', async () => {
