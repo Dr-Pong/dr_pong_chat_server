@@ -6,6 +6,7 @@ import { Friend } from '../friend.entity';
 import { Block } from 'src/domain/block/block.entity';
 import { ProfileImage } from 'src/domain/profile-image/profile-image.entity';
 import { ProfileImageRepository } from 'src/domain/profile-image/profile-image.repository';
+import { AuthModule } from '../../auth/auth.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { ProfileImageRepository } from 'src/domain/profile-image/profile-image.r
       ProfileImageRepository,
       ProfileImage,
     ]),
+    AuthModule,
   ],
   providers: [FriendTestService],
   exports: [

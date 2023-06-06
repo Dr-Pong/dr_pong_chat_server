@@ -14,6 +14,7 @@ import { ChannelMessageModule } from './domain/channel-message/channel-message.m
 import { DirectMessageRoomModule } from './domain/direct-message-room/direct-message-room.module';
 import { DirectMessageModule } from './domain/direct-message/direct-message.module';
 import { FriendModule } from './domain/friend/friend.module';
+import { AuthModule } from './domain/auth/auth.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { FriendModule } from './domain/friend/friend.module';
     DirectMessageModule,
     ChannelMessageModule,
     DirectMessageRoomModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],

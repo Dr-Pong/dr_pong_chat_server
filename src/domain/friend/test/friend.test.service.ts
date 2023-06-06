@@ -10,10 +10,12 @@ import {
   FRIENDSTATUS_REQUESTING,
 } from 'src/global/type/type.friend.status';
 import { FriendChatManager } from 'src/global/utils/generate.room.id';
+import {JwtService} from "@nestjs/jwt";
 
 @Injectable()
 export class FriendTestService {
   constructor(
+    private jwtService: JwtService,
     @InjectRepository(User)
     private userRepository: Repository<User>,
     @InjectRepository(ProfileImage)
@@ -153,5 +155,13 @@ export class FriendTestService {
       });
       this.blocks.push(block);
     }
+  }
+
+  async giveTokenToUser(user: User) {
+    const token = this.jwtService.sign({
+      id: user.id,
+      nickname: user.nickname,
+    });
+    return token;
   }
 }
