@@ -23,7 +23,25 @@ export class FriendRepository {
    * */
   async findFriendsByUserId(userId: number): Promise<Friend[]> {
     const friends: Friend[] = await this.repository.find({
-      where: [{ sender: { id: userId } }, { receiver: { id: userId } }],
+      where: [
+        { sender: { id: userId }, status: FRIENDSTATUS_FRIEND },
+        { receiver: { id: userId }, status: FRIENDSTATUS_FRIEND },
+      ],
+    });
+    return friends;
+  }
+
+  /**친구 요청 목록
+   * 사용자의 친구 요청목록을 가져옵니다.
+   * @param userId - 사용자의 id
+   * @returns Promise<Friend[]> - 사용자의 친구요청 목록을 담은 DTO를 Promise로 반환합니다.
+   * */
+  async findFriendRequestingsByUserId(userId: number): Promise<Friend[]> {
+    const friends: Friend[] = await this.repository.find({
+      where: [
+        { sender: { id: userId }, status: FRIENDSTATUS_REQUESTING },
+        { receiver: { id: userId }, status: FRIENDSTATUS_REQUESTING },
+      ],
     });
     return friends;
   }
@@ -34,16 +52,15 @@ export class FriendRepository {
    * @param userId - 사용자의 id
    * @param friendId - 친구의 id
    * @returns Promise<Friend[]> - 사용자의 친구 목록을 담은 DTO를 Promise로 반환합니다.
-   * @todo 친구 삭제, 추가, 수락, 요청에 다사용하니까 변수명 수정해주세요 friendLogs가 어떨까요?
    */
   async findAllFriendsByUserIdAndFriendId(
     userId: number,
     friendId: number,
   ): Promise<Friend[]> {
-    const deletedFriends: Friend[] = await this.repository.find({
+    const friendLogs: Friend[] = await this.repository.find({
       where: [{ sender: { id: userId }, receiver: { id: friendId } }],
     });
-    return deletedFriends;
+    return friendLogs;
   }
 
   /** 친구요청
@@ -60,14 +77,6 @@ export class FriendRepository {
       receiver: { id: friendId },
       status: FRIENDSTATUS_REQUESTING,
     });
-  }
-
-  //이함수 삭제해주세요 findFriendsByUserId 와 같습니다.
-  async findAllFriendsStatusPendingByUserId(userId: number): Promise<Friend[]> {
-    const pendingFriends: Friend[] = await this.repository.find({
-      where: [{ sender: { id: userId } }, { receiver: { id: userId } }],
-    });
-    return pendingFriends;
   }
 
   /** 친구수락
