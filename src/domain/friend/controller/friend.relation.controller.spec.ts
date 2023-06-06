@@ -12,9 +12,9 @@ describe('FriendController', () => {
   let dataSources: DataSource;
   let friendTestService: FriendTestService;
   let friendService: FriendService;
-  initializeTransactionalContext();
 
-  beforeEach(async () => {
+  beforeAll(async () => {
+    initializeTransactionalContext();
     const module: TestingModule = await Test.createTestingModule({
       controllers: [FriendController],
     }).compile();
