@@ -5,6 +5,7 @@ import {
   CHAT_LEAVE,
   CHAT_MUTE,
   CHAT_SETADMIN,
+  CHAT_UNMUTE,
   CHAT_UNSETADMIN,
   ChatType,
 } from 'src/global/type/type.chat';
@@ -58,6 +59,17 @@ export class SaveChannelMessageDto {
       channelId,
       CHAT_MUTE,
       'is muted',
+      new Date(),
+    );
+  }
+
+  static fromUnmuteDto(muteDto: PostChannelMuteDto): SaveChannelMessageDto {
+    const { targetUserId: userId, channelId } = muteDto;
+    return new SaveChannelMessageDto(
+      userId,
+      channelId,
+      CHAT_UNMUTE,
+      'is unmuted',
       new Date(),
     );
   }

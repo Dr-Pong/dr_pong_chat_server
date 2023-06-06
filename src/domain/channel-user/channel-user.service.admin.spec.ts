@@ -423,52 +423,62 @@ describe('ChannelUserService', () => {
       });
     });
 
-    // describe('UNMUTE TEST', () => {
-    //   it('[Valid Case] 일반 유저 UNMUTE', async () => {
-    //     const user: UserModel = await testData.createUserInChannel(9);
-    //     const channel: ChannelModel = channelFactory.findById(
-    //       user.joinedChannel,
-    //     );
+    describe('UNMUTE TEST', () => {
+      it('[Valid Case] 일반 유저 UNMUTE', async () => {
+        const user: UserModel = await testData.createUserInChannel(9);
+        const channel: ChannelModel = channelFactory.findById(
+          user.joinedChannel,
+        );
 
-    //     const deleteChannelMuteRequest: DeleteChannelMuteDto = {
-    //       requestUserId: channel.ownerId,
-    //       channelId: channel.id,
-    //       targetUserId: user.id,
-    //     };
+        const deleteChannelMuteRequest: DeleteChannelMuteDto = {
+          requestUserId: channel.ownerId,
+          channelId: channel.id,
+          targetUserId: user.id,
+        };
 
-    //     await service.deleteChannelMute(deleteChannelMuteRequest);
-    //     const savedChannelFt: ChannelModel = channelFactory.findById(
-    //       channel.id,
-    //     );
+        await service.deleteChannelMute(deleteChannelMuteRequest);
+        const savedMessage: ChannelMessage =
+          await channelMessageRepository.findOne({
+            where: {
+              channel: { id: channel.id },
+              user: { id: user.id },
+            },
+          });
+        expect(savedMessage.content).toBe('is unmuted');
+        const savedChannelFt: ChannelModel = channelFactory.findById(
+          channel.id,
+        );
 
-    //     expect(savedChannelFt.users).toContain(user.id);
-    //     expect(savedChannelFt.muteList).not.toContain(user.id);
-    //   });
-    //   it('[Error Case] 관리자가 관리자를 UNMUTE', async () => {
-    //     const channel: ChannelModel =
-    //       await testData.createChannelWithMutedAdmins(7);
-    //     const iterator = channel.adminList.values();
-    //     iterator.next();
-    //     const admin: UserModel = userFactory.findById(iterator.next().value);
-    //     const user: UserModel = userFactory.findById(iterator.next().value);
+        expect(savedChannelFt.users.has(user.id)).toBe(true);
+        expect(savedChannelFt.muteList.has(user.id)).toBe(false);
+      });
+      it('[Error Case] 관리자가 관리자를 UNMUTE', async () => {
+        const channel: ChannelModel =
+          await testData.createChannelWithMutedAdmins(7);
+        const iterator = channel.adminList.values();
+        iterator.next();
+        const admin: UserModel = userFactory.findById(iterator.next().value);
+        const user: UserModel = userFactory.findById(iterator.next().value);
 
-    //     const deleteChannelMuteRequest: DeleteChannelMuteDto = {
-    //       requestUserId: admin.id,
-    //       channelId: channel.id,
-    //       targetUserId: user.id,
-    //     };
+        const deleteChannelMuteRequest: DeleteChannelMuteDto = {
+          requestUserId: admin.id,
+          channelId: channel.id,
+          targetUserId: user.id,
+        };
 
-    //     await expect(
-    //       service.deleteChannelMute(deleteChannelMuteRequest),
-    //     ).rejects.toThrow(new BadRequestException());
-    //     const savedChannelFt: ChannelModel = channelFactory.findById(
-    //       channel.id,
-    //     );
+        await expect(
+          service.deleteChannelMute(deleteChannelMuteRequest),
+        ).rejects.toThrow(
+          new BadRequestException('You cannot access to same role'),
+        );
+        const savedChannelFt: ChannelModel = channelFactory.findById(
+          channel.id,
+        );
 
-    //     expect(savedChannelFt.users).toContain(user.id);
-    //     expect(savedChannelFt.muteList).toContain(user.id);
-    //   });
-    // });
+        expect(savedChannelFt.users.has(user.id)).toBe(true);
+        expect(savedChannelFt.muteList.has(user.id)).toBe(true);
+      });
+    });
 
     // describe('채팅방 삭제', () => {
     //   it('[Valid Case] 채팅방 삭제(오너가 삭제하는 경우)', async () => {

@@ -60,6 +60,7 @@ import { DeleteChannelKickDto } from './dto/delete.channel.kick.dto';
 import { ChannelAdminCommandDto } from './dto/channel.admin.command.dto';
 import { PostChannelBanDto } from './dto/post.channel.ban.dto';
 import { PostChannelMuteDto } from './dto/post.channel.mute.dto';
+import { DeleteChannelMuteDto } from './dto/delete.channel.mute.dto';
 
 @Injectable()
 export class ChannelUserService {
@@ -526,6 +527,35 @@ export class ChannelUserService {
     /** 트랜잭션이 성공하면 Factory에도 결과를 반영한다 */
     runOnTransactionComplete(() => {
       this.channelFactory.setMute(targetUser.user.id, postDto.channelId);
+    });
+  }
+
+  @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
+  async deleteChannelMute(deleteDto: DeleteChannelMuteDto): Promise<void> {
+    const dto: ChannelAdminCommandDto = deleteDto;
+    const channel: ChannelModel = this.channelFactory.findById(
+      deleteDto.channelId,
+    );
+
+    checkChannelExist(channel);
+    validateChannelAdmin(dto, this.channelFactory, this.userFactory);
+
+    const targetUser: ChannelUser =
+      await this.channelUserRepository.findByUserIdAndChannelIdAndIsDelFalse(
+        deleteDto.targetUserId,
+        deleteDto.channelId,
+      );
+    if (!targetUser) {
+      return;
+    }
+
+    await this.messageRepository.save(
+      SaveChannelMessageDto.fromUnmuteDto(deleteDto),
+    );
+
+    /** 트랜잭션이 성공하면 Factory에도 결과를 반영한다 */
+    runOnTransactionComplete(() => {
+      this.channelFactory.unsetMute(targetUser.user.id, deleteDto.channelId);
     });
   }
 
