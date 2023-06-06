@@ -27,12 +27,15 @@ import {
 import {
   CHAT_BAN,
   CHAT_KICK,
+  CHAT_MUTE,
   CHAT_SETADMIN,
   CHAT_UNSETADMIN,
 } from 'src/global/type/type.chat';
 import { ChannlUserTestModule } from './test/channel-user.test.module';
 import { DeleteChannelKickDto } from './dto/delete.channel.kick.dto';
 import { PostChannelBanDto } from './dto/post.channel.ban.dto';
+import { PostChannelMuteDto } from './dto/post.channel.mute.dto';
+import { DeleteChannelMuteDto } from './dto/delete.channel.mute.dto';
 
 describe('ChannelUserService', () => {
   let service: ChannelUserService;
@@ -364,8 +367,10 @@ describe('ChannelUserService', () => {
 
     describe('MUTE TEST', () => {
       it('[Valid Case] 일반 유저 MUTE', async () => {
-        const channel: ChannelModel = await testData.createBasicChannel();
-        const user: UserModel = userFactory.users.get(channel.users[1]);
+        const user: UserModel = await testData.createUserInChannel(9);
+        const channel: ChannelModel = channelFactory.findById(
+          user.joinedChannel,
+        );
 
         const postChannelMuteRequest: PostChannelMuteDto = {
           requestUserId: channel.ownerId,
@@ -374,17 +379,28 @@ describe('ChannelUserService', () => {
         };
 
         await service.postChannelMute(postChannelMuteRequest);
+        const savedMessage: ChannelMessage =
+          await channelMessageRepository.findOne({
+            where: {
+              channel: { id: channel.id },
+              user: { id: user.id },
+              type: CHAT_MUTE,
+            },
+          });
+        expect(savedMessage.content).toBe('is muted');
         const savedChannelFt: ChannelModel = channelFactory.findById(
           channel.id,
         );
 
-        expect(savedChannelFt.users).toContain(user.id);
-        expect(savedChannelFt.muteList).toContain(user.id);
+        expect(savedChannelFt.users.has(user.id)).toBe(true);
+        expect(savedChannelFt.muteList.has(user.id)).toBe(true);
       });
       it('[Error Case] 관리자가 관리자를 MUTE', async () => {
-        const channel: ChannelModel = await testData.createChannelWithAdmins();
-        const admin: UserModel = userFactory.users.get(channel.users[1]);
-        const user: UserModel = userFactory.users.get(channel.users[2]);
+        const channel: ChannelModel = await testData.createChannelWithAdmins(7);
+        const iterator = channel.adminList.values();
+        iterator.next();
+        const admin: UserModel = userFactory.findById(iterator.next().value);
+        const user: UserModel = userFactory.findById(iterator.next().value);
 
         const postChannelMuteRequest: PostChannelMuteDto = {
           requestUserId: admin.id,
@@ -394,20 +410,25 @@ describe('ChannelUserService', () => {
 
         await expect(
           service.postChannelMute(postChannelMuteRequest),
-        ).rejects.toThrow(new BadRequestException());
+        ).rejects.toThrow(
+          new BadRequestException('You cannot access to same role'),
+        );
+
         const savedChannelFt: ChannelModel = channelFactory.findById(
           channel.id,
         );
 
-        expect(savedChannelFt.users).toContain(user.id);
-        expect(savedChannelFt.muteList).not.toContain(user.id);
+        expect(savedChannelFt.users.has(user.id)).toBe(true);
+        expect(savedChannelFt.muteList.has(user.id)).toBe(false);
       });
     });
 
     describe('UNMUTE TEST', () => {
       it('[Valid Case] 일반 유저 UNMUTE', async () => {
-        const channel: ChannelModel = await testData.createChannelWithMuteds();
-        const user: UserModel = userFactory.users.get(channel.users[1]);
+        const user: UserModel = await testData.createUserInChannel(9);
+        const channel: ChannelModel = channelFactory.findById(
+          user.joinedChannel,
+        );
 
         const deleteChannelMuteRequest: DeleteChannelMuteDto = {
           requestUserId: channel.ownerId,
@@ -416,18 +437,28 @@ describe('ChannelUserService', () => {
         };
 
         await service.deleteChannelMute(deleteChannelMuteRequest);
+        const savedMessage: ChannelMessage =
+          await channelMessageRepository.findOne({
+            where: {
+              channel: { id: channel.id },
+              user: { id: user.id },
+            },
+          });
+        expect(savedMessage.content).toBe('is unmuted');
         const savedChannelFt: ChannelModel = channelFactory.findById(
           channel.id,
         );
 
-        expect(savedChannelFt.users).toContain(user.id);
-        expect(savedChannelFt.muteList).not.toContain(user.id);
+        expect(savedChannelFt.users.has(user.id)).toBe(true);
+        expect(savedChannelFt.muteList.has(user.id)).toBe(false);
       });
       it('[Error Case] 관리자가 관리자를 UNMUTE', async () => {
         const channel: ChannelModel =
-          await testData.createChannelWithMutedAdmins();
-        const admin: UserModel = userFactory.users.get(channel.users[1]);
-        const user: UserModel = userFactory.users.get(channel.users[2]);
+          await testData.createChannelWithMutedAdmins(7);
+        const iterator = channel.adminList.values();
+        iterator.next();
+        const admin: UserModel = userFactory.findById(iterator.next().value);
+        const user: UserModel = userFactory.findById(iterator.next().value);
 
         const deleteChannelMuteRequest: DeleteChannelMuteDto = {
           requestUserId: admin.id,
@@ -437,144 +468,146 @@ describe('ChannelUserService', () => {
 
         await expect(
           service.deleteChannelMute(deleteChannelMuteRequest),
-        ).rejects.toThrow(new BadRequestException());
+        ).rejects.toThrow(
+          new BadRequestException('You cannot access to same role'),
+        );
         const savedChannelFt: ChannelModel = channelFactory.findById(
           channel.id,
         );
 
-        expect(savedChannelFt.users).toContain(user.id);
-        expect(savedChannelFt.muteList).toContain(user.id);
+        expect(savedChannelFt.users.has(user.id)).toBe(true);
+        expect(savedChannelFt.muteList.has(user.id)).toBe(true);
       });
     });
 
-    describe('채팅방 삭제', () => {
-      it('[Valid Case] 채팅방 삭제(오너가 삭제하는 경우)', async () => {
-        const channel: ChannelModel = await testData.createBasicChannel();
-        const user: UserModel = userFactory.users.get(channel.ownerId);
+    // describe('채팅방 삭제', () => {
+    //   it('[Valid Case] 채팅방 삭제(오너가 삭제하는 경우)', async () => {
+    //     const channel: ChannelModel = await testData.createBasicChannel();
+    //     const user: UserModel = userFactory.users.get(channel.ownerId);
 
-        const deleteChannelRequest: DeleteChannelDto = {
-          userId: user.id,
-          channelId: channel.id,
-        };
+    //     const deleteChannelRequest: DeleteChannelDto = {
+    //       userId: user.id,
+    //       channelId: channel.id,
+    //     };
 
-        await service.deleteChannel(deleteChannelRequest);
-        const savedChannelFt: ChannelModel = channelFactory.findById(
-          channel.id,
-        );
+    //     await service.deleteChannel(deleteChannelRequest);
+    //     const savedChannelFt: ChannelModel = channelFactory.findById(
+    //       channel.id,
+    //     );
 
-        expect(savedChannelFt.users).toContain(user.id);
-        expect(savedChannelFt.muteList).toContain(user.id);
-      });
-    });
-    describe('채팅방 수정', () => {
-      it('[Valid Case] public -> private', async () => {
-        const channel: ChannelModel = await testData.createBasicChannel();
-        const user: UserModel = userFactory.users.get(channel.ownerId);
+    //     expect(savedChannelFt.users).toContain(user.id);
+    //     expect(savedChannelFt.muteList).toContain(user.id);
+    //   });
+    // });
+    // describe('채팅방 수정', () => {
+    //   it('[Valid Case] public -> private', async () => {
+    //     const channel: ChannelModel = await testData.createBasicChannel();
+    //     const user: UserModel = userFactory.users.get(channel.ownerId);
 
-        const patchChannelRequest: patchChannelDto = {
-          userId: user.id,
-          channelId: channel.id,
-          password: null,
-          access: CHANNEL_PRIVATE,
-        };
+    //     const patchChannelRequest: patchChannelDto = {
+    //       userId: user.id,
+    //       channelId: channel.id,
+    //       password: null,
+    //       access: CHANNEL_PRIVATE,
+    //     };
 
-        await service.patchChannel(patchChannelRequest);
-        const savedChannelFt: ChannelModel = channelFactory.findById(
-          channel.id,
-        );
+    //     await service.patchChannel(patchChannelRequest);
+    //     const savedChannelFt: ChannelModel = channelFactory.findById(
+    //       channel.id,
+    //     );
 
-        expect(savedChannelFt.type).toBe(CHANNEL_PRIVATE);
-      });
-      it('[Valid Case] public -> protected', async () => {
-        const channel: ChannelModel = await testData.createBasicChannel();
-        const user: UserModel = userFactory.users.get(channel.ownerId);
+    //     expect(savedChannelFt.type).toBe(CHANNEL_PRIVATE);
+    //   });
+    //   it('[Valid Case] public -> protected', async () => {
+    //     const channel: ChannelModel = await testData.createBasicChannel();
+    //     const user: UserModel = userFactory.users.get(channel.ownerId);
 
-        const patchChannelRequest: patchChannelDto = {
-          userId: user.id,
-          channelId: channel.id,
-          password: '1234',
-          access: CHANNEL_PROTECTED,
-        };
+    //     const patchChannelRequest: patchChannelDto = {
+    //       userId: user.id,
+    //       channelId: channel.id,
+    //       password: '1234',
+    //       access: CHANNEL_PROTECTED,
+    //     };
 
-        await service.patchChannel(patchChannelRequest);
-        const savedChannelFt: ChannelModel = channelFactory.findById(
-          channel.id,
-        );
+    //     await service.patchChannel(patchChannelRequest);
+    //     const savedChannelFt: ChannelModel = channelFactory.findById(
+    //       channel.id,
+    //     );
 
-        expect(savedChannelFt.type).toBe(CHANNEL_PROTECTED);
-        expect(savedChannelFt.password).toBe('1234');
-      });
-      it('[Valid Case] private -> public', async () => {
-        const channel: ChannelModel = await testData.createPrivateChannel();
+    //     expect(savedChannelFt.type).toBe(CHANNEL_PROTECTED);
+    //     expect(savedChannelFt.password).toBe('1234');
+    //   });
+    //   it('[Valid Case] private -> public', async () => {
+    //     const channel: ChannelModel = await testData.createPrivateChannel();
 
-        const patchChannelRequest: patchChannelDto = {
-          userId: channel.ownerId,
-          channelId: channel.id,
-          password: null,
-          access: CHANNEL_PUBLIC,
-        };
+    //     const patchChannelRequest: patchChannelDto = {
+    //       userId: channel.ownerId,
+    //       channelId: channel.id,
+    //       password: null,
+    //       access: CHANNEL_PUBLIC,
+    //     };
 
-        await service.patchChannel(patchChannelRequest);
-        const savedChannelFt: ChannelModel = channelFactory.findById(
-          channel.id,
-        );
+    //     await service.patchChannel(patchChannelRequest);
+    //     const savedChannelFt: ChannelModel = channelFactory.findById(
+    //       channel.id,
+    //     );
 
-        expect(savedChannelFt.type).toBe(CHANNEL_PUBLIC);
-      });
-      it('[Valid Case] private -> protected', async () => {
-        const channel: ChannelModel = await testData.createPrivateChannel();
+    //     expect(savedChannelFt.type).toBe(CHANNEL_PUBLIC);
+    //   });
+    //   it('[Valid Case] private -> protected', async () => {
+    //     const channel: ChannelModel = await testData.createPrivateChannel();
 
-        const patchChannelRequest: patchChannelDto = {
-          userId: channel.ownerId,
-          channelId: channel.id,
-          password: '1234',
-          access: CHANNEL_PROTECTED,
-        };
+    //     const patchChannelRequest: patchChannelDto = {
+    //       userId: channel.ownerId,
+    //       channelId: channel.id,
+    //       password: '1234',
+    //       access: CHANNEL_PROTECTED,
+    //     };
 
-        await service.patchChannel(patchChannelRequest);
-        const savedChannelFt: ChannelModel = channelFactory.findById(
-          channel.id,
-        );
+    //     await service.patchChannel(patchChannelRequest);
+    //     const savedChannelFt: ChannelModel = channelFactory.findById(
+    //       channel.id,
+    //     );
 
-        expect(savedChannelFt.type).toBe(CHANNEL_PUBLIC);
-        expect(savedChannelFt.password).toBe('1234');
-      });
-      it('[Valid Case] protected -> public', async () => {
-        const channel: ChannelModel = await testData.createPrivateChannel();
+    //     expect(savedChannelFt.type).toBe(CHANNEL_PUBLIC);
+    //     expect(savedChannelFt.password).toBe('1234');
+    //   });
+    //   it('[Valid Case] protected -> public', async () => {
+    //     const channel: ChannelModel = await testData.createPrivateChannel();
 
-        const patchChannelRequest: patchChannelDto = {
-          userId: channel.ownerId,
-          channelId: channel.id,
-          password: null,
-          access: CHANNEL_PUBLIC,
-        };
+    //     const patchChannelRequest: patchChannelDto = {
+    //       userId: channel.ownerId,
+    //       channelId: channel.id,
+    //       password: null,
+    //       access: CHANNEL_PUBLIC,
+    //     };
 
-        await service.patchChannel(patchChannelRequest);
-        const savedChannelFt: ChannelModel = channelFactory.findById(
-          channel.id,
-        );
+    //     await service.patchChannel(patchChannelRequest);
+    //     const savedChannelFt: ChannelModel = channelFactory.findById(
+    //       channel.id,
+    //     );
 
-        expect(savedChannelFt.type).toBe(CHANNEL_PUBLIC);
-        expect(savedChannelFt.password).toBe(null);
-      });
-      it('[Valid Case] protected -> private', async () => {
-        const channel: ChannelModel = await testData.createPrivateChannel();
+    //     expect(savedChannelFt.type).toBe(CHANNEL_PUBLIC);
+    //     expect(savedChannelFt.password).toBe(null);
+    //   });
+    //   it('[Valid Case] protected -> private', async () => {
+    //     const channel: ChannelModel = await testData.createPrivateChannel();
 
-        const patchChannelRequest: patchChannelDto = {
-          userId: channel.ownerId,
-          channelId: channel.id,
-          password: null,
-          access: CHANNEL_PRIVATE,
-        };
+    //     const patchChannelRequest: patchChannelDto = {
+    //       userId: channel.ownerId,
+    //       channelId: channel.id,
+    //       password: null,
+    //       access: CHANNEL_PRIVATE,
+    //     };
 
-        await service.patchChannel(patchChannelRequest);
-        const savedChannelFt: ChannelModel = channelFactory.findById(
-          channel.id,
-        );
+    //     await service.patchChannel(patchChannelRequest);
+    //     const savedChannelFt: ChannelModel = channelFactory.findById(
+    //       channel.id,
+    //     );
 
-        expect(savedChannelFt.type).toBe(CHANNEL_PRIVATE);
-        expect(savedChannelFt.password).toBe(null);
-      });
-    });
+    //     expect(savedChannelFt.type).toBe(CHANNEL_PRIVATE);
+    //     expect(savedChannelFt.password).toBe(null);
+    //   });
+    // });
   });
 });

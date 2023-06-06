@@ -3,7 +3,9 @@ import {
   CHAT_JOIN,
   CHAT_KICK,
   CHAT_LEAVE,
+  CHAT_MUTE,
   CHAT_SETADMIN,
+  CHAT_UNMUTE,
   CHAT_UNSETADMIN,
   ChatType,
 } from 'src/global/type/type.chat';
@@ -14,6 +16,7 @@ import { PostChannelAdminDto } from '../channel-user/dto/post.channel.admin.dto'
 import { DeleteChannelAdminDto } from '../channel-user/dto/delete.channel.admin.dto';
 import { DeleteChannelKickDto } from '../channel-user/dto/delete.channel.kick.dto';
 import { PostChannelBanDto } from '../channel-user/dto/post.channel.ban.dto';
+import { PostChannelMuteDto } from '../channel-user/dto/post.channel.mute.dto';
 
 export class SaveChannelMessageDto {
   userId: number;
@@ -45,6 +48,28 @@ export class SaveChannelMessageDto {
       channelId,
       CHAT_LEAVE,
       'exited channel',
+      new Date(),
+    );
+  }
+
+  static fromMuteDto(muteDto: PostChannelMuteDto): SaveChannelMessageDto {
+    const { targetUserId: userId, channelId } = muteDto;
+    return new SaveChannelMessageDto(
+      userId,
+      channelId,
+      CHAT_MUTE,
+      'is muted',
+      new Date(),
+    );
+  }
+
+  static fromUnmuteDto(muteDto: PostChannelMuteDto): SaveChannelMessageDto {
+    const { targetUserId: userId, channelId } = muteDto;
+    return new SaveChannelMessageDto(
+      userId,
+      channelId,
+      CHAT_UNMUTE,
+      'is unmuted',
       new Date(),
     );
   }

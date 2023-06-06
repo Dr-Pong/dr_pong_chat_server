@@ -165,6 +165,16 @@ export class ChannelUserTestService {
     return this.channelFactory.findById(channel.id);
   }
 
+  async createChannelWithMutedAdmins(userNum: number): Promise<ChannelModel> {
+    const channel: ChannelModel = await this.createChannelWithAdmins(userNum);
+    channel.users.forEach((userId) => {
+      if (channel.ownerId !== userId) {
+        this.channelFactory.setMute(userId, channel.id);
+      }
+    });
+    return this.channelFactory.findById(channel.id);
+  }
+
   async createBannedChannel(user: UserModel): Promise<ChannelModel> {
     const channel: ChannelModel = await this.createBasicChannel('banned', 9);
     this.channelFactory.setBan(user.id, channel.id);
