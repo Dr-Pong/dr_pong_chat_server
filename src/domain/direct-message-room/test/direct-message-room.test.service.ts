@@ -12,10 +12,12 @@ import { FriendChatManager } from 'src/global/utils/generate.room.id';
 import { Friend } from 'src/domain/friend/friend.entity';
 import { DirectMessageRoom } from 'src/domain/direct-message-room/direct-message-room.entity';
 import { DirectMessage } from 'src/domain/direct-message/direct-message.entity';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class FriendDirectMessageTestService {
   constructor(
+    private jwtService: JwtService,
     @InjectRepository(User)
     private userRepository: Repository<User>,
     @InjectRepository(ProfileImage)
@@ -128,6 +130,21 @@ export class FriendDirectMessageTestService {
     }
   }
 
+  async createDirectMessageToUser0(messageCount: number): Promise<void> {
+    for (let i = 0; i < messageCount; i++) {
+      const directMessage = await this.directMessageRepository.save({
+        sender: this.users[1],
+        roomId: FriendChatManager.generateRoomId(
+          this.users[1].id.toString(),
+          this.users[0].id.toString(),
+        ),
+        message: 'message' + i.toString(),
+        time: new Date(),
+      });
+      this.directMessage.push(directMessage);
+    }
+  }
+
   async createDirectMessageToUser1(messageCount: number): Promise<void> {
     for (let i = 0; i < messageCount; i++) {
       const directMessage = await this.directMessageRepository.save({
@@ -160,6 +177,23 @@ export class FriendDirectMessageTestService {
     friendDirectMessages.push(friendDirectMessage);
   }
 
+  async createDirectMessageRoomToUserI(i: number): Promise<void> {
+    const friendDirectMessages: DirectMessageRoom[] = [];
+
+    const friendDirectMessage = await this.directMessageRoomRepository.save({
+      userId: this.users[0],
+      friendId: this.users[i],
+      roomId: FriendChatManager.generateRoomId(
+        this.users[0].id.toString(),
+        this.users[i].id.toString(),
+      ),
+      lastReadMessageId: null,
+      isDisplay: true,
+    });
+
+    friendDirectMessages.push(friendDirectMessage);
+  }
+
   async createAllReadDirectMessageRoomToUser1(): Promise<void> {
     const friendDirectMessages: DirectMessageRoom[] = [];
 
@@ -177,6 +211,23 @@ export class FriendDirectMessageTestService {
     friendDirectMessages.push(friendDirectMessage);
   }
 
+  async createAllReadDirectMessageRoomToUserI(i: number): Promise<void> {
+    const friendDirectMessages: DirectMessageRoom[] = [];
+
+    const friendDirectMessage = await this.directMessageRoomRepository.save({
+      userId: this.users[0],
+      friendId: this.users[i],
+      roomId: FriendChatManager.generateRoomId(
+        this.users[0].id.toString(),
+        this.users[i].id.toString(),
+      ),
+      lastReadMessageId: this.directMessage[this.directMessage.length - 1].id,
+      isDisplay: true,
+    });
+
+    friendDirectMessages.push(friendDirectMessage);
+  }
+
   async createHalfReadDirectMessageRoomToUser1(): Promise<void> {
     const friendDirectMessages: DirectMessageRoom[] = [];
 
@@ -188,6 +239,24 @@ export class FriendDirectMessageTestService {
         this.users[1].id.toString(),
       ),
       lastReadMessageId: this.directMessage[4].id,
+      isDisplay: true,
+    });
+
+    friendDirectMessages.push(friendDirectMessage);
+  }
+
+  async createHalfReadDirectMessageRoomToUserI(i: number): Promise<void> {
+    const friendDirectMessages: DirectMessageRoom[] = [];
+
+    const friendDirectMessage = await this.directMessageRoomRepository.save({
+      userId: this.users[0],
+      friendId: this.users[i],
+      roomId: FriendChatManager.generateRoomId(
+        this.users[0].id.toString(),
+        this.users[i].id.toString(),
+      ),
+      lastReadMessageId:
+        this.directMessage[this.directMessage.length / 2 - 1].id,
       isDisplay: true,
     });
 
@@ -224,5 +293,13 @@ export class FriendDirectMessageTestService {
     });
 
     friendDirectMessages.push(friendDirectMessage);
+  }
+
+  async giveTokenToUser(user: User) {
+    const token = this.jwtService.sign({
+      id: user.id,
+      nickname: user.nickname,
+    });
+    return token;
   }
 }

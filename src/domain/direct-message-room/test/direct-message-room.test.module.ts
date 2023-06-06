@@ -8,6 +8,7 @@ import { ProfileImageRepository } from 'src/domain/profile-image/profile-image.r
 import { Friend } from 'src/domain/friend/friend.entity';
 import { DirectMessage } from 'src/domain/direct-message/direct-message.entity';
 import { DirectMessageRoom } from '../direct-message-room.entity';
+import { AuthModule } from '../../auth/auth.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { DirectMessageRoom } from '../direct-message-room.entity';
       DirectMessage,
       DirectMessageRoom,
     ]),
+    AuthModule,
   ],
   providers: [FriendDirectMessageTestService],
   exports: [
