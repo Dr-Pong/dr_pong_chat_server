@@ -442,10 +442,13 @@ export class ChannelUserService {
     await this.exitChannel(new ChannelExitDto(targetUser.user.id, channel.id));
 
     await this.messageRepository.save(
-      SaveChannelMessageDto.fromExitDto(deleteDto),
+      SaveChannelMessageDto.fromKickDto(deleteDto),
     );
 
     /** 트랜잭션이 성공하면 Factory에도 결과를 반영한다 */
+    runOnTransactionComplete(() => {
+      this.channelFactory.leave(targetUser.user.id, deleteDto.channelId);
+    });
   }
 
   /**

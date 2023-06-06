@@ -1,5 +1,6 @@
 import {
   CHAT_JOIN,
+  CHAT_KICK,
   CHAT_LEAVE,
   CHAT_SETADMIN,
   CHAT_UNSETADMIN,
@@ -10,6 +11,7 @@ import { PostChannelJoinDto } from '../channel-user/dto/post.channel.join.dto';
 import { DeleteChannelUserDto } from '../channel-user/dto/delete.channel.user.dto';
 import { PostChannelAdminDto } from '../channel-user/dto/post.channel.admin.dto';
 import { DeleteChannelAdminDto } from '../channel-user/dto/delete.channel.admin.dto';
+import { DeleteChannelKickDto } from '../channel-user/dto/delete.channel.kick.dto';
 
 export class SaveChannelMessageDto {
   userId: number;
@@ -41,6 +43,17 @@ export class SaveChannelMessageDto {
       channelId,
       CHAT_LEAVE,
       'exited channel',
+      new Date(),
+    );
+  }
+
+  static fromKickDto(kickDto: DeleteChannelKickDto): SaveChannelMessageDto {
+    const { targetUserId: userId, channelId } = kickDto;
+    return new SaveChannelMessageDto(
+      userId,
+      channelId,
+      CHAT_KICK,
+      'is kicked',
       new Date(),
     );
   }
