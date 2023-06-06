@@ -90,7 +90,7 @@ describe('BlockService', () => {
         expect(blockList.users[0]).toHaveProperty('nickname');
         expect(blockList.users[0]).toHaveProperty('imgUrl');
 
-        expect(blockList.users[0].nickname).toBe('user2');
+        expect(blockList.users[0].nickname).toBe(user2.nickname);
       });
 
       it('[Valid Case] 차단유저가 빈경우', async () => {
@@ -112,7 +112,7 @@ describe('BlockService', () => {
         const user2: UserModel = await testData.createBasicUser('user2');
         const userBlockDto: PostUserBlockDto = {
           userId: user1.id,
-          friendId: user2.id,
+          targetId: user2.id,
         };
 
         await service.postUserBlocks(userBlockDto);
@@ -123,7 +123,6 @@ describe('BlockService', () => {
             blockedUser: { id: user2.id },
           },
         });
-        expect(BlocksDb).toBe(1);
         expect(BlocksDb.user.id).toBe(user1.id);
         expect(BlocksDb.blockedUser.id).toBe(user2.id);
 
@@ -139,7 +138,7 @@ describe('BlockService', () => {
 
         const userBlockDto: PostUserBlockDto = {
           userId: user1.id,
-          friendId: user2.id,
+          targetId: user2.id,
         };
 
         await service.postUserBlocks(userBlockDto);
@@ -150,7 +149,6 @@ describe('BlockService', () => {
             blockedUser: { id: user2.id },
           },
         });
-        expect(BlocksDb).toBe(1);
         expect(BlocksDb.user.id).toBe(user1.id);
         expect(BlocksDb.blockedUser.id).toBe(user2.id);
 
@@ -163,7 +161,7 @@ describe('BlockService', () => {
         const user1: UserModel = await testData.createBasicUser('user1');
         const userBlockDto: PostUserBlockDto = {
           userId: user1.id,
-          friendId: 100,
+          targetId: 123456789,
         };
 
         await expect(service.postUserBlocks(userBlockDto)).rejects.toThrowError(
@@ -179,7 +177,7 @@ describe('BlockService', () => {
 
         const userBlockDto: DeleteUserBlockDto = {
           userId: user1.id,
-          friendId: user2.id,
+          targetId: user2.id,
         };
 
         await service.deleteUserBlocks(userBlockDto);
@@ -190,7 +188,7 @@ describe('BlockService', () => {
             blockedUser: { id: user2.id },
           },
         });
-        expect(BlocksDb).toBeUndefined();
+        expect(BlocksDb).toBeNull();
 
         const UserFt: UserModel = userFactory.findById(user1.id);
         expect(UserFt.blockedList.size).toBe(0);
@@ -203,7 +201,7 @@ describe('BlockService', () => {
 
         const userBlockDto: DeleteUserBlockDto = {
           userId: user1.id,
-          friendId: user2.id,
+          targetId: user2.id,
         };
 
         await expect(

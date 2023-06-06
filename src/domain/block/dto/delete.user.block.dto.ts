@@ -1,4 +1,4 @@
 export class DeleteUserBlockDto {
   userId: number;
-  friendId: number;
+  targetId: number;
 }
