@@ -17,6 +17,7 @@ import { UserModel } from '../factory/model/user.model';
 import { UserFactory } from '../factory/user.factory';
 import { PostUserBlockDto } from './dto/post.user.block.dto';
 import { BadRequestException } from '@nestjs/common';
+import { DeleteUserBlockDto } from './dto/delete.user.block.dto';
 
 describe('BlockService', () => {
   let service: BlockService;
@@ -171,11 +172,44 @@ describe('BlockService', () => {
       });
     });
     describe('DELETE 차단 해제', () => {
-      it('[Valid Case] 차단이 해제되는지', async () => {});
+      it('[Valid Case] 차단이 해제되는지', async () => {
+        const user1: UserModel = await testData.createBasicUser('user1');
+        const user2: UserModel = await testData.createBasicUser('user2');
+        await testData.createUserBlocks(user1, user2);
 
-      it('[Valid Case] 차단해제후 차단목록에 없는지 조회', async () => {});
+        const userBlockDto: DeleteUserBlockDto = {
+          userId: user1.id,
+          friendId: user2.id,
+        };
 
-      it('[Error Case] 차단 목록에 없는 유저를 해제하려할때 에러응답', async () => {});
+        await service.deleteUserBlocks(userBlockDto);
+
+        const BlocksDb: Block = await blockRepository.findOne({
+          where: {
+            user: { id: user1.id },
+            blockedUser: { id: user2.id },
+          },
+        });
+        expect(BlocksDb).toBeUndefined();
+
+        const UserFt: UserModel = userFactory.findById(user1.id);
+        expect(UserFt.blockedList.size).toBe(0);
+        expect(UserFt.blockedList.has(user2.id)).toBe(false);
+      });
+
+      it('[Error Case] 차단 목록에 없는 유저를 해제하려할때 에러응답', async () => {
+        const user1: UserModel = await testData.createBasicUser('user1');
+        const user2: UserModel = await testData.createBasicUser('user2');
+
+        const userBlockDto: DeleteUserBlockDto = {
+          userId: user1.id,
+          friendId: user2.id,
+        };
+
+        await expect(
+          service.deleteUserBlocks(userBlockDto),
+        ).rejects.toThrowError(new BadRequestException('Invalid userId'));
+      });
     });
   });
 });
