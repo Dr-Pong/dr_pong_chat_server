@@ -6,9 +6,6 @@ import * as request from 'supertest';
 import { FriendTestService } from 'src/domain/friend/test/friend.test.service';
 import { FriendService } from 'src/domain/friend/friend.service';
 import { initializeTransactionalContext } from 'typeorm-transactional';
-import { TestService } from 'src/domain/channel-user/test/test.service';
-import { DirectMessageTestService } from 'src/domain/direct-message/test/direct-message.test.service';
-import { FriendDirectMessageTestService } from 'src/domain/direct-message-room/test/direct-message-room.test.service';
 
 describe('FriendController', () => {
   let app: INestApplication;
@@ -54,7 +51,6 @@ describe('FriendController', () => {
   });
 
   describe('[GET]', () => {
-    //친구 목록 조회
     describe('/users/friends', () => {
       it('친구 목록 정상 조회', async () => {
         await friendTestService.createUserFriends(50);
@@ -75,10 +71,9 @@ describe('FriendController', () => {
       });
     });
 
-    //친구 요청 목록 조회
     describe('/users/friends/pendings', () => {
       it('친구 요청 목록 정상 조회', async () => {
-        await friendTestService.createUser0ToRequesting(50);
+        await friendTestService.createUserRequesting(50);
         const user = friendTestService.users[0];
         const token = await friendTestService.giveTokenToUser(user);
         const response = await req(token, 'GET', `/users/friends/pendings`);
@@ -98,26 +93,65 @@ describe('FriendController', () => {
   });
 
   describe('[POST]', () => {
-    describe('/users/friends/{nickname}', () => {
-      it('some test', async () => {});
+    describe('/users/friends/pendings/{nickname}', () => {
+      it('친구 요청 정상 전송', async () => {
+        const user = friendTestService.users[0];
+        const receiver = friendTestService.users[1];
+        const token = await friendTestService.giveTokenToUser(user);
+        const response = await req(
+          token,
+          'POST',
+          `/users/friends/pendings/${receiver.nickname}`,
+        );
+        expect(response.status).toBe(200);
+      });
     });
 
-    describe('/users/friends/{nickname}/chats', () => {
-      it('some test', async () => {});
+    describe('/users/friends/{nickname}', () => {
+      it('친구 요청 정상 수락', async () => {
+        const user = friendTestService.users[0];
+        const sender = friendTestService.users[1];
+        await friendTestService.createUser0ToRequesting(sender.id);
+        const token = await friendTestService.giveTokenToUser(user);
+        const response = await req(
+          token,
+          'POST',
+          `/users/friends/${sender.nickname}`,
+        );
+        expect(response.status).toBe(200);
+      });
     });
   });
 
   describe('[DELETE]', () => {
     describe('/users/friends/pendings/{nickname}', () => {
-      it('some test', async () => {});
+      it('친구 요청 정상 거절', async () => {
+        const user = friendTestService.users[0];
+        const sender = friendTestService.users[1];
+        await friendTestService.createUser0ToRequesting(sender.id);
+        const token = await friendTestService.giveTokenToUser(user);
+        const response = await req(
+          token,
+          'DELETE',
+          `/users/friends/pendings/${sender.nickname}`,
+        );
+        expect(response.status).toBe(200);
+      });
     });
 
     describe('/users/friends/{nickname}', () => {
-      it('some test', async () => {});
-    });
-
-    describe('/users/friends/chats/{nickname}', () => {
-      it('some test', async () => {});
+      it('친구 정상 삭제', async () => {
+        const user = friendTestService.users[0];
+        const friend = friendTestService.users[1];
+        await friendTestService.createUser0ToFriends(friend.id);
+        const token = await friendTestService.giveTokenToUser(user);
+        const response = await req(
+          token,
+          'DELETE',
+          `/users/friends/${friend.nickname}`,
+        );
+        expect(response.status).toBe(200);
+      });
     });
   });
 
