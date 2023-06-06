@@ -1,11 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { FriendController } from './friend.controller';
 import { INestApplication } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import * as request from 'supertest';
 import { FriendTestService } from 'src/domain/friend/test/friend.test.service';
 import { initializeTransactionalContext } from 'typeorm-transactional';
-import {AppModule} from "../../../app.module";
+import { AppModule } from 'src/app.module';
 
 describe('FriendController - Relation', () => {
   let app: INestApplication;
@@ -15,7 +14,7 @@ describe('FriendController - Relation', () => {
   beforeAll(async () => {
     initializeTransactionalContext();
     const module: TestingModule = await Test.createTestingModule({
-      imports: [AppModule공],
+      imports: [AppModule],
     }).compile();
 
     app = module.createNestApplication();
@@ -170,11 +169,7 @@ describe('FriendController - Relation', () => {
         const user = friendTestService.users[0];
         const nobody = 'nobody';
         const token = await friendTestService.giveTokenToUser(user);
-        const response = await req(
-          token,
-          'POST',
-          `/users/friends/${nobody}`,
-        );
+        const response = await req(token, 'POST', `/users/friends/${nobody}`);
         expect(response.status).toBe(400);
       });
       it('친구 요청 수락 실패(아이디는 있는데 요청이 없음)', async () => {
@@ -246,11 +241,7 @@ describe('FriendController - Relation', () => {
         const user = friendTestService.users[0];
         const nobody = 'nobody';
         const token = await friendTestService.giveTokenToUser(user);
-        const response = await req(
-          token,
-          'DELETE',
-          `/users/friends/${nobody}`,
-        );
+        const response = await req(token, 'DELETE', `/users/friends/${nobody}`);
         expect(response.status).toBe(400);
       });
       it('친구 삭제 실패(친구 아님)', async () => {
