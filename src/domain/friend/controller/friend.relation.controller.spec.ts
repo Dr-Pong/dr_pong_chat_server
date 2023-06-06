@@ -7,7 +7,7 @@ import { FriendTestService } from 'src/domain/friend/test/friend.test.service';
 import { FriendService } from 'src/domain/friend/friend.service';
 import { initializeTransactionalContext } from 'typeorm-transactional';
 
-describe('FriendController', () => {
+describe('FriendController - Relation', () => {
   let app: INestApplication;
   let dataSources: DataSource;
   let friendTestService: FriendTestService;
