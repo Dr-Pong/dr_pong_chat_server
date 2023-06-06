@@ -10,7 +10,7 @@ import {
   FRIENDSTATUS_REQUESTING,
 } from 'src/global/type/type.friend.status';
 import { FriendChatManager } from 'src/global/utils/generate.room.id';
-import {JwtService} from "@nestjs/jwt";
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class FriendTestService {
