@@ -3,13 +3,13 @@ import { INestApplication } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import * as request from 'supertest';
 import { initializeTransactionalContext } from 'typeorm-transactional';
-import { FriendDirectMessageTestService } from 'src/domain/direct-message-room/test/direct-message-room.test.service';
+import { DirectMessageRoomTestService } from 'src/domain/direct-message-room/test/direct-message-room.test.service';
 import { AppModule } from '../../../app.module';
 
 describe('FriendController - Chat', () => {
   let app: INestApplication;
   let dataSources: DataSource;
-  let testService: FriendDirectMessageTestService;
+  let testService: DirectMessageRoomTestService;
 
   beforeAll(async () => {
     initializeTransactionalContext();
@@ -19,8 +19,8 @@ describe('FriendController - Chat', () => {
 
     app = module.createNestApplication();
     await app.init();
-    testService = module.get<FriendDirectMessageTestService>(
-      FriendDirectMessageTestService,
+    testService = module.get<DirectMessageRoomTestService>(
+      DirectMessageRoomTestService,
     );
     dataSources = module.get<DataSource>(DataSource);
     await dataSources.synchronize(true);

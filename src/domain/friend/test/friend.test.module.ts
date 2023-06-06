@@ -7,7 +7,7 @@ import { Block } from 'src/domain/block/block.entity';
 import { ProfileImage } from 'src/domain/profile-image/profile-image.entity';
 import { ProfileImageRepository } from 'src/domain/profile-image/profile-image.repository';
 import { AuthModule } from '../../auth/auth.module';
-import { FriendDirectMessageTestService } from '../../direct-message-room/test/direct-message-room.test.service';
+import { DirectMessageRoomTestService } from '../../direct-message-room/test/direct-message-room.test.service';
 import { DirectMessage } from '../../direct-message/direct-message.entity';
 import { DirectMessageRoom } from '../../direct-message-room/direct-message-room.entity';
 
@@ -24,7 +24,7 @@ import { DirectMessageRoom } from '../../direct-message-room/direct-message-room
     ]),
     AuthModule,
   ],
-  providers: [FriendTestService, FriendDirectMessageTestService],
-  exports: [FriendTestService, FriendDirectMessageTestService],
+  providers: [FriendTestService, DirectMessageRoomTestService],
+  exports: [FriendTestService, DirectMessageRoomTestService],
 })
 export class FriendTestModule {}
