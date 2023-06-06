@@ -132,3 +132,9 @@ export function validateChannelAdmin(
   checkIfAccessToOwner(targetUser, channel);
   checkAccessToSameRoleType(requestUser, targetUser);
 }
+
+export function checkUserIsOwner(userId: number, channel: Channel): void {
+  if (userId !== channel.operator.id) {
+    throw new BadRequestException('You are not owner');
+  }
+}
