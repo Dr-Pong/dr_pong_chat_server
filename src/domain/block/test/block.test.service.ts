@@ -45,12 +45,11 @@ export class BlockTestService {
     }
   }
 
-  async createUserBlocks(): Promise<void> {
-    const index: number = this.blocks.length;
-    for (let i = 1; i < index; i++) {
+  async createUserBlocks(person: number): Promise<void> {
+    for (let i = 1; i < person; i++) {
       const block = await this.blockRepository.save({
         user: this.users[0],
-        block: this.users[i],
+        blockedUser: this.users[i],
       });
       this.blocks.push(block);
     }
