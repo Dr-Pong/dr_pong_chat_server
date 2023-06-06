@@ -86,6 +86,7 @@ describe('BlockService', () => {
         expect(blockList.users[0]).toHaveProperty('nickname');
         expect(blockList.users[0]).toHaveProperty('imgUrl');
       });
+
       it('[Valid Case] 차단유저가 있는경우 ', async () => {
         await testData.createUserBlocks(10);
 
@@ -103,6 +104,7 @@ describe('BlockService', () => {
         expect(blockList.users[9].nickname).toBe(testData.users[10].nickname);
         expect(blockList.users[9].imgUrl).toBe(testData.users[10].image.url);
       });
+
       it('[Valid Case] 차단유저가 빈경우', async () => {
         const blockListDto: GetUserBlocksDto = {
           userId: testData.users[0].id,
