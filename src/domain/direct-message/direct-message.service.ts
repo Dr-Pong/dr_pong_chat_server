@@ -24,9 +24,6 @@ export class DirectMessageService {
 
   /** DirectMessage 히스토리조회
    * offset과 count 를 이용해서 사용자 간의 DirectMessage 히스토리를 조회합니다.
-   * @param getDto.offset - 히스토리 조회의 시작 오프셋
-   * @param getDto.count - 조회할 메시지의 개수
-   * @returns Promise<GetDirectMessageHistoryResponseDto> - 직접 메시지 히스토리를 담은 Promise를 반환합니다.
    */
   @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
   async getDirectMessagesHistory(
