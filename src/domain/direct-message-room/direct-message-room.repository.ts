@@ -95,14 +95,14 @@ export class DirectMessageRoomRepository {
   async updateLastMessageIdByUserIdAndFriendId(
     userId: number,
     friendId: number,
-    lastmessage: DirectMessage,
+    lastmessage: number,
   ) {
     await this.repository.update(
       {
         user: { id: userId },
         friend: { id: friendId },
       },
-      { lastReadMessageId: lastmessage.id },
+      { lastReadMessageId: lastmessage },
     );
   }
 }

@@ -107,7 +107,7 @@ export class DirectMessageService {
           await this.directMessageRoomRepository.updateLastMessageIdByUserIdAndFriendId(
             userId,
             friendId,
-            lastmessage,
+            lastmessage.id,
           );
         }
       }
