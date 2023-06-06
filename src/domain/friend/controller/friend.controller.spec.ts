@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { FriendController } from './friend.controller';
 import { INestApplication } from '@nestjs/common';
 import { DataSource } from 'typeorm';
+import * as request from 'supertest';
 import { FriendTestService } from 'src/domain/friend/test/friend.test.service';
 import { FriendService } from 'src/domain/friend/friend.service';
 import { initializeTransactionalContext } from 'typeorm-transactional';
@@ -40,8 +41,8 @@ describe('FriendController', () => {
   });
 
   beforeEach(async () => {
-    // await testService.createProfileImages();
-    // await testService.createBasicCollectable();
+    await friendTestService.createProfileImages();
+    await friendTestService.createBasicUsers(100);
   });
 
   afterAll(async () => {
@@ -52,27 +53,39 @@ describe('FriendController', () => {
 
   afterEach(async () => {
     friendTestService.clear();
-    // userService.users.clear();
     jest.resetAllMocks();
     await dataSources.synchronize(true);
   });
 
   afterEach(async () => {
     friendTestService.clear();
-    // userService.users.clear();
     jest.resetAllMocks();
     await dataSources.synchronize(true);
   });
 
   describe('[GET]', () => {
+    //친구 목록 조회
     describe('/users/friends', () => {
-      it('some test', async () => {});
+      it('친구 목록 정상 조회', async () => {
+        await friendTestService.createUserFriends(50);
+        const response = await request(app.getHttpServer()).get(
+          '/users/friends',
+        );
+        const result = response.body;
+        expect(response.status).toBe(200);
+        expect(result).toHaveProperty('users');
+        expect(result.users.length).toBe(49);
+        for (const user of response.body.users) {
+          expect(user).toHaveProperty('nickname');
+          expect(user).toHaveProperty('imgUrl');
+        }
+        expect(result.users.flatMap((user) => user.nickname)).toEqual(
+          result.users.sort((a, b) => a.nickname.localeCompare(b.nickname)),
+        );
+      });
     });
 
-    describe('/users/friends/pendings/{nickname}', () => {
-      it('some test', async () => {});
-    });
-
+    //친구 요청 목록 조회
     describe('/users/friends/pendings', () => {
       it('some test', async () => {});
     });
