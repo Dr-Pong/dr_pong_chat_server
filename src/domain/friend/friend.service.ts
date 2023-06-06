@@ -22,7 +22,9 @@ import { UserFriendNotificationsDto } from './dto/user.friend.notifications.dto'
 export class FriendService {
   constructor(private friendRepository: FriendRepository) {}
 
-  //**친구 목록 GET 반환 */
+  /**친구 목록 GET
+   * 사용자의 친구 목록을 nickname을 기준으로 오름차순으로 정렬합니다
+   */
   @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
   async getUserFriends(getDto: GetUserFriendDto): Promise<UserFriendsDto> {
     const userFriends: Friend[] =
@@ -55,26 +57,21 @@ export class FriendService {
     return responseDto;
   }
 
-  //**친구 추가 */
+  /**친구 추가
+   * 주어진 `postDto.userId`와 `postDto.friendId`를 사용하여 친구 요청을 처리합니다.
+   * 친구가 아니거나 친구 요청이 삭제된 경우 친구 요청을 처리합니다.
+   */
   @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
   async postUserFriendRequest(
     postDto: PostUserFriendRequestDto,
   ): Promise<void> {
     const friendTables: Friend[] =
-      await this.friendRepository.findAllFriendsByUserIdAndFriendId(
+      await this.friendRepository.findAllNotDeletedFriendsByUserIdAndFriendId(
         postDto.userId,
         postDto.friendId,
       );
 
-    let allDeleted = true;
-
-    for (const friend of friendTables) {
-      if (friend.status !== FRIENDSTATUS_DELETED) {
-        allDeleted = false;
-        break;
-      }
-    }
-    if (friendTables.length === 0 || allDeleted) {
+    if (friendTables) {
       await this.friendRepository.saveFriendStatusRequestingByUserIdAndFriendId(
         postDto.userId,
         postDto.friendId,
@@ -82,15 +79,15 @@ export class FriendService {
     }
   }
 
-  //**친구 요청 목록*/
+  /**친구 요청 목록
+   * 사용자의 친구 요청 목록을 nickname을 기준으로 오름차순으로 정렬합니다.
+   */
   @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
   async getUserPendingFriendRequests(
     getDto: GetUserPendingFriendDto,
   ): Promise<UserPendingFriendsDto> {
     const userFriends: Friend[] =
-      await this.friendRepository.findAllFriendsStatusPendingByUserId(
-        getDto.userId,
-      );
+      await this.friendRepository.findFriendRequestingsByUserId(getDto.userId);
 
     const friends: FriendDto[] = userFriends.map((friend) => {
       if (friend.receiver.id === getDto.userId) {
@@ -120,24 +117,19 @@ export class FriendService {
     return responseDto;
   }
 
-  //**친구 요청 수락 */
+  /**친구 요청 수락
+   * 주어진 `postDto.userId`와 `postDto.friendId`를 사용하여 친구 요청을 수락합니다.
+   * 요청 상태가 FRIENDSTATUS_REQUESTING 인 경우에만 수락 처리됩니다.
+   */
   @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
   async postUserFriendAccept(postDto: PostUserFriendAcceptDto): Promise<void> {
-    const friendTables: Friend[] =
-      await this.friendRepository.findAllFriendsByUserIdAndFriendId(
+    const friendRequestTable: Friend[] =
+      await this.friendRepository.findAllFriendRequestsByUserIdAndFriendId(
         postDto.userId,
         postDto.friendId,
       );
-    let isRequesting = false;
 
-    for (const friend of friendTables) {
-      if (friend.status === FRIENDSTATUS_REQUESTING) {
-        isRequesting = true;
-        break;
-      }
-    }
-
-    if (isRequesting) {
+    if (friendRequestTable) {
       await this.friendRepository.updateFriendRequestStatusFriendByUserIdAndFriendId(
         postDto.userId,
         postDto.friendId,
@@ -149,26 +141,21 @@ export class FriendService {
     }
   }
 
-  //**  친구요청 거절 */
+  /**  친구요청 거절
+   * 주어진 `deleteDto.userId`와 `deleteDto.friendId`를 사용하여 친구 요청을 거절합니다.
+   * 요청 상태가 FRIENDSTATUS_REQUESTING인 경우에만 거절 처리됩니다.
+   */
   @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
   async deleteUserFriendReject(
     deleteDto: DeleteUserFriendRejectDto,
   ): Promise<void> {
     const friendTables: Friend[] =
-      await this.friendRepository.findAllFriendsByUserIdAndFriendId(
+      await this.friendRepository.findAllFriendRequestsByUserIdAndFriendId(
         deleteDto.userId,
         deleteDto.friendId,
       );
-    let isRequesting = false;
 
-    for (const friend of friendTables) {
-      if (friend.status === FRIENDSTATUS_REQUESTING) {
-        isRequesting = true;
-        break;
-      }
-    }
-
-    if (isRequesting) {
+    if (friendTables.length > 0) {
       await this.friendRepository.updateFriendRequestStatusDeletedByUserIdAndFriendId(
         deleteDto.userId,
         deleteDto.friendId,
@@ -176,7 +163,10 @@ export class FriendService {
     }
   }
 
-  //**친구 삭제 */
+  /**친구 삭제
+   * 주어진 `deleteDto.userId`와 `deleteDto.friendId`를 사용하여 친구를 삭제합니다.
+   * 요청 상태가 FRIENDSTATUS_FRIEND인 경우에만 삭제 처리됩니다.
+   */
   @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
   async deleteUserFriend(deleteDto: DeleteUserFriendDto): Promise<void> {
     const friendTables: Friend[] =
@@ -205,17 +195,16 @@ export class FriendService {
     }
   }
 
-  //** 친구요청 개수 */
+  /** 친구요청 개수
+   * 사용자의 친구 요청 개수를 반환합니다.
+   */
   @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
   async getUserFriendNotificationCount(
     getDto: GetUserFriendNotificationsRequestDto,
   ): Promise<UserFriendNotificationsDto> {
-    const userFriends: Friend[] =
-      await this.friendRepository.findAllFriendsStatusPendingByUserId(
-        getDto.userId,
-      );
+    let friendsCount: number =
+      await this.friendRepository.countFriendRequestingsByUserId(getDto.userId);
 
-    let friendsCount = userFriends.length;
     if (friendsCount > 50) {
       friendsCount = 50;
     }

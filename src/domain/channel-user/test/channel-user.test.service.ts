@@ -17,14 +17,10 @@ import {
 } from 'src/global/type/type.channel';
 import { UserModel } from 'src/domain/factory/model/user.model';
 import { InviteModel } from 'src/domain/factory/model/invite.model';
-import {
-  PENALTY_BANNED,
-  PENALTY_MUTED,
-} from 'src/global/type/type.channel-user';
 import { CHAT_MUTE } from 'src/global/type/type.chat';
 
 @Injectable()
-export class TestService {
+export class ChannelUserTestService {
   constructor(
     private readonly channelFactory: ChannelFactory,
     private readonly userFactory: UserFactory,
@@ -176,7 +172,6 @@ export class TestService {
       user: { id: user.id },
       channel: { id: channel.id },
       isDeleted: true,
-      penalty: PENALTY_BANNED,
     });
     return this.channelFactory.findById(channel.id);
   }
@@ -203,29 +198,22 @@ export class TestService {
       'channel',
       userNum,
     );
-    channel.users.values().next();
-    const user: UserModel = this.userFactory.findById(
-      channel.users.values().next().value,
-    );
+    const iterator = channel.users.values();
+    iterator.next();
+    const user: UserModel = this.userFactory.findById(iterator.next().value);
     return user;
   }
 
   async createMutedUserInChannel(userNum: number): Promise<UserModel> {
-    const channel: ChannelModel = await this.createBasicChannel('channel', 9);
+    const channel: ChannelModel = await this.createBasicChannel(
+      'channel',
+      userNum,
+    );
     channel.users.values().next();
     const user: UserModel = this.userFactory.findById(
       channel.users.values().next().value,
     );
     this.channelFactory.setMute(user.id, channel.id);
-    await this.channelUserRepository.update(
-      {
-        user: { id: user.id },
-        channel: { id: channel.id },
-      },
-      {
-        penalty: PENALTY_MUTED,
-      },
-    );
     await this.messageRepository.save({
       user: { id: user.id },
       channel: { id: channel.id },

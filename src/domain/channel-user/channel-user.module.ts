@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { ChannelUserService } from './channel-user.service';
-import { TestModule } from './test/test.module';
 import { FactoryModule } from '../factory/factory.module';
 import { ChannelRepository } from '../channel/channel.repository';
 import { ChannelUserRepository } from './channel-user.repository';
@@ -13,7 +12,6 @@ import { ChannelUser } from './channel-user.entity';
 
 @Module({
   imports: [
-    TestModule,
     FactoryModule,
     GatewayModule,
     TypeOrmModule.forFeature([Channel, ChannelUser, ChannelMessage]),

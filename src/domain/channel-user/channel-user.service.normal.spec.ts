@@ -18,7 +18,7 @@ import { PostInviteDto } from './dto/post.invite.dto';
 import { InviteModel } from '../factory/model/invite.model';
 import { PostChannelAcceptInviteDto } from './dto/post.channel.accept.invite.dto';
 import { DeleteChannelUserDto } from './dto/delete.channel.user.dto';
-import { TestService } from './test/test.service';
+import { ChannelUserTestService } from './test/channel-user.test.service';
 import { GetChannelPageDto } from './dto/get.channel.page.dto';
 import { ChannelPageDto, ChannelPageDtos } from './dto/channel.page.dto';
 import { GetChannelParticipantsDto } from './dto/get.channel-participants.dto';
@@ -41,12 +41,13 @@ import { DeleteChannelInviteDto } from './dto/delete.channel.invite.dto';
 import { PostChannelMessageDto } from '../channel-message/post.channel-message.dto';
 import { CHAT_MESSAGE } from 'src/global/type/type.chat';
 import { ChannelMessage } from '../channel-message/channel-message.entity';
+import { ChannlUserTestModule } from './test/channel-user.test.module';
 
 describe('ChannelUserService', () => {
   let service: ChannelUserService;
   let channelFactory: ChannelFactory;
   let userFactory: UserFactory;
-  let testData: TestService;
+  let testData: ChannelUserTestService;
   let dataSource: DataSource;
   let channelRepository: Repository<Channel>;
   let channelUserRepository: Repository<ChannelUser>;
@@ -56,6 +57,7 @@ describe('ChannelUserService', () => {
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [
+        ChannlUserTestModule,
         FactoryModule,
         GatewayModule,
         TypeOrmModule.forRootAsync({
@@ -92,7 +94,7 @@ describe('ChannelUserService', () => {
     service = module.get<ChannelUserService>(ChannelUserService);
     channelFactory = module.get<ChannelFactory>(ChannelFactory);
     userFactory = module.get<UserFactory>(UserFactory);
-    testData = module.get<TestService>(TestService);
+    testData = module.get<ChannelUserTestService>(ChannelUserTestService);
     dataSource = module.get<DataSource>(DataSource);
     channelRepository = module.get<Repository<Channel>>(
       getRepositoryToken(Channel),

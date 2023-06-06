@@ -98,11 +98,8 @@ export class ChannelFactory {
 
   setBan(userId: number, channelId: string): boolean {
     const channel: ChannelModel = this.findById(channelId);
-    if (channel.users.has(userId)) {
-      channel.banList.set(userId, userId);
-      this.channels.set(channel.id, channel);
-      return true;
-    }
+    channel.banList.set(userId, userId);
+    this.channels.set(channel.id, channel);
     return false;
   }
 

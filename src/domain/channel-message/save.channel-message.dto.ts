@@ -1,7 +1,19 @@
-import { CHAT_JOIN, CHAT_LEAVE, ChatType } from 'src/global/type/type.chat';
+import {
+  CHAT_BAN,
+  CHAT_JOIN,
+  CHAT_KICK,
+  CHAT_LEAVE,
+  CHAT_SETADMIN,
+  CHAT_UNSETADMIN,
+  ChatType,
+} from 'src/global/type/type.chat';
 import { MessageDto } from 'src/gateway/dto/message.dto';
 import { PostChannelJoinDto } from '../channel-user/dto/post.channel.join.dto';
 import { DeleteChannelUserDto } from '../channel-user/dto/delete.channel.user.dto';
+import { PostChannelAdminDto } from '../channel-user/dto/post.channel.admin.dto';
+import { DeleteChannelAdminDto } from '../channel-user/dto/delete.channel.admin.dto';
+import { DeleteChannelKickDto } from '../channel-user/dto/delete.channel.kick.dto';
+import { PostChannelBanDto } from '../channel-user/dto/post.channel.ban.dto';
 
 export class SaveChannelMessageDto {
   userId: number;
@@ -33,6 +45,52 @@ export class SaveChannelMessageDto {
       channelId,
       CHAT_LEAVE,
       'exited channel',
+      new Date(),
+    );
+  }
+
+  static fromKickDto(kickDto: DeleteChannelKickDto): SaveChannelMessageDto {
+    const { targetUserId: userId, channelId } = kickDto;
+    return new SaveChannelMessageDto(
+      userId,
+      channelId,
+      CHAT_KICK,
+      'is kicked',
+      new Date(),
+    );
+  }
+
+  static fromBanDto(banDto: PostChannelBanDto): SaveChannelMessageDto {
+    const { targetUserId: userId, channelId } = banDto;
+    return new SaveChannelMessageDto(
+      userId,
+      channelId,
+      CHAT_BAN,
+      'is banned',
+      new Date(),
+    );
+  }
+
+  static fromPostAdminDto(postDto: PostChannelAdminDto): SaveChannelMessageDto {
+    const { targetUserId: userId, channelId } = postDto;
+    return new SaveChannelMessageDto(
+      userId,
+      channelId,
+      CHAT_SETADMIN,
+      'is admin now',
+      new Date(),
+    );
+  }
+
+  static fromDeleteAdminDto(
+    deleteDto: DeleteChannelAdminDto,
+  ): SaveChannelMessageDto {
+    const { targetUserId: userId, channelId } = deleteDto;
+    return new SaveChannelMessageDto(
+      userId,
+      channelId,
+      CHAT_UNSETADMIN,
+      'is not admin anymore',
       new Date(),
     );
   }
