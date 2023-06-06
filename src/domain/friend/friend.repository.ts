@@ -41,16 +41,59 @@ export class FriendRepository {
     return friends;
   }
 
-  /**친구 목록
-   * 유저와 친구의 id로 둘이 테이블에 존재하는지 가져옵니다
-   * 주의: 친구 status구분 안하고 그냥 다가져옵니다.
+  /**delete가 아닌 친구 테이블 목록
+   * 유저와 친구의 id로 둘이 테이블에 delete가 아닌 Frined[]를 반환합니다.
+   */
+  async findAllNotDeletedFriendsByUserIdAndFriendId(
+    userId: number,
+    friendId: number,
+  ): Promise<Friend[]> {
+    const friendLogs: Friend[] = await this.repository.find({
+      where: [
+        {
+          sender: { id: userId },
+          receiver: { id: friendId },
+          status: In([FRIENDSTATUS_FRIEND, FRIENDSTATUS_REQUESTING]),
+        },
+      ],
+    });
+    return friendLogs;
+  }
+
+  /**친구 requesting 테이블 목록
+   * 유저와 친구의 id로 둘이 테이블에 requesting인 Frined[]를 반환합니다.
+   */
+  async findAllFriendRequestsByUserIdAndFriendId(
+    userId: number,
+    friendId: number,
+  ): Promise<Friend[]> {
+    const friendLogs: Friend[] = await this.repository.find({
+      where: [
+        {
+          sender: { id: userId },
+          receiver: { id: friendId },
+          status: FRIENDSTATUS_REQUESTING,
+        },
+      ],
+    });
+    return friendLogs;
+  }
+
+  /**친구 테이블 목록
+   * 유저와 친구의 id로 둘이 테이블에 friend인 Frined[]를 반환합니다.
    */
   async findAllFriendsByUserIdAndFriendId(
     userId: number,
     friendId: number,
   ): Promise<Friend[]> {
     const friendLogs: Friend[] = await this.repository.find({
-      where: [{ sender: { id: userId }, receiver: { id: friendId } }],
+      where: [
+        {
+          sender: { id: userId },
+          receiver: { id: friendId },
+          status: FRIENDSTATUS_FRIEND,
+        },
+      ],
     });
     return friendLogs;
   }
