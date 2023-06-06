@@ -203,15 +203,17 @@ export class TestService {
       'channel',
       userNum,
     );
-    channel.users.values().next();
-    const user: UserModel = this.userFactory.findById(
-      channel.users.values().next().value,
-    );
+    const iterator = channel.users.values();
+    iterator.next();
+    const user: UserModel = this.userFactory.findById(iterator.next().value);
     return user;
   }
 
   async createMutedUserInChannel(userNum: number): Promise<UserModel> {
-    const channel: ChannelModel = await this.createBasicChannel('channel', 9);
+    const channel: ChannelModel = await this.createBasicChannel(
+      'channel',
+      userNum,
+    );
     channel.users.values().next();
     const user: UserModel = this.userFactory.findById(
       channel.users.values().next().value,
