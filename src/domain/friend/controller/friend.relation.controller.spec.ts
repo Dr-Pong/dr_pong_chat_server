@@ -15,7 +15,7 @@ describe('FriendController - Relation', () => {
   beforeAll(async () => {
     initializeTransactionalContext();
     const module: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
+      imports: [AppModule공],
     }).compile();
 
     app = module.createNestApplication();
