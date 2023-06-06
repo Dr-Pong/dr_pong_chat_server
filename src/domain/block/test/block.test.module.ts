@@ -5,6 +5,7 @@ import { Block } from 'src/domain/block/block.entity';
 import { ProfileImage } from 'src/domain/profile-image/profile-image.entity';
 import { ProfileImageRepository } from 'src/domain/profile-image/profile-image.repository';
 import { BlockTestService } from './block.test.service';
+import { FactoryModule } from 'src/domain/factory/factory.module';
 
 @Module({
   imports: [
@@ -14,16 +15,9 @@ import { BlockTestService } from './block.test.service';
       ProfileImageRepository,
       ProfileImage,
     ]),
+    FactoryModule,
   ],
   providers: [BlockTestService],
-  exports: [
-    BlockTestService,
-    TypeOrmModule.forFeature([
-      User,
-      Block,
-      ProfileImage,
-      ProfileImageRepository,
-    ]),
-  ],
+  exports: [BlockTestService],
 })
 export class TestModule {}
