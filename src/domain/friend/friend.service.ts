@@ -66,20 +66,12 @@ export class FriendService {
     postDto: PostUserFriendRequestDto,
   ): Promise<void> {
     const friendTables: Friend[] =
-      await this.friendRepository.findAllFriendsByUserIdAndFriendId(
+      await this.friendRepository.findAllNotDeletedFriendsByUserIdAndFriendId(
         postDto.userId,
         postDto.friendId,
       );
 
-    let allDeleted = true;
-
-    for (const friend of friendTables) {
-      if (friend.status !== FRIENDSTATUS_DELETED) {
-        allDeleted = false;
-        break;
-      }
-    }
-    if (friendTables.length === 0 || allDeleted) {
+    if (friendTables) {
       await this.friendRepository.saveFriendStatusRequestingByUserIdAndFriendId(
         postDto.userId,
         postDto.friendId,
@@ -132,20 +124,12 @@ export class FriendService {
   @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
   async postUserFriendAccept(postDto: PostUserFriendAcceptDto): Promise<void> {
     const friendTables: Friend[] =
-      await this.friendRepository.findAllFriendsByUserIdAndFriendId(
+      await this.friendRepository.findAllFriendRequestsByUserIdAndFriendId(
         postDto.userId,
         postDto.friendId,
       );
-    let isRequesting = false;
 
-    for (const friend of friendTables) {
-      if (friend.status === FRIENDSTATUS_REQUESTING) {
-        isRequesting = true;
-        break;
-      }
-    }
-
-    if (isRequesting) {
+    if (friendTables) {
       await this.friendRepository.updateFriendRequestStatusFriendByUserIdAndFriendId(
         postDto.userId,
         postDto.friendId,
@@ -166,20 +150,12 @@ export class FriendService {
     deleteDto: DeleteUserFriendRejectDto,
   ): Promise<void> {
     const friendTables: Friend[] =
-      await this.friendRepository.findAllFriendsByUserIdAndFriendId(
+      await this.friendRepository.findAllFriendRequestsByUserIdAndFriendId(
         deleteDto.userId,
         deleteDto.friendId,
       );
-    let isRequesting = false;
 
-    for (const friend of friendTables) {
-      if (friend.status === FRIENDSTATUS_REQUESTING) {
-        isRequesting = true;
-        break;
-      }
-    }
-
-    if (isRequesting) {
+    if (friendTables.length > 0) {
       await this.friendRepository.updateFriendRequestStatusDeletedByUserIdAndFriendId(
         deleteDto.userId,
         deleteDto.friendId,
