@@ -11,6 +11,8 @@ import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
 import { typeORMConfig } from 'src/configs/typeorm.config';
 import { TestModule } from './test/block.test.module';
 import { BlockModule } from './block.module';
+import { GetUserBlocksDto } from './dto/get.user.blocks.dto';
+import { UserBlocksDto } from './dto/user.blocks.dto';
 
 describe('BlockService', () => {
   let service: BlockService;
@@ -69,9 +71,49 @@ describe('BlockService', () => {
   });
   describe('차단관련 Service Logic', () => {
     describe('차단목록 조회', () => {
-      it('[Valid Case] 차단형식 확인', async () => {});
-      it('[Valid Case] 차단유저가 있는경우 ', async () => {});
-      it('[Valid Case] 차단유저가 빈경우', async () => {});
+      it('[Valid Case] 차단형식 확인', async () => {
+        await testData.createUserBlocks(10);
+
+        const blockListDto: GetUserBlocksDto = {
+          userId: testData.users[0].id,
+        };
+
+        const blockList: UserBlocksDto = await service.getUserBlocks(
+          blockListDto,
+        );
+
+        expect(blockList).toHaveProperty('users');
+        expect(blockList.users[0]).toHaveProperty('nickname');
+        expect(blockList.users[0]).toHaveProperty('imgUrl');
+      });
+      it('[Valid Case] 차단유저가 있는경우 ', async () => {
+        await testData.createUserBlocks(10);
+
+        const blockListDto: GetUserBlocksDto = {
+          userId: testData.users[0].id,
+        };
+
+        const blockList: UserBlocksDto = await service.getUserBlocks(
+          blockListDto,
+        );
+
+        expect(blockList.users.length).toBe(10);
+        expect(blockList.users[0].nickname).toBe(testData.users[1].nickname);
+        expect(blockList.users[0].imgUrl).toBe(testData.users[1].image.url);
+        expect(blockList.users[9].nickname).toBe(testData.users[10].nickname);
+        expect(blockList.users[9].imgUrl).toBe(testData.users[10].image.url);
+      });
+      it('[Valid Case] 차단유저가 빈경우', async () => {
+        const blockListDto: GetUserBlocksDto = {
+          userId: testData.users[0].id,
+        };
+
+        const blockList: UserBlocksDto = await service.getUserBlocks(
+          blockListDto,
+        );
+
+        expect(blockList.users.length).toBe(0);
+      });
     });
     describe('유저 차단', () => {
       it('[Valid Case] 유저가 차단되는지', async () => {});
