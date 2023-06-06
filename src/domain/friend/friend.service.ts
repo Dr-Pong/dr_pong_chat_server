@@ -22,7 +22,13 @@ import { UserFriendNotificationsDto } from './dto/user.friend.notifications.dto'
 export class FriendService {
   constructor(private friendRepository: FriendRepository) {}
 
-  //**친구 목록 GET 반환 */
+  /**친구 목록 GET
+   * 사용자의 친구 목록을 nickname을 기준으로 오름차순으로 정렬합니다
+   * @param getDto - 사용자의 친구 목록을 가져오기 위한 DTO
+   * @returns Promise<UserFriendsDto> - 사용자의 친구 목록을 담은 DTO를 Promise로 반환합니다.
+   *
+   * @todo 친구 목록을 가져올 때, status가 친구인경우만 추가합니다..filter사용해서 추가해주세요
+   */
   @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
   async getUserFriends(getDto: GetUserFriendDto): Promise<UserFriendsDto> {
     const userFriends: Friend[] =
@@ -55,7 +61,12 @@ export class FriendService {
     return responseDto;
   }
 
-  //**친구 추가 */
+  /**친구 추가
+   * 주어진 `postDto.userId`와 `postDto.friendId`를 사용하여 친구 요청을 처리합니다.
+   * 친구가 아니거나 친구 요청이 삭제된 경우 친구 요청을 처리합니다.
+   * @param postDto - 친구 요청을 처리하기 위한 DTO
+   * @returns Promise<void> - 친구 요청을 처리합니다.
+   */
   @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
   async postUserFriendRequest(
     postDto: PostUserFriendRequestDto,
@@ -82,7 +93,12 @@ export class FriendService {
     }
   }
 
-  //**친구 요청 목록*/
+  /**친구 요청 목록
+   * 사용자의 친구 요청 목록을 nickname을 기준으로 오름차순으로 정렬합니다.
+   * @param getDto - 사용자의 친구 요청 목록을 가져오기 위한 DTO (Data Transfer Object)
+   * @returns Promise<UserPendingFriendsDto> - 사용자의 친구 요청 목록을 담은 DTO를 Promise로 반환합니다.
+   * @todo findFriendsByUserId 이함수 사용해주시고.filter사용해서 추가해주세요
+   */
   @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
   async getUserPendingFriendRequests(
     getDto: GetUserPendingFriendDto,
@@ -120,7 +136,12 @@ export class FriendService {
     return responseDto;
   }
 
-  //**친구 요청 수락 */
+  /**친구 요청 수락
+   * 주어진 `postDto.userId`와 `postDto.friendId`를 사용하여 친구 요청을 수락합니다.
+   * 요청 상태가 FRIENDSTATUS_REQUESTING 인 경우에만 수락 처리됩니다.
+   * @param postDto - 친구 요청 수락을 처리하기 위한 DTO
+   * @returns Promise<void> - 친구 요청을 수락합니다.
+   */
   @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
   async postUserFriendAccept(postDto: PostUserFriendAcceptDto): Promise<void> {
     const friendTables: Friend[] =
@@ -149,7 +170,12 @@ export class FriendService {
     }
   }
 
-  //**  친구요청 거절 */
+  /**  친구요청 거절
+   * 주어진 `deleteDto.userId`와 `deleteDto.friendId`를 사용하여 친구 요청을 거절합니다.
+   * 요청 상태가 '요청 중'인 경우에만 거절 처리됩니다.
+   * @param deleteDto - 친구 요청 거절을 처리하기 위한 DTO
+   * @returns Promise<void> - 친구 요청을 거절합니다.
+   */
   @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
   async deleteUserFriendReject(
     deleteDto: DeleteUserFriendRejectDto,
@@ -176,7 +202,12 @@ export class FriendService {
     }
   }
 
-  //**친구 삭제 */
+  /**친구 삭제
+   * 주어진 `deleteDto.userId`와 `deleteDto.friendId`를 사용하여 친구를 삭제합니다.
+   * 요청 상태가 '친구'인 경우에만 삭제 처리됩니다.
+   * @param deleteDto - 친구 삭제를 처리하기 위한 DTO
+   * @returns Promise<void> - 친구를 삭제합니다.
+   */
   @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
   async deleteUserFriend(deleteDto: DeleteUserFriendDto): Promise<void> {
     const friendTables: Friend[] =
@@ -205,7 +236,12 @@ export class FriendService {
     }
   }
 
-  //** 친구요청 개수 */
+  /** 친구요청 개수
+   * 사용자의 친구 요청 개수를 반환합니다.
+   * @param getDto - 사용자의 친구 요청 개수를 가져오기 위한 DTO
+   * @returns Promise<UserFriendNotificationsDto> - 사용자의 친구 요청 개수를 담은 DTO를 Promise로 반환합니다.
+   * @todo findFriendsByUserId 이함수 사용하고 pending인지 filter사용해서 수정
+   */
   @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
   async getUserFriendNotificationCount(
     getDto: GetUserFriendNotificationsRequestDto,
