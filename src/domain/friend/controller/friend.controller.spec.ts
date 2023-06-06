@@ -87,7 +87,24 @@ describe('FriendController', () => {
 
     //친구 요청 목록 조회
     describe('/users/friends/pendings', () => {
-      it('some test', async () => {});
+      it('친구 요청 목록 정상 조회', async () => {
+        await friendTestService.createUser0ToRequesting(50);
+        const user0 = friendTestService.users[0];
+        const response = await request(app.getHttpServer()).get(
+          `/users/friends/pendings`,
+        );
+        const result = response.body;
+        expect(response.status).toBe(200);
+        expect(result).toHaveProperty('users');
+        expect(result.users.length).toBe(49);
+        for (const user of result.users) {
+          expect(user).toHaveProperty('nickname');
+          expect(user).toHaveProperty('imgUrl');
+        }
+        expect(result.users.flatMap((user) => user.nickname)).toEqual(
+          result.users.sort((a, b) => a.nickname.localeCompare(b.nickname)),
+        );
+      });
     });
 
     describe('/users/friends/{nickname}/chats', () => {
