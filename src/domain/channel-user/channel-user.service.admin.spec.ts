@@ -14,7 +14,7 @@ import { CHANNEL_PRIVATE } from 'src/global/type/type.channel';
 import { CHANNEL_PUBLIC } from 'src/global/type/type.channel';
 import { PostChannelAdminDto } from './dto/post.channel.admin.dto';
 import { DeleteChannelAdminDto } from './dto/delete.channel.admin.dto';
-import { TestService } from './test/test.service';
+import { ChannelUserTestService } from './test/channel-user.test.service';
 import { ChannelUser } from './channel-user.entity';
 import { ChannelMessage } from './channel-message.entity';
 import { FactoryModule } from '../factory/factory.module';
@@ -25,13 +25,13 @@ import {
   initializeTransactionalContext,
 } from 'typeorm-transactional';
 import { CHAT_SETADMIN, CHAT_UNSETADMIN } from 'src/global/type/type.chat';
-import { TestModule } from './test/test.module';
+import { ChannlUserTestModule } from './test/channel-user.test.module';
 
 describe('ChannelUserService', () => {
   let service: ChannelUserService;
   let channelFactory: ChannelFactory;
   let userFactory: UserFactory;
-  let testData: TestService;
+  let testData: ChannelUserTestService;
   let dataSource: DataSource;
   let channelRepository: Repository<Channel>;
   let channelUserRepository: Repository<ChannelUser>;
@@ -41,7 +41,7 @@ describe('ChannelUserService', () => {
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [
-        TestModule,
+        ChannlUserTestModule,
         FactoryModule,
         GatewayModule,
         TypeOrmModule.forRootAsync({
@@ -78,7 +78,7 @@ describe('ChannelUserService', () => {
     service = module.get<ChannelUserService>(ChannelUserService);
     channelFactory = module.get<ChannelFactory>(ChannelFactory);
     userFactory = module.get<UserFactory>(UserFactory);
-    testData = module.get<TestService>(TestService);
+    testData = module.get<ChannelUserTestService>(ChannelUserTestService);
     dataSource = module.get<DataSource>(DataSource);
     channelRepository = module.get<Repository<Channel>>(
       getRepositoryToken(Channel),

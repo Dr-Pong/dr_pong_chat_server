@@ -20,7 +20,7 @@ import { InviteModel } from 'src/domain/factory/model/invite.model';
 import { CHAT_MUTE } from 'src/global/type/type.chat';
 
 @Injectable()
-export class TestService {
+export class ChannelUserTestService {
   constructor(
     private readonly channelFactory: ChannelFactory,
     private readonly userFactory: UserFactory,
