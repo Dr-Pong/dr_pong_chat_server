@@ -4,11 +4,6 @@ import { GetUserFriendDto } from './dto/get.user.friend.dto';
 import { FriendDto, UserFriendsDto } from './dto/user.friends.dto';
 import { Friend } from './friend.entity';
 import { PostUserFriendRequestDto } from './dto/post.user.friend.request.dto';
-import {
-  FRIENDSTATUS_DELETED,
-  FRIENDSTATUS_FRIEND,
-  FRIENDSTATUS_REQUESTING,
-} from 'src/global/type/type.friend.status';
 import { GetUserPendingFriendDto } from './dto/get.user.peding.friend.dto';
 import { UserPendingFriendsDto } from './dto/user.pending.friends.dto';
 import { PostUserFriendAcceptDto } from './dto/post.user.friend.accept.dto';
@@ -54,17 +49,18 @@ export class FriendService {
   async postUserFriendRequest(
     postDto: PostUserFriendRequestDto,
   ): Promise<void> {
-    const friendTables: Friend[] =
-      await this.friendRepository.findAllNotDeletedFriendsByUserIdAndFriendId(
-        postDto.userId,
-        postDto.friendId,
+    const { userId, friendId } = postDto;
+    const isFriendOrRequesting: boolean =
+      await this.friendRepository.checkIsFriendOrRequestingByUserIdAndFriendId(
+        userId,
+        friendId,
       );
 
-    if (friendTables.length) return;
+    if (isFriendOrRequesting) return;
 
     await this.friendRepository.saveFriendStatusRequestingByUserIdAndFriendId(
-      postDto.userId,
-      postDto.friendId,
+      userId,
+      friendId,
     );
   }
 
@@ -101,22 +97,23 @@ export class FriendService {
    */
   @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
   async postUserFriendAccept(postDto: PostUserFriendAcceptDto): Promise<void> {
-    const friendRequestTable: Friend[] =
-      await this.friendRepository.findAllFriendRequestsByUserIdAndFriendId(
-        postDto.userId,
-        postDto.friendId,
+    const { userId, friendId } = postDto;
+    const isRequesting: boolean =
+      await this.friendRepository.checkIsRequestingByUserIdAndFriendId(
+        friendId,
+        userId,
       );
 
-    if (friendRequestTable) {
-      await this.friendRepository.updateFriendRequestStatusFriendByUserIdAndFriendId(
-        postDto.userId,
-        postDto.friendId,
-      );
-      await this.friendRepository.updateFriendRequestStatusFriendByUserIdAndFriendId(
-        postDto.friendId,
-        postDto.userId,
-      );
-    }
+    if (!isRequesting) return;
+
+    await this.friendRepository.updateFriendRequestStatusFriendByUserIdAndFriendId(
+      userId,
+      friendId,
+    );
+    await this.friendRepository.updateFriendRequestStatusFriendByUserIdAndFriendId(
+      friendId,
+      userId,
+    );
   }
 
   /**  친구요청 거절
@@ -127,18 +124,19 @@ export class FriendService {
   async deleteUserFriendReject(
     deleteDto: DeleteUserFriendRejectDto,
   ): Promise<void> {
-    const friendTables: Friend[] =
-      await this.friendRepository.findAllFriendRequestsByUserIdAndFriendId(
-        deleteDto.userId,
-        deleteDto.friendId,
+    const { userId, friendId } = deleteDto;
+    const hasFriendRequest: boolean =
+      await this.friendRepository.checkIsRequestingByUserIdAndFriendId(
+        userId,
+        friendId,
       );
 
-    if (friendTables.length > 0) {
-      await this.friendRepository.updateFriendRequestStatusDeletedByUserIdAndFriendId(
-        deleteDto.userId,
-        deleteDto.friendId,
-      );
-    }
+    if (!hasFriendRequest) return;
+
+    await this.friendRepository.updateFriendRequestStatusDeletedByUserIdAndFriendId(
+      userId,
+      friendId,
+    );
   }
 
   /**친구 삭제
@@ -147,30 +145,23 @@ export class FriendService {
    */
   @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
   async deleteUserFriend(deleteDto: DeleteUserFriendDto): Promise<void> {
-    const friendTables: Friend[] =
-      await this.friendRepository.findAllFriendsByUserIdAndFriendId(
-        deleteDto.userId,
-        deleteDto.friendId,
+    const { userId, friendId } = deleteDto;
+    const isFriend: boolean =
+      await this.friendRepository.checkIsFriendByUserIdAndFriendId(
+        userId,
+        friendId,
       );
-    let isFriend = false;
 
-    for (const friend of friendTables) {
-      if (friend.status === FRIENDSTATUS_FRIEND) {
-        isFriend = true;
-        break;
-      }
-    }
+    if (!isFriend) return;
 
-    if (isFriend) {
-      await this.friendRepository.updateFriendRequestStatusDeletedByUserIdAndFriendId(
-        deleteDto.userId,
-        deleteDto.friendId,
-      );
-      await this.friendRepository.updateFriendRequestStatusDeletedByUserIdAndFriendId(
-        deleteDto.friendId,
-        deleteDto.userId,
-      );
-    }
+    await this.friendRepository.updateFriendRequestStatusDeletedByUserIdAndFriendId(
+      userId,
+      friendId,
+    );
+    await this.friendRepository.updateFriendRequestStatusDeletedByUserIdAndFriendId(
+      friendId,
+      userId,
+    );
   }
 
   /** 친구요청 개수
@@ -180,14 +171,11 @@ export class FriendService {
   async getUserFriendNotificationCount(
     getDto: GetUserFriendNotificationsRequestDto,
   ): Promise<UserFriendNotificationsDto> {
-    let friendsCount: number =
+    const friendsCount: number =
       await this.friendRepository.countFriendRequestingsByUserId(getDto.userId);
 
-    if (friendsCount > 50) {
-      friendsCount = 50;
-    }
     const responseDto: UserFriendNotificationsDto = {
-      requestCount: friendsCount,
+      requestCount: friendsCount > 50 ? 50 : friendsCount,
     };
     return responseDto;
   }
