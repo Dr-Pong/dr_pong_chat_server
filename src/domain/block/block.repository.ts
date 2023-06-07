@@ -12,10 +12,11 @@ export class BlockRepository {
 
   /** 차단목록 조회
    * 특정 사용자의 차단 목록을 조회하는 함수입니다.
+   * unblocked가 false == 차단 on이라는뜻
    */
   async findBlocksByUserId(userId: number): Promise<Block[]> {
     const blocks: Block[] = await this.repository.find({
-      where: { id: userId },
+      where: { user: { id: userId }, isUnblocked: false },
     });
     return blocks;
   }
@@ -31,6 +32,7 @@ export class BlockRepository {
       where: {
         user: { id: userId },
         blockedUser: { id: targetId },
+        isUnblocked: false,
       },
     });
     return block;
@@ -43,6 +45,20 @@ export class BlockRepository {
     await this.repository.save({
       user: { id: userId },
       blockedUser: { id: targetId },
+      isUnblocked: false,
     });
+  }
+
+  /** 차단 삭제
+   * 특정 사용자를 차단 해제하는 함수입니다.
+   */
+  async deleteUserBlock(userId: number, targetId: number): Promise<void> {
+    await this.repository.update(
+      {
+        user: { id: userId },
+        blockedUser: { id: targetId },
+      },
+      { isUnblocked: true },
+    );
   }
 }
