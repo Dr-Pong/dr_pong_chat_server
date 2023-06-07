@@ -19,4 +19,30 @@ export class BlockRepository {
     });
     return blocks;
   }
+
+  /** 차단 조회
+   * 특정 사용자를 차단유무를 확인하는 함수입니다.
+   */
+  async findBlockByUserIdAndTargetId(
+    userId: number,
+    targetId: number,
+  ): Promise<Block> {
+    const block: Block = await this.repository.findOne({
+      where: {
+        user: { id: userId },
+        blockedUser: { id: targetId },
+      },
+    });
+    return block;
+  }
+
+  /** 차단 생성
+   * 특정 사용자를 차단하는 함수입니다.
+   */
+  async createUserBlock(userId: number, targetId: number): Promise<void> {
+    await this.repository.save({
+      user: { id: userId },
+      blockedUser: { id: targetId },
+    });
+  }
 }
