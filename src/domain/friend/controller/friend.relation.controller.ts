@@ -21,10 +21,14 @@ import { UserFriendsDto } from '../dto/user.friends.dto';
 import { Requestor } from '../../auth/jwt/auth.requestor.decorator';
 import { UserIdCardDto } from '../../auth/jwt/auth.user.id-card.dto';
 import { AuthGuard } from '@nestjs/passport';
+import { UserService } from '../../user/user.service';
 
 @Controller('users/friends')
 export class FriendRelationController {
-  constructor(private friendService: FriendService) {}
+  constructor(
+    private friendService: FriendService,
+    private userService: UserService,
+  ) {}
 
   /* 친구 목록 조회
    * GET /users/friends
@@ -60,8 +64,16 @@ export class FriendRelationController {
    * } // 요청을 둘다 보냈을 경우 친구 수락
    * */
   @Post('/pendings/:nickname')
-  async friendPendingPost(@Param('nickname') nickname: string): Promise<void> {
-    return;
+  @UseGuards(AuthGuard('jwt'))
+  async friendPendingPost(
+    @Requestor() requestor: UserIdCardDto,
+    @Param('nickname') nickname: string,
+  ): Promise<void> {
+    const { id: userId } = requestor;
+    const { id: friendId } = await this.userService.getIdFromNickname({
+      nickname,
+    });
+    await this.friendService.postUserFriendRequest({ userId, friendId });
   }
 
   /* 친구 요청 목록 조회 (pending list)
