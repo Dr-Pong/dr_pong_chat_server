@@ -64,23 +64,23 @@ export class BlockService {
   @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
   async postUserBlocks(postDto: PostUserBlockDto): Promise<void> {
     const { userId, targetId } = postDto;
-    // 차단할 사용자가 유효한지 확인합니다.
+    // 차단당할 사용자가 유효한지 확인합니다.
     const validUser: UserModel = this.userFactory.findById(targetId);
     if (!validUser) {
       throw new BadRequestException('Invalid userId');
     }
-    // 차단할 사용자를 차단목록에 존재하는지 찾습니다.
+    // 차단당할 사용자를 차단목록에 존재하는지 찾습니다.
     const blockedUser: Block =
       await this.blockRepository.findBlockByUserIdAndTargetId(userId, targetId);
 
-    // 차단할 사용자가 차단목록에 있다면 차단하지 않습니다.
+    // 차단당할 사용자가 차단목록에 있다면 차단하지 않습니다.
     if (blockedUser) {
       return;
     }
-    // 차단할 사용자가 차단목록에 없다면 차단합니다.DB
+    // 차단당할 사용자가 차단목록에 없다면 차단합니다.DB
     await this.blockRepository.createUserBlock(userId, targetId);
 
-    // 차단할 사용자가 차단목록에 없다면 차단합니다. Factory
+    // 차단당할 사용자가 차단목록에 없다면 차단합니다. Factory
     runOnTransactionComplete(() => {
       const userModel: UserModel = this.userFactory.findById(userId);
       this.userFactory.block(userModel.id, targetId);
