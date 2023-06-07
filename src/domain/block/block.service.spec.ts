@@ -188,7 +188,7 @@ describe('BlockService', () => {
             blockedUser: { id: user2.id },
           },
         });
-        expect(BlocksDb.unblocked).toBe(true);
+        expect(BlocksDb.isUnblocked).toBe(true);
 
         const UserFt: UserModel = userFactory.findById(user1.id);
         expect(UserFt.blockedList.size).toBe(0);

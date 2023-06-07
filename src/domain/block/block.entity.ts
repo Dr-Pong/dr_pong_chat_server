@@ -22,5 +22,5 @@ export class Block extends BaseTimeEntity {
   blockedUser: User;
 
   @Column({ name: 'unblocked' })
-  unblocked: boolean;
+  isUnblocked: boolean;
 }

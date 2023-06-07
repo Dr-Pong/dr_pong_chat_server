@@ -41,7 +41,7 @@ export class BlockTestService {
     await this.blockRepository.save({
       user: { id: user1.id },
       blockedUser: { id: user2.id },
-      unblocked: false,
+      isUnblocked: false,
     });
     this.userFactory.block(user1.id, user2.id);
   }

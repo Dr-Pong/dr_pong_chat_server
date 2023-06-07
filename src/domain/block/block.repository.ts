@@ -16,7 +16,7 @@ export class BlockRepository {
    */
   async findBlocksByUserId(userId: number): Promise<Block[]> {
     const blocks: Block[] = await this.repository.find({
-      where: { user: { id: userId }, unblocked: false },
+      where: { user: { id: userId }, isUnblocked: false },
     });
     return blocks;
   }
@@ -32,7 +32,7 @@ export class BlockRepository {
       where: {
         user: { id: userId },
         blockedUser: { id: targetId },
-        unblocked: false,
+        isUnblocked: false,
       },
     });
     return block;
@@ -45,7 +45,7 @@ export class BlockRepository {
     await this.repository.save({
       user: { id: userId },
       blockedUser: { id: targetId },
-      unblocked: false,
+      isUnblocked: false,
     });
   }
 
@@ -58,7 +58,7 @@ export class BlockRepository {
         user: { id: userId },
         blockedUser: { id: targetId },
       },
-      { unblocked: true },
+      { isUnblocked: true },
     );
   }
 }
