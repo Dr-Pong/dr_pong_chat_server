@@ -45,4 +45,14 @@ export class BlockRepository {
       blockedUser: { id: targetId },
     });
   }
+
+  /** 차단 삭제
+   * 특정 사용자를 차단 해제하는 함수입니다.
+   */
+  async deleteUserBlock(userId: number, targetId: number): Promise<void> {
+    await this.repository.delete({
+      user: { id: userId },
+      blockedUser: { id: targetId },
+    });
+  }
 }

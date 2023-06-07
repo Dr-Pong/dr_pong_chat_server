@@ -1,14 +1,9 @@
-import {
-  BadGatewayException,
-  BadRequestException,
-  Injectable,
-} from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { BlockRepository } from './block.repository';
 import {
   IsolationLevel,
   Transactional,
   runOnTransactionComplete,
-  runOnTransactionRollback,
 } from 'typeorm-transactional';
 import { UserBlocksDto } from './dto/user.blocks.dto';
 import { GetUserBlocksDto } from './dto/get.user.blocks.dto';
@@ -17,6 +12,7 @@ import { BlockUserInfoDto } from './dto/user.blocks.dto';
 import { PostUserBlockDto } from './dto/post.user.block.dto';
 import { UserModel } from '../factory/model/user.model';
 import { UserFactory } from '../factory/user.factory';
+import { DeleteUserBlockDto } from './dto/delete.user.block.dto';
 
 @Injectable()
 export class BlockService {
@@ -87,6 +83,34 @@ export class BlockService {
     runOnTransactionComplete(() => {
       const userModel: UserModel = this.userFactory.findById(userId);
       this.userFactory.block(userModel.id, targetId);
+    });
+  }
+
+  /** 유저 차단 DELETE
+   * 특정 사용자를 차단 해제하는 함수입니다.
+   */
+  @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
+  async deleteUserBlocks(deleteDto: DeleteUserBlockDto): Promise<void> {
+    const { userId, targetId } = deleteDto;
+    // 차단 해제할 사용자가 유효한지 확인합니다.
+    const validUser: UserModel = this.userFactory.findById(targetId);
+    if (!validUser) {
+      throw new BadRequestException('Invalid userId');
+    }
+    // 차단 해제할 사용자를 차단목록에 존재하는지 찾습니다.
+    const blockedUser: Block =
+      await this.blockRepository.findBlockByUserIdAndTargetId(userId, targetId);
+
+    // 차단 해제할 사용자가 차단목록에 있다면 차단을 해제합니다.
+    if (!blockedUser) {
+      throw new BadRequestException('Invalid userId');
+    }
+    await this.blockRepository.deleteUserBlock(userId, targetId);
+
+    // 차단 해제할 사용자가 차단목록에 있다면 차단을 해제합니다. Factory
+    runOnTransactionComplete(() => {
+      const userModel: UserModel = this.userFactory.findById(userId);
+      this.userFactory.unblock(userModel.id, targetId);
     });
   }
 }
