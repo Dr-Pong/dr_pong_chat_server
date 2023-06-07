@@ -41,6 +41,7 @@ import {
   isUserAdmin,
   checkExcutable,
   checkChannelNameIsDuplicate,
+  checkUserHaveAuthority,
 } from './channel-user.error';
 import { PostInviteDto } from './dto/post.invite.dto';
 import { InviteModel } from '../factory/model/invite.model';
@@ -62,6 +63,8 @@ import { ChannelAdminCommandDto } from './dto/channel.admin.command.dto';
 import { PostChannelBanDto } from './dto/post.channel.ban.dto';
 import { PostChannelMuteDto } from './dto/post.channel.mute.dto';
 import { DeleteChannelMuteDto } from './dto/delete.channel.mute.dto';
+import { UpdateChannelDto } from './dto/update.channel.dto';
+import { PatchChannelDto } from './dto/patch.channel.dto';
 
 @Injectable()
 export class ChannelUserService {
@@ -211,7 +214,7 @@ export class ChannelUserService {
 
     this.exitIfUserIsInChannel(postDto.userId);
 
-    const newChannel: Channel = await this.channelRepository.saveChannel(
+    const newChannel: Channel = await this.channelRepository.save(
       SaveChannelDto.from(postDto),
     );
     await this.channelUserRepository.saveChannelUser(
@@ -526,6 +529,27 @@ export class ChannelUserService {
         deleteDto.targetUserId,
         deleteDto.channelId,
       );
+    });
+  }
+
+  @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
+  async patchChannel(patchDto: PatchChannelDto): Promise<void> {
+    const channel: Channel = await this.channelRepository.findById(
+      patchDto.channelId,
+    );
+    const user: UserModel = this.userFactory.findById(patchDto.userId);
+
+    checkChannelExist(channel);
+    checkUserHaveAuthority(user);
+
+    await this.channelRepository.updateAccessAndPassword(
+      UpdateChannelDto.fromPatchDto(patchDto),
+    );
+
+    await /** 트랜잭션이 성공하면 Factory에도 결과를 반영한다 */
+    runOnTransactionComplete(() => {
+      this.channelFactory.updateType(patchDto.access, patchDto.channelId);
+      this.channelFactory.updatePassword(patchDto.password, patchDto.channelId);
     });
   }
 
