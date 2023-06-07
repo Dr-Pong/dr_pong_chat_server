@@ -65,6 +65,7 @@ import { PostChannelMuteDto } from './dto/post.channel.mute.dto';
 import { DeleteChannelMuteDto } from './dto/delete.channel.mute.dto';
 import { UpdateChannelDto } from './dto/update.channel.dto';
 import { PatchChannelDto } from './dto/patch.channel.dto';
+import { DeleteChannelDto } from './dto/delete.channel.dto';
 
 @Injectable()
 export class ChannelUserService {
@@ -534,7 +535,7 @@ export class ChannelUserService {
 
   @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
   async patchChannel(patchDto: PatchChannelDto): Promise<void> {
-    const channel: Channel = await this.channelRepository.findById(
+    const channel: ChannelModel = this.channelFactory.findById(
       patchDto.channelId,
     );
     const user: UserModel = this.userFactory.findById(patchDto.userId);
@@ -546,10 +547,31 @@ export class ChannelUserService {
       UpdateChannelDto.fromPatchDto(patchDto),
     );
 
-    await /** 트랜잭션이 성공하면 Factory에도 결과를 반영한다 */
+    /** 트랜잭션이 성공하면 Factory에도 결과를 반영한다 */
     runOnTransactionComplete(() => {
       this.channelFactory.updateType(patchDto.access, patchDto.channelId);
       this.channelFactory.updatePassword(patchDto.password, patchDto.channelId);
+    });
+  }
+
+  @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
+  async deleteChannel(deleteDto: DeleteChannelDto): Promise<void> {
+    const channel: ChannelModel = this.channelFactory.findById(
+      deleteDto.channelId,
+    );
+
+    checkChannelExist(channel);
+    checkUserIsOwner(channel, deleteDto.userId);
+
+    channel.users.forEach(async (user) => {
+      await this.exitChannel(new ChannelExitDto(user, channel.id));
+    });
+
+    await this.channelRepository.deleteById(deleteDto.channelId);
+
+    /** 트랜잭션이 성공하면 Factory에도 결과를 반영한다 */
+    runOnTransactionComplete(() => {
+      this.channelFactory.delete(deleteDto.channelId);
     });
   }
 
