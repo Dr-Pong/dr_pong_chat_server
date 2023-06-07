@@ -5,7 +5,6 @@ import { UserModule } from './domain/user/user.module';
 import { ProfileImageModule } from './domain/profile-image/profile-image.module';
 import { BlockModule } from './domain/block/block.module';
 import { ChannelModule } from './domain/channel/channel.module';
-import { ChannelLogModule } from './domain/channel-log/channel-log.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { typeORMConfig } from './configs/typeorm.config';
 import { addTransactionalDataSource } from 'typeorm-transactional';
@@ -15,7 +14,7 @@ import { DirectMessageRoomModule } from './domain/direct-message-room/direct-mes
 import { DirectMessageModule } from './domain/direct-message/direct-message.module';
 import { FriendModule } from './domain/friend/friend.module';
 import { AuthModule } from './domain/auth/auth.module';
-import { FriendTestModule } from "./domain/friend/test/friend.test.module";
+import { FriendTestModule } from './domain/friend/test/friend.test.module';
 
 @Module({
   imports: [
@@ -38,7 +37,6 @@ import { FriendTestModule } from "./domain/friend/test/friend.test.module";
     ProfileImageModule,
     BlockModule,
     ChannelModule,
-    ChannelLogModule,
     DirectMessageModule,
     ChannelMessageModule,
     DirectMessageRoomModule,
