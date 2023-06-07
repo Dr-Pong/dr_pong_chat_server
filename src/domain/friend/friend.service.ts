@@ -54,17 +54,18 @@ export class FriendService {
   async postUserFriendRequest(
     postDto: PostUserFriendRequestDto,
   ): Promise<void> {
+    const { userId, friendId } = postDto;
     const friendTables: Friend[] =
       await this.friendRepository.findAllNotDeletedFriendsByUserIdAndFriendId(
-        postDto.userId,
-        postDto.friendId,
+        userId,
+        friendId,
       );
 
     if (friendTables.length) return;
 
     await this.friendRepository.saveFriendStatusRequestingByUserIdAndFriendId(
-      postDto.userId,
-      postDto.friendId,
+      userId,
+      friendId,
     );
   }
 
@@ -101,22 +102,23 @@ export class FriendService {
    */
   @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
   async postUserFriendAccept(postDto: PostUserFriendAcceptDto): Promise<void> {
+    const { userId, friendId } = postDto;
     const friendRequestTable: Friend[] =
       await this.friendRepository.findAllFriendRequestsByUserIdAndFriendId(
-        postDto.userId,
-        postDto.friendId,
+        userId,
+        friendId,
       );
 
-    if (friendRequestTable) {
-      await this.friendRepository.updateFriendRequestStatusFriendByUserIdAndFriendId(
-        postDto.userId,
-        postDto.friendId,
-      );
-      await this.friendRepository.updateFriendRequestStatusFriendByUserIdAndFriendId(
-        postDto.friendId,
-        postDto.userId,
-      );
-    }
+    if (!friendRequestTable.length) return;
+
+    await this.friendRepository.updateFriendRequestStatusFriendByUserIdAndFriendId(
+      userId,
+      friendId,
+    );
+    await this.friendRepository.updateFriendRequestStatusFriendByUserIdAndFriendId(
+      friendId,
+      userId,
+    );
   }
 
   /**  친구요청 거절
@@ -127,16 +129,17 @@ export class FriendService {
   async deleteUserFriendReject(
     deleteDto: DeleteUserFriendRejectDto,
   ): Promise<void> {
+    const { userId, friendId } = deleteDto;
     const friendTables: Friend[] =
       await this.friendRepository.findAllFriendRequestsByUserIdAndFriendId(
-        deleteDto.userId,
-        deleteDto.friendId,
+        userId,
+        friendId,
       );
 
     if (friendTables.length > 0) {
       await this.friendRepository.updateFriendRequestStatusDeletedByUserIdAndFriendId(
-        deleteDto.userId,
-        deleteDto.friendId,
+        userId,
+        friendId,
       );
     }
   }
@@ -147,10 +150,11 @@ export class FriendService {
    */
   @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
   async deleteUserFriend(deleteDto: DeleteUserFriendDto): Promise<void> {
+    const { userId, friendId } = deleteDto;
     const friendTables: Friend[] =
       await this.friendRepository.findAllFriendsByUserIdAndFriendId(
-        deleteDto.userId,
-        deleteDto.friendId,
+        userId,
+        friendId,
       );
     let isFriend = false;
 
@@ -163,12 +167,12 @@ export class FriendService {
 
     if (isFriend) {
       await this.friendRepository.updateFriendRequestStatusDeletedByUserIdAndFriendId(
-        deleteDto.userId,
-        deleteDto.friendId,
+        userId,
+        friendId,
       );
       await this.friendRepository.updateFriendRequestStatusDeletedByUserIdAndFriendId(
-        deleteDto.friendId,
-        deleteDto.userId,
+        friendId,
+        userId,
       );
     }
   }
@@ -180,14 +184,11 @@ export class FriendService {
   async getUserFriendNotificationCount(
     getDto: GetUserFriendNotificationsRequestDto,
   ): Promise<UserFriendNotificationsDto> {
-    let friendsCount: number =
+    const friendsCount: number =
       await this.friendRepository.countFriendRequestingsByUserId(getDto.userId);
 
-    if (friendsCount > 50) {
-      friendsCount = 50;
-    }
     const responseDto: UserFriendNotificationsDto = {
-      requestCount: friendsCount,
+      requestCount: friendsCount > 50 ? 50 : friendsCount,
     };
     return responseDto;
   }
