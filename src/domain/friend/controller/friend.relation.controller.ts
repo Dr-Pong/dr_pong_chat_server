@@ -16,8 +16,11 @@ import { FriendDirectMessageChatListResponseDto } from 'src/domain/friend/dto/fr
 import { PostFriendChatRequestDto } from 'src/domain/friend/dto/post.friend.chat.request.dto';
 import { FriendDirectMessageRoomListResponseDto } from 'src/domain/friend/dto/friend.direct.message.room.list.response.dto';
 import { FriendDirectMessageNewResponseDto } from 'src/domain/friend/dto/friend.direct.message.new.response';
+import { UserFriendsDto } from '../dto/user.friends.dto';
+import { Requestor } from '../../auth/jwt/auth.requestor.decorator';
+import { UserIdCardDto } from '../../auth/jwt/auth.user.id-card.dto';
 
-@Controller('controller')
+@Controller('users/friends')
 export class FriendRelationController {
   constructor(private friendService: FriendService) {}
 
@@ -35,7 +38,7 @@ export class FriendRelationController {
    * 	200: ok;
    * }
    * */
-  @Get('/users/friends')
+  @Get('/')
   async friendListGet(): Promise<FriendListResponseDto> {
     const friendList: FriendListResponseDto = {
       users: [],
@@ -50,7 +53,7 @@ export class FriendRelationController {
    *   400: error;
    * } // 요청을 둘다 보냈을 경우 친구 수락
    * */
-  @Post('/users/friends/pendings/:nickname')
+  @Post('/pendings/:nickname')
   async friendPendingPost(@Param('nickname') nickname: string): Promise<void> {
     return;
   }
@@ -69,7 +72,7 @@ export class FriendRelationController {
    *   200: ok;
    * }
    * */
-  @Get('/users/friends/pendings')
+  @Get('/pendings')
   async friendPendingListGet(): Promise<FriendPendingListResponseDto> {
     const friendPendingList: FriendPendingListResponseDto = {
       users: [],
@@ -83,7 +86,7 @@ export class FriendRelationController {
    * 	 200: ok;
    * }
    * */
-  @Post('/users/friends/:nickname')
+  @Post('/:nickname')
   async friendAcceptPost(@Param('nickname') nickname: string): Promise<void> {
     return;
   }
@@ -94,7 +97,7 @@ export class FriendRelationController {
    * 	 200: ok;
    * }
    * */
-  @Delete('/users/friends/pendings/:nickname')
+  @Delete('/pendings/:nickname')
   async friendRejectDelete(@Param('nickname') nickname: string): Promise<void> {
     return;
   }
@@ -105,108 +108,8 @@ export class FriendRelationController {
    *	200: ok;
    * }
    * */
-  @Delete('/users/friends/:nickname')
+  @Delete('/:nickname')
   async friendDelete(@Param('nickname') nickname: string): Promise<void> {
     return;
-  }
-
-  /* DM 대화 내역
-   * GET /users/friends/{nickname}/chats?offset={offset}&count={count}
-   * response body {
-   * chatList: [
-   *   {
-   *     id: number;
-   *     message: string;
-   *     nickname: string;
-   *     createdAt: Date;
-   *   }, ...
-   * ],
-   *   isLastPage: boolean;
-   * }
-   * response header {
-   *   200: ok;
-   * }
-   * */
-  @Get('/users/friends/:nickname/chats')
-  async friendChatListGet(
-    @Param('nickname') nickname: string,
-    @Query('count', new DefaultValuePipe(40), ParseIntPipe) count: number,
-    @Query('offset', new DefaultValuePipe(0), ParseIntPipe) offset: number,
-  ): Promise<FriendDirectMessageChatListResponseDto> {
-    const friendDirectMessageChatList: FriendDirectMessageChatListResponseDto =
-      {
-        chatList: [],
-        isLastPage: true,
-      };
-    return friendDirectMessageChatList;
-  }
-
-  /* DM 전송
-   * POST /users/friends/{nickname}/chats
-   * request body {
-   *   message: string;
-   * }
-   * response header {
-   *   200: ok;
-   *   400: not friend;
-   * }
-   * */
-
-  @Post('/users/friends/:nickname/chats')
-  async friendChatPost(
-    @Param('nickname') nickname: string,
-    @Body() postFriendChatRequestDto: PostFriendChatRequestDto,
-  ): Promise<void> {
-    return;
-  }
-
-  /* 진행 중인 DM 목록 받기
-   * GET /users/friends/chatlist
-   * response body {
-   * 	 dmList: [
-   *     {
-   *       nickname: string;
-   *       imgUrl: string;
-   *       newChats: number;
-   *     }
-   *   ]...;
-   * }
-   * */
-
-  @Get('/users/friends/chatlist')
-  async friendDmListGet(): Promise<FriendDirectMessageRoomListResponseDto> {
-    const friendDirectMessageRoomList: FriendDirectMessageRoomListResponseDto =
-      {
-        dmList: [],
-      };
-    return friendDirectMessageRoomList;
-  }
-
-  /* 진행 중인 DM 리스트에서 특정 방 삭제
-   * DELETE /users/friends/chats/{nickname}
-   * response header {
-   *   200: ok;
-   * }
-   * */
-  @Delete('/users/friends/chats/:nickname')
-  async friendDirectMessageDelete(
-    @Param('nickname') nickname: string,
-  ): Promise<void> {
-    return;
-  }
-
-  /* 새로운 DM 유무 확인
-   *
-   * GET /users/friends/chats/new
-   * response body {
-   *   hasNewChat: boolean;
-   * }
-   * */
-  @Get('/users/friends/chats/new')
-  async friendDirectMessageNewGet(): Promise<FriendDirectMessageNewResponseDto> {
-    const friendDirectMessageNew: FriendDirectMessageNewResponseDto = {
-      hasNewChat: true,
-    };
-    return friendDirectMessageNew;
   }
 }
