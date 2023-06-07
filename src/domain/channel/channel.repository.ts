@@ -96,7 +96,7 @@ export class ChannelRepository {
     return page;
   }
 
-  async saveChannel(saveDto: SaveChannelDto): Promise<Channel> {
+  async save(saveDto: SaveChannelDto): Promise<Channel> {
     return await this.repository.save({
       operator: { id: saveDto.userId },
       name: saveDto.name,
@@ -119,7 +119,7 @@ export class ChannelRepository {
     );
   }
 
-  async deleteChannelById(channelId: string): Promise<void> {
+  async deleteById(channelId: string): Promise<void> {
     await this.repository.update(
       {
         id: channelId,
