@@ -57,11 +57,11 @@ export class FriendRepository {
   /**delete가 아닌 친구 테이블 목록
    * 유저와 친구의 id로 둘이 테이블에 delete가 아닌 Frined[]를 반환합니다.
    */
-  async findAllNotDeletedFriendsByUserIdAndFriendId(
+  async isAlreadyFriendOrRequestingByUserIdAndFriendId(
     userId: number,
     friendId: number,
-  ): Promise<Friend[]> {
-    const friendLogs: Friend[] = await this.repository.find({
+  ): Promise<boolean> {
+    const isAlreadyFriendOrRequesting: boolean = await this.repository.exist({
       where: [
         {
           sender: { id: userId },
@@ -70,17 +70,17 @@ export class FriendRepository {
         },
       ],
     });
-    return friendLogs;
+    return isAlreadyFriendOrRequesting;
   }
 
   /**친구 requesting 테이블 목록
    * 유저와 친구의 id로 둘이 테이블에 requesting인 Frined[]를 반환합니다.
    */
-  async findAllFriendRequestsByUserIdAndFriendId(
+  async hasFriendRequestsByUserIdAndFriendId(
     userId: number,
     friendId: number,
-  ): Promise<Friend[]> {
-    const friendLogs: Friend[] = await this.repository.find({
+  ): Promise<boolean> {
+    const hasFriendRequest: boolean = await this.repository.exist({
       where: [
         {
           sender: { id: userId },
@@ -89,17 +89,17 @@ export class FriendRepository {
         },
       ],
     });
-    return friendLogs;
+    return hasFriendRequest;
   }
 
   /**친구 테이블 목록
    * 유저와 친구의 id로 둘이 테이블에 friend인 Frined[]를 반환합니다.
    */
-  async findAllFriendsByUserIdAndFriendId(
+  async checkIsFriendByUserIdAndFriendId(
     userId: number,
     friendId: number,
-  ): Promise<Friend[]> {
-    const friendLogs: Friend[] = await this.repository.find({
+  ): Promise<boolean> {
+    const isFriend: boolean = await this.repository.exist({
       where: [
         {
           sender: { id: userId },
@@ -108,7 +108,7 @@ export class FriendRepository {
         },
       ],
     });
-    return friendLogs;
+    return isFriend;
   }
 
   /** 친구요청
