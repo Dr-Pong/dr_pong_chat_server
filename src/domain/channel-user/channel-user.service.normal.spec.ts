@@ -39,7 +39,7 @@ import {
 } from 'src/global/type/type.order.channel';
 import { DeleteChannelInviteDto } from './dto/delete.channel.invite.dto';
 import { PostChannelMessageDto } from '../channel-message/dto/post.channel-message.dto';
-import { CHAT_MESSAGE } from 'src/global/type/type.chat';
+import { CHAT_MESSAGE } from 'src/global/type/type.channel.action';
 import { ChannelMessage } from '../channel-message/channel-message.entity';
 import { ChannlUserTestModule } from './test/channel-user.test.module';
 

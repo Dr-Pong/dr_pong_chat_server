@@ -7,8 +7,8 @@ import {
   CHAT_SETADMIN,
   CHAT_UNMUTE,
   CHAT_UNSETADMIN,
-  ChatType,
-} from 'src/global/type/type.chat';
+  ChannelActionType,
+} from 'src/global/type/type.channel.action';
 import { MessageDto } from 'src/gateway/dto/message.dto';
 import { PostChannelJoinDto } from '../channel-user/dto/post.channel.join.dto';
 import { DeleteChannelUserDto } from '../channel-user/dto/delete.channel.user.dto';
@@ -23,7 +23,7 @@ import { DeleteChannelMuteDto } from '../channel-user/dto/delete.channel.mute.dt
 export class SaveChannelMessageDto {
   userId: number;
   channelId: string;
-  type: ChatType;
+  type: ChannelActionType;
   content: string;
   time: Date;
 
@@ -56,7 +56,7 @@ export class SaveChannelMessageDto {
 
   static fromCommandDto(dto: ChannelAdminCommandDto): SaveChannelMessageDto {
     const { targetUserId: userId, channelId } = dto;
-    let type: ChatType;
+    let type: ChannelActionType;
     switch (dto.getType()) {
       case PostChannelMuteDto.name:
         type = CHAT_MUTE;
@@ -83,7 +83,7 @@ export class SaveChannelMessageDto {
   constructor(
     userId: number,
     channelId: string,
-    type: ChatType,
+    type: ChannelActionType,
     content: string,
     time: Date,
   ) {

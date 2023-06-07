@@ -8,7 +8,7 @@ export const CHAT_UNMUTE = 'unmute' as const;
 export const CHAT_UNSETADMIN = 'unsetadmin' as const;
 export const CHAT_SETADMIN = 'setadmin' as const;
 
-export type ChatType =
+export type ChannelActionType =
   | 'message'
   | 'join'
   | 'leave'

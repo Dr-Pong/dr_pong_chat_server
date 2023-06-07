@@ -9,7 +9,7 @@ import { Server, Socket } from 'socket.io';
 import { ChannelFactory } from 'src/domain/factory/channel.factory';
 import { UserFactory } from 'src/domain/factory/user.factory';
 import { UserModel } from 'src/domain/factory/model/user.model';
-import { ChatType } from 'src/global/type/type.chat';
+import { ChannelActionType } from 'src/global/type/type.channel.action';
 import { MessageDto } from './dto/message.dto';
 
 @Injectable()
@@ -49,7 +49,7 @@ export class ChatGateWay implements OnGatewayConnection, OnGatewayDisconnect {
     this.server.to(channelId).except(blockList).emit('message', message);
   }
 
-  sendNoticeToChannel(channelId: string, type: ChatType) {
+  sendNoticeToChannel(channelId: string, type: ChannelActionType) {
     this.server.to(channelId).emit(type, MessageDto);
   }
 }

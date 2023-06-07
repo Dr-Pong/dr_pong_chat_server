@@ -1,8 +1,8 @@
-import { ChatType } from 'src/global/type/type.chat';
+import { ChannelActionType } from 'src/global/type/type.channel.action';
 
 export class PostChannelMessageDto {
   userId: number;
   channelId: string;
-  type: ChatType;
+  type: ChannelActionType;
   content: string;
 }

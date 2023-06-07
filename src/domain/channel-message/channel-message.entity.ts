@@ -1,5 +1,5 @@
 import { BaseTimeEntity } from 'src/global/base-entity/base-time.entity';
-import { ChatType } from 'src/global/type/type.chat';
+import { ChannelActionType } from 'src/global/type/type.channel.action';
 import {
   Column,
   Entity,
@@ -30,5 +30,5 @@ export class ChannelMessage extends BaseTimeEntity {
   content: string;
 
   @Column({ name: 'type', nullable: false })
-  type: ChatType;
+  type: ChannelActionType;
 }
