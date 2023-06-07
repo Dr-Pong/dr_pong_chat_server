@@ -963,7 +963,7 @@ describe('ChannelUserService', () => {
         await service.deleteChannelUser(deleteChannelUserRequest);
         const channelUserDb: ChannelUser = await channelUserRepository.findOne({
           where: {
-            user: { id: channel.ownerId },
+            user: { id: user.id },
             channel: { id: channel.id },
           },
         });

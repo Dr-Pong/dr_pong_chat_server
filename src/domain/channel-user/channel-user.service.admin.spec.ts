@@ -425,7 +425,7 @@ describe('ChannelUserService', () => {
 
     describe('UNMUTE TEST', () => {
       it('[Valid Case] 일반 유저 UNMUTE', async () => {
-        const user: UserModel = await testData.createUserInChannel(9);
+        const user: UserModel = await testData.createMutedUserInChannel(9);
         const channel: ChannelModel = channelFactory.findById(
           user.joinedChannel,
         );
@@ -443,6 +443,7 @@ describe('ChannelUserService', () => {
               channel: { id: channel.id },
               user: { id: user.id },
             },
+            order: { id: 'DESC' },
           });
         expect(savedMessage.content).toBe('is unmuted');
         const savedChannelFt: ChannelModel = channelFactory.findById(
