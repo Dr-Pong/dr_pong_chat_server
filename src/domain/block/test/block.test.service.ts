@@ -6,10 +6,12 @@ import { Repository } from 'typeorm';
 import { Block } from 'src/domain/block/block.entity';
 import { UserFactory } from 'src/domain/factory/user.factory';
 import { UserModel } from 'src/domain/factory/model/user.model';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class BlockTestService {
   constructor(
+    private jwtService: JwtService,
     private readonly userFactory: UserFactory,
     @InjectRepository(User)
     private userRepository: Repository<User>,
@@ -44,5 +46,13 @@ export class BlockTestService {
       isUnblocked: false,
     });
     this.userFactory.block(user1.id, user2.id);
+  }
+
+  async giveTokenToUser(user: UserModel) {
+    const token = this.jwtService.sign({
+      id: user.id,
+      nickname: user.nickname,
+    });
+    return token;
   }
 }
