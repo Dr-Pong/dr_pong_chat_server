@@ -79,11 +79,15 @@ export class FriendRelationController {
    * }
    * */
   @Get('/pendings')
-  async friendPendingListGet(): Promise<FriendPendingListResponseDto> {
-    const friendPendingList: FriendPendingListResponseDto = {
-      users: [],
-    };
-    return friendPendingList;
+  @UseGuards(AuthGuard('jwt'))
+  async friendPendingListGet(
+    @Requestor() requestor: UserIdCardDto,
+  ): Promise<FriendPendingListResponseDto> {
+    const { id } = requestor;
+    const { friends } = await this.friendService.getUserPendingFriendRequests({
+      userId: id,
+    });
+    return { users: [...friends] };
   }
 
   /* 친구 요청 수락
