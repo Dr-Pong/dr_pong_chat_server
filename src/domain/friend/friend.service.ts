@@ -71,12 +71,12 @@ export class FriendService {
         postDto.friendId,
       );
 
-    if (friendTables) {
-      await this.friendRepository.saveFriendStatusRequestingByUserIdAndFriendId(
-        postDto.userId,
-        postDto.friendId,
-      );
-    }
+    if (friendTables.length) return;
+
+    await this.friendRepository.saveFriendStatusRequestingByUserIdAndFriendId(
+      postDto.userId,
+      postDto.friendId,
+    );
   }
 
   /**친구 요청 목록
