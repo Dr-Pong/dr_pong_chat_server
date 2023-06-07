@@ -111,7 +111,7 @@ function checkAccessToSameRoleType(
   }
 }
 
-export function validateChannelAdmin(
+export function checkExcutable(
   dto: ChannelAdminCommandDto,
   channelFactory: ChannelFactory,
   userFactory: UserFactory,
@@ -134,4 +134,14 @@ export function checkUserIsOwner(channel: ChannelModel, userId: number): void {
 
 export function isUserAdmin(channel: ChannelModel, userId: number): boolean {
   return channel.adminList.has(userId);
+}
+
+export async function checkChannelNameIsDuplicate(
+  repository: ChannelRepository,
+  name: string,
+): Promise<void> {
+  const channel = await repository.findByChannelName(name);
+  if (channel) {
+    throw new BadRequestException('Channel name already exists');
+  }
 }

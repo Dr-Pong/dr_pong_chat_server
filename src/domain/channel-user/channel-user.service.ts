@@ -39,7 +39,8 @@ import {
   checkUserIsOwner,
   validateChannelJoin,
   isUserAdmin,
-  validateChannelAdmin,
+  checkExcutable,
+  checkChannelNameIsDuplicate,
 } from './channel-user.error';
 import { PostInviteDto } from './dto/post.invite.dto';
 import { InviteModel } from '../factory/model/invite.model';
@@ -146,7 +147,7 @@ export class ChannelUserService {
    * 채널에 참여한 유저가 아니면 메시지를 전송할 수 없다
    * 채널에 참여한 유저가 뮤트 상태라면 메시지를 전송할 수 없다
    * 채널에 메시지를 전송하면 채널의 참여자들에게 메시지를 전송한다
-   * Ban된 유저들에게는 메시지를 전송하지 않는다
+   * 차단된 유저들에게는 메시지를 전송하지 않는다
    * 전송한 메시지를 DB에 저장한다
    */
   @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
@@ -206,21 +207,9 @@ export class ChannelUserService {
    */
   @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
   async postChannel(postDto: PostChannelDto): Promise<void> {
-    const existChannel: Channel =
-      await this.channelRepository.findByChannelName(postDto.name);
-    if (existChannel) {
-      throw new BadRequestException('Channel name already exists');
-    }
+    await checkChannelNameIsDuplicate(this.channelRepository, postDto.name);
 
-    const existChannelUser: ChannelUser =
-      await this.channelUserRepository.findByUserIdAndNotDeleted(
-        postDto.userId,
-      );
-    if (existChannelUser) {
-      await this.exitChannel(
-        new ChannelExitDto(postDto.userId, existChannelUser.channel.id),
-      );
-    }
+    this.exitIfUserIsInChannel(postDto.userId);
 
     const newChannel: Channel = await this.channelRepository.saveChannel(
       SaveChannelDto.from(postDto),
@@ -248,15 +237,7 @@ export class ChannelUserService {
    */
   @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
   async postChannelJoin(postDto: PostChannelJoinDto): Promise<void> {
-    const existChannelUser: ChannelUser =
-      await this.channelUserRepository.findByUserIdAndNotDeleted(
-        postDto.userId,
-      );
-    if (existChannelUser) {
-      await this.exitChannel(
-        new ChannelExitDto(postDto.userId, existChannelUser.channel.id),
-      );
-    }
+    this.exitIfUserIsInChannel(postDto.userId);
 
     await this.joinChannel(
       new ChannelJoinDto(
@@ -288,15 +269,7 @@ export class ChannelUserService {
     const user: UserModel = this.userFactory.findById(postDto.userId);
     checkUserIsInvited(user, postDto.channelId);
 
-    const existChannelUser: ChannelUser =
-      await this.channelUserRepository.findByUserIdAndNotDeleted(
-        postDto.userId,
-      );
-    if (existChannelUser) {
-      await this.exitChannel(
-        new ChannelExitDto(postDto.userId, existChannelUser.channel.id),
-      );
-    }
+    this.exitIfUserIsInChannel(postDto.userId);
 
     await this.joinChannel(
       new ChannelJoinDto(
@@ -438,18 +411,13 @@ export class ChannelUserService {
       deleteDto.channelId,
     );
     checkChannelExist(channel);
-    validateChannelAdmin(dto, this.channelFactory, this.userFactory);
+    checkExcutable(dto, this.channelFactory, this.userFactory);
 
-    const targetUser: ChannelUser =
-      await this.channelUserRepository.findByUserIdAndChannelIdAndIsDelFalse(
-        deleteDto.targetUserId,
-        deleteDto.channelId,
-      );
-    if (!targetUser) {
+    if (!channel.users.has(deleteDto.targetUserId)) {
       return;
     }
 
-    await this.exitChannel(new ChannelExitDto(targetUser.user.id, channel.id));
+    await this.exitChannel(new ChannelExitDto(dto.targetUserId, channel.id));
 
     await this.messageRepository.save(
       SaveChannelMessageDto.fromKickDto(deleteDto),
@@ -457,7 +425,7 @@ export class ChannelUserService {
 
     /** 트랜잭션이 성공하면 Factory에도 결과를 반영한다 */
     runOnTransactionComplete(() => {
-      this.channelFactory.leave(targetUser.user.id, deleteDto.channelId);
+      this.channelFactory.leave(deleteDto.targetUserId, deleteDto.channelId);
     });
   }
 
@@ -477,18 +445,15 @@ export class ChannelUserService {
     );
 
     checkChannelExist(channel);
-    validateChannelAdmin(dto, this.channelFactory, this.userFactory);
+    checkExcutable(dto, this.channelFactory, this.userFactory);
 
-    const targetUser: ChannelUser =
-      await this.channelUserRepository.findByUserIdAndChannelIdAndIsDelFalse(
-        postDto.targetUserId,
-        postDto.channelId,
-      );
-    if (!targetUser) {
+    if (channel.banList.has(postDto.targetUserId)) {
       return;
     }
 
-    await this.exitChannel(new ChannelExitDto(targetUser.user.id, channel.id));
+    await this.exitChannel(
+      new ChannelExitDto(postDto.targetUserId, channel.id),
+    );
 
     await this.messageRepository.save(
       SaveChannelMessageDto.fromBanDto(postDto),
@@ -496,8 +461,8 @@ export class ChannelUserService {
 
     /** 트랜잭션이 성공하면 Factory에도 결과를 반영한다 */
     runOnTransactionComplete(() => {
-      this.channelFactory.setBan(targetUser.user.id, postDto.channelId);
-      this.channelFactory.leave(targetUser.user.id, postDto.channelId);
+      this.channelFactory.setBan(postDto.targetUserId, postDto.channelId);
+      this.channelFactory.leave(postDto.targetUserId, postDto.channelId);
     });
   }
 
@@ -515,14 +480,9 @@ export class ChannelUserService {
     );
 
     checkChannelExist(channel);
-    validateChannelAdmin(dto, this.channelFactory, this.userFactory);
+    checkExcutable(dto, this.channelFactory, this.userFactory);
 
-    const targetUser: ChannelUser =
-      await this.channelUserRepository.findByUserIdAndChannelIdAndIsDelFalse(
-        postDto.targetUserId,
-        postDto.channelId,
-      );
-    if (!targetUser) {
+    if (channel.muteList.has(postDto.targetUserId)) {
       return;
     }
 
@@ -532,7 +492,7 @@ export class ChannelUserService {
 
     /** 트랜잭션이 성공하면 Factory에도 결과를 반영한다 */
     runOnTransactionComplete(() => {
-      this.channelFactory.setMute(targetUser.user.id, postDto.channelId);
+      this.channelFactory.setMute(postDto.targetUserId, postDto.channelId);
     });
   }
 
@@ -550,14 +510,9 @@ export class ChannelUserService {
     );
 
     checkChannelExist(channel);
-    validateChannelAdmin(dto, this.channelFactory, this.userFactory);
+    checkExcutable(dto, this.channelFactory, this.userFactory);
 
-    const targetUser: ChannelUser =
-      await this.channelUserRepository.findByUserIdAndChannelIdAndIsDelFalse(
-        deleteDto.targetUserId,
-        deleteDto.channelId,
-      );
-    if (!targetUser) {
+    if (!channel.muteList.has(deleteDto.targetUserId)) {
       return;
     }
 
@@ -567,7 +522,10 @@ export class ChannelUserService {
 
     /** 트랜잭션이 성공하면 Factory에도 결과를 반영한다 */
     runOnTransactionComplete(() => {
-      this.channelFactory.unsetMute(targetUser.user.id, deleteDto.channelId);
+      this.channelFactory.unsetMute(
+        deleteDto.targetUserId,
+        deleteDto.channelId,
+      );
     });
   }
 
@@ -616,5 +574,19 @@ export class ChannelUserService {
       new UpdateChannelHeadCountDto(dto.channelId, -1),
     );
     await this.messageRepository.save(SaveChannelMessageDto.fromExitDto(dto));
+  }
+
+  /**
+   * 유저가 채널에 속해 있는지 확인하고, 속해 있다면 퇴장시키는 함수
+   * 채널에 속해 있지 않은 경우 아무것도 하지 않는다
+   * */
+  private async exitIfUserIsInChannel(userId: number): Promise<void> {
+    const channelUser: ChannelUser =
+      await this.channelUserRepository.findByUserIdAndNotDeleted(userId);
+    if (channelUser) {
+      await this.exitChannel(
+        new ChannelExitDto(userId, channelUser.channel.id),
+      );
+    }
   }
 }
