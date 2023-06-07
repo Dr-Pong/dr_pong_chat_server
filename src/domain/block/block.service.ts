@@ -73,10 +73,11 @@ export class BlockService {
     const blockedUser: Block =
       await this.blockRepository.findBlockByUserIdAndTargetId(userId, targetId);
 
-    // 차단할 사용자가 차단목록에 없다면 차단합니다.DB
+    // 차단할 사용자가 차단목록에 있다면 차단하지 않습니다.
     if (blockedUser) {
       return;
     }
+    // 차단할 사용자가 차단목록에 없다면 차단합니다.DB
     await this.blockRepository.createUserBlock(userId, targetId);
 
     // 차단할 사용자가 차단목록에 없다면 차단합니다. Factory
@@ -101,10 +102,11 @@ export class BlockService {
     const blockedUser: Block =
       await this.blockRepository.findBlockByUserIdAndTargetId(userId, targetId);
 
-    // 차단 해제할 사용자가 차단목록에 있다면 차단을 해제합니다.
+    // 차단 해제할 사용자가 차단목록에 없다면 에러를 반환합니다.
     if (!blockedUser) {
       throw new BadRequestException('Invalid userId');
     }
+    // 차단 해제할 사용자가 차단목록에 있다면 차단을 해제합니다.
     await this.blockRepository.deleteUserBlock(userId, targetId);
 
     // 차단 해제할 사용자가 차단목록에 있다면 차단을 해제합니다. Factory
