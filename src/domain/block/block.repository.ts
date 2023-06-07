@@ -9,4 +9,11 @@ export class BlockRepository {
     @InjectRepository(Block)
     private readonly repository: Repository<Block>,
   ) {}
+
+  async findBlocksByUserId(userId: number): Promise<Block[]> {
+    const blocks: Block[] = await this.repository.find({
+      where: { id: userId },
+    });
+    return blocks;
+  }
 }
