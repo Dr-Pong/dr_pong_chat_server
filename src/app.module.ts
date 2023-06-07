@@ -16,6 +16,7 @@ import { DirectMessageModule } from './domain/direct-message/direct-message.modu
 import { FriendModule } from './domain/friend/friend.module';
 import { AuthModule } from './domain/auth/auth.module';
 import { FriendTestModule } from './domain/friend/test/friend.test.module';
+import { BlockTestModule } from './domain/block/test/block.test.module';
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { FriendTestModule } from './domain/friend/test/friend.test.module';
     ChannelMessageModule,
     DirectMessageRoomModule,
     AuthModule,
+    BlockTestModule,
   ],
   controllers: [AppController],
   providers: [AppService],
