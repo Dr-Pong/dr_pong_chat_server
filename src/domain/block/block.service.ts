@@ -93,11 +93,6 @@ export class BlockService {
   @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
   async deleteUserBlocks(deleteDto: DeleteUserBlockDto): Promise<void> {
     const { userId, targetId } = deleteDto;
-    // 차단 해제할 사용자가 유효한지 확인합니다.
-    const validUser: UserModel = this.userFactory.findById(targetId);
-    if (!validUser) {
-      throw new BadRequestException('Invalid userId');
-    }
     // 차단 해제할 사용자를 차단목록에 존재하는지 찾습니다.
     const blockedUser: Block =
       await this.blockRepository.findBlockByUserIdAndTargetId(userId, targetId);
