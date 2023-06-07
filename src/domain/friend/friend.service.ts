@@ -100,8 +100,8 @@ export class FriendService {
     const { userId, friendId } = postDto;
     const hasFriendRequest: boolean =
       await this.friendRepository.hasFriendRequestsByUserIdAndFriendId(
-        userId,
         friendId,
+        userId,
       );
 
     if (!hasFriendRequest) return;

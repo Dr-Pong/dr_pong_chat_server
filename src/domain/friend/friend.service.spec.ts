@@ -271,13 +271,13 @@ describe('FriendService', () => {
         await testData.createUserRequesting(10);
 
         const userFriendsAcceptDto: PostUserFriendAcceptDto = {
-          userId: testData.users[0].id,
-          friendId: testData.users[1].id,
+          userId: testData.users[1].id,
+          friendId: testData.users[0].id,
         };
 
         await await service.postUserFriendAccept(userFriendsAcceptDto);
 
-        const friendRequest: Friend = await friendRepository.findOne({
+        const friend: Friend = await friendRepository.findOne({
           where: {
             sender: { id: testData.users[0].id },
             receiver: { id: testData.users[1].id },
@@ -285,7 +285,7 @@ describe('FriendService', () => {
           },
         });
 
-        expect(friendRequest.status).toBe(FRIENDSTATUS_FRIEND);
+        expect(friend.status).toBe(FRIENDSTATUS_FRIEND);
       });
 
       it('[Valid Case] 양쪽에서 친구 요청 보낸경우', async () => {
