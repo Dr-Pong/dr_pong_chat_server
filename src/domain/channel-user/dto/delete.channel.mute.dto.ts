@@ -1,7 +1,7 @@
 import { ChannelAdminCommandDto } from './channel.admin.command.dto';
 
 export class DeleteChannelMuteDto extends ChannelAdminCommandDto {
-  typeof(): string {
+  getType(): string {
     return DeleteChannelMuteDto.name;
   }
 }

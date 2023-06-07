@@ -57,7 +57,7 @@ export class SaveChannelMessageDto {
   static fromCommandDto(dto: ChannelAdminCommandDto): SaveChannelMessageDto {
     const { targetUserId: userId, channelId } = dto;
     let type: ChatType;
-    switch (dto.typeof()) {
+    switch (dto.getType()) {
       case PostChannelMuteDto.name:
         type = CHAT_MUTE;
         break;

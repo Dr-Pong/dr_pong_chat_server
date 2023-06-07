@@ -3,7 +3,7 @@ export class ChannelAdminCommandDto {
   channelId: string;
   targetUserId: number;
 
-  typeof(): string {
+  getType(): string {
     return ChannelAdminCommandDto.name;
   }
 
