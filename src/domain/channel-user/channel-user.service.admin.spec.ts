@@ -457,25 +457,6 @@ describe('ChannelUserService', () => {
       });
     });
 
-    // describe('채팅방 삭제', () => {
-    //   it('[Valid Case] 채팅방 삭제(오너가 삭제하는 경우)', async () => {
-    //     const channel: ChannelModel = await testData.createBasicChannel();
-    //     const user: UserModel = userFactory.users.get(channel.ownerId);
-
-    //     const deleteChannelRequest: DeleteChannelDto = new DeleteChannelDto(
-    //       user.id,
-    //       channel.id,
-    //     );
-
-    //     await service.deleteChannel(deleteChannelRequest);
-    //     const savedChannelFt: ChannelModel = channelFactory.findById(
-    //       channel.id,
-    //     );
-
-    //     expect(savedChannelFt.users).toContain(user.id);
-    //     expect(savedChannelFt.muteList).toContain(user.id);
-    //   });
-    // });
     describe('채팅방 수정', () => {
       it('[Valid Case] public -> private', async () => {
         const channel: ChannelModel = await testData.createBasicChannel(
