@@ -101,7 +101,11 @@ export class FriendRelationController {
    * }
    * */
   @Post('/:nickname')
-  async friendAcceptPost(@Param('nickname') nickname: string): Promise<void> {
+  @UseGuards(AuthGuard('jwt'))
+  async friendAcceptPost(
+    @Requestor() requestor: UserIdCardDto,
+    @Param('nickname') nickname: string,
+  ): Promise<void> {
     return;
   }
 
@@ -112,7 +116,11 @@ export class FriendRelationController {
    * }
    * */
   @Delete('/pendings/:nickname')
-  async friendRejectDelete(@Param('nickname') nickname: string): Promise<void> {
+  @UseGuards(AuthGuard('jwt'))
+  async friendRejectDelete(
+    @Requestor() requestor: UserIdCardDto,
+    @Param('nickname') nickname: string,
+  ): Promise<void> {
     return;
   }
 
@@ -123,7 +131,11 @@ export class FriendRelationController {
    * }
    * */
   @Delete('/:nickname')
-  async friendDelete(@Param('nickname') nickname: string): Promise<void> {
+  @UseGuards(AuthGuard('jwt'))
+  async friendDelete(
+    @Requestor() requestor: UserIdCardDto,
+    @Param('nickname') nickname: string,
+  ): Promise<void> {
     return;
   }
 }
