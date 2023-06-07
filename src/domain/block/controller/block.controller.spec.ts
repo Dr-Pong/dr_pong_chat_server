@@ -96,7 +96,7 @@ describe('BlockController', () => {
           `/users/blocks/${target.nickname}`,
         );
 
-        expect(response.status).toBe(200);
+        expect(response.status).toBe(201);
       });
 
       it('[ValidCase] 이미 차단된 사용자', async () => {
@@ -110,7 +110,7 @@ describe('BlockController', () => {
           `/users/blocks/${target.nickname}`,
         );
 
-        expect(response.status).toBe(200);
+        expect(response.status).toBe(201);
       });
 
       it('[InvalidCase] 차단할 사용자가 없는 경우', async () => {
