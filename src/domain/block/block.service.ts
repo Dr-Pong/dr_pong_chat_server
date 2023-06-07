@@ -1,14 +1,29 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadGatewayException,
+  BadRequestException,
+  Injectable,
+} from '@nestjs/common';
 import { BlockRepository } from './block.repository';
-import { IsolationLevel, Transactional } from 'typeorm-transactional';
+import {
+  IsolationLevel,
+  Transactional,
+  runOnTransactionComplete,
+  runOnTransactionRollback,
+} from 'typeorm-transactional';
 import { UserBlocksDto } from './dto/user.blocks.dto';
 import { GetUserBlocksDto } from './dto/get.user.blocks.dto';
 import { Block } from './block.entity';
 import { BlockUserInfoDto } from './dto/user.blocks.dto';
+import { PostUserBlockDto } from './dto/post.user.block.dto';
+import { UserModel } from '../factory/model/user.model';
+import { UserFactory } from '../factory/user.factory';
 
 @Injectable()
 export class BlockService {
-  constructor(private blockRepository: BlockRepository) {}
+  constructor(
+    private readonly blockRepository: BlockRepository,
+    private readonly userFactory: UserFactory,
+  ) {}
 
   /** 차단목록 GET
    * 특정 사용자의 차단 목록을 조회하는 함수입니다.
@@ -45,5 +60,33 @@ export class BlockService {
       users: blockedUsers,
     };
     return responseDto;
+  }
+
+  /** 유저 차단 POST
+   * 특정 사용자를 차단하는 함수입니다.
+   */
+  @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
+  async postUserBlocks(postDto: PostUserBlockDto): Promise<void> {
+    const { userId, targetId } = postDto;
+    // 차단할 사용자가 유효한지 확인합니다.
+    const validUser: UserModel = this.userFactory.findById(targetId);
+    if (!validUser) {
+      throw new BadRequestException('Invalid userId');
+    }
+    // 차단할 사용자를 차단목록에 존재하는지 찾습니다.
+    const blockedUser: Block =
+      await this.blockRepository.findBlockByUserIdAndTargetId(userId, targetId);
+
+    // 차단할 사용자가 차단목록에 없다면 차단합니다.DB
+    if (blockedUser) {
+      return;
+    }
+    await this.blockRepository.createUserBlock(userId, targetId);
+
+    // 차단할 사용자가 차단목록에 없다면 차단합니다. Factory
+    runOnTransactionComplete(() => {
+      const userModel: UserModel = this.userFactory.findById(userId);
+      this.userFactory.block(userModel.id, targetId);
+    });
   }
 }
