@@ -125,13 +125,13 @@ export class FriendService {
     deleteDto: DeleteUserFriendRejectDto,
   ): Promise<void> {
     const { userId, friendId } = deleteDto;
-    const hasFriendRequest: boolean =
+    const isRequesting: boolean =
       await this.friendRepository.checkIsRequestingByUserIdAndFriendId(
         userId,
         friendId,
       );
 
-    if (!hasFriendRequest) return;
+    if (!isRequesting) return;
 
     await this.friendRepository.updateFriendRequestStatusDeletedByUserIdAndFriendId(
       userId,

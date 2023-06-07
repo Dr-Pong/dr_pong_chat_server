@@ -1,22 +1,14 @@
 import {
-  Body,
   Controller,
-  DefaultValuePipe,
   Delete,
   Get,
   Param,
-  ParseIntPipe,
   Post,
-  Query,
   UseGuards,
 } from '@nestjs/common';
 import { FriendService } from 'src/domain/friend/friend.service';
 import { FriendListResponseDto } from 'src/domain/friend/dto/friend.list.response.dto';
 import { FriendPendingListResponseDto } from 'src/domain/friend/dto/friend.pending.list.response.dto';
-import { FriendDirectMessageChatListResponseDto } from 'src/domain/friend/dto/friend.direct.message.chat.list.response.dto';
-import { PostFriendChatRequestDto } from 'src/domain/friend/dto/post.friend.chat.request.dto';
-import { FriendDirectMessageRoomListResponseDto } from 'src/domain/friend/dto/friend.direct.message.room.list.response.dto';
-import { FriendDirectMessageNewResponseDto } from 'src/domain/friend/dto/friend.direct.message.new.response';
 import { UserFriendsDto } from '../dto/user.friends.dto';
 import { Requestor } from '../../auth/jwt/auth.requestor.decorator';
 import { UserIdCardDto } from '../../auth/jwt/auth.user.id-card.dto';
@@ -109,8 +101,16 @@ export class FriendRelationController {
    * }
    * */
   @Post('/:nickname')
-  async friendAcceptPost(@Param('nickname') nickname: string): Promise<void> {
-    return;
+  @UseGuards(AuthGuard('jwt'))
+  async friendAcceptPost(
+    @Requestor() requestor: UserIdCardDto,
+    @Param('nickname') nickname: string,
+  ): Promise<void> {
+    const { id: userId } = requestor;
+    const { id: friendId } = await this.userService.getIdFromNickname({
+      nickname,
+    });
+    await this.friendService.postUserFriendAccept({ userId, friendId });
   }
 
   /* 친구 요청 거절
@@ -120,7 +120,11 @@ export class FriendRelationController {
    * }
    * */
   @Delete('/pendings/:nickname')
-  async friendRejectDelete(@Param('nickname') nickname: string): Promise<void> {
+  @UseGuards(AuthGuard('jwt'))
+  async friendRejectDelete(
+    @Requestor() requestor: UserIdCardDto,
+    @Param('nickname') nickname: string,
+  ): Promise<void> {
     return;
   }
 
@@ -131,7 +135,11 @@ export class FriendRelationController {
    * }
    * */
   @Delete('/:nickname')
-  async friendDelete(@Param('nickname') nickname: string): Promise<void> {
+  @UseGuards(AuthGuard('jwt'))
+  async friendDelete(
+    @Requestor() requestor: UserIdCardDto,
+    @Param('nickname') nickname: string,
+  ): Promise<void> {
     return;
   }
 }
