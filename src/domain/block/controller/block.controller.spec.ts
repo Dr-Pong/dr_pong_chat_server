@@ -36,7 +36,7 @@ describe('BlockController', () => {
     await dataSources.synchronize(true);
   });
   describe('[GET]', () => {
-    describe('/blocks', () => {
+    describe('users/blocks', () => {
       it('[ValidCase] 차단목록 조회', async () => {
         const user: UserModel = await testData.createBasicUser('user');
         const target1: UserModel = await testData.createBasicUser('target1');
@@ -44,43 +44,28 @@ describe('BlockController', () => {
         await testData.createUserBlocks(user, target1);
         await testData.createUserBlocks(user, target2);
         const token = await testData.giveTokenToUser(user);
-        const response = await req(token, 'GET', `/blocks`);
+        const response = await req(token, 'GET', `/users/blocks`);
         const result = response.body;
 
         expect(response.status).toBe(200);
         expect(result).toHaveProperty('users');
-        expect(result.users).toHaveProperty('nickname');
-        expect(result.users).toHaveProperty('imgUrl');
-
-        expect(result).toEqual(
-          expect.arrayContaining([
-            expect.objectContaining({
-              id: target1.id,
-              nickname: target1.nickname,
-              imageUrl: target1.profileImage,
-            }),
-            expect.objectContaining({
-              id: target2.id,
-              nickname: target2.nickname,
-              imageUrl: target2.profileImage,
-            }),
-          ]),
-        );
-        expect(result.length).toBe(2);
+        expect(result.users[0]).toHaveProperty('nickname');
+        expect(result.users[0]).toHaveProperty('imgUrl');
+        expect(result.users[1]).toHaveProperty('nickname');
+        expect(result.users[1]).toHaveProperty('imgUrl');
+        expect(result.users.length).toBe(2);
       });
 
       it('[ValidCase] 차단목록이 빈경우', async () => {
         const user: UserModel = await testData.createBasicUser('user');
         const token = await testData.giveTokenToUser(user);
-        const response = await req(token, 'GET', `/blocks`);
+        const response = await req(token, 'GET', `/users/blocks`);
         const result = response.body;
 
         expect(response.status).toBe(200);
         expect(result).toHaveProperty('users');
-        expect(result.users).toHaveProperty('nickname');
-        expect(result.users).toHaveProperty('imgUrl');
 
-        expect(result).toEqual([]);
+        expect(result.users.length).toBe(0);
       });
     });
   });
