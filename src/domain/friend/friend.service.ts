@@ -27,12 +27,13 @@ export class FriendService {
    */
   @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
   async getUserFriends(getDto: GetUserFriendDto): Promise<UserFriendsDto> {
+    const { userId: myId } = getDto;
     const userFriends: Friend[] =
-      await this.friendRepository.findFriendsByUserId(getDto.userId);
+      await this.friendRepository.findFriendsByUserId(myId);
 
     const friends: FriendDto[] = userFriends.map((friend) => {
       const { sender, receiver } = friend;
-      if (friend.receiver.id === getDto.userId) {
+      if (friend.receiver.id === myId) {
         return FriendDto.fromUser(sender);
       }
       return FriendDto.fromUser(receiver);
@@ -74,12 +75,13 @@ export class FriendService {
   async getUserPendingFriendRequests(
     getDto: GetUserPendingFriendDto,
   ): Promise<UserPendingFriendsDto> {
+    const { userId: myId } = getDto;
     const userFriends: Friend[] =
-      await this.friendRepository.findFriendRequestingsByUserId(getDto.userId);
+      await this.friendRepository.findFriendRequestingsByUserId(myId);
 
     const friends: FriendDto[] = userFriends.map((friend) => {
       const { sender, receiver } = friend;
-      if (friend.receiver.id === getDto.userId) {
+      if (friend.receiver.id === myId) {
         return FriendDto.fromUser(sender);
       }
       return FriendDto.fromUser(receiver);
