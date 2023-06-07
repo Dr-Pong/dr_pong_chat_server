@@ -50,13 +50,13 @@ export class FriendService {
     postDto: PostUserFriendRequestDto,
   ): Promise<void> {
     const { userId, friendId } = postDto;
-    const isAlreadyFriendOrRequesting: boolean =
-      await this.friendRepository.isAlreadyFriendOrRequestingByUserIdAndFriendId(
+    const isFriendOrRequesting: boolean =
+      await this.friendRepository.checkIsFriendOrRequestingByUserIdAndFriendId(
         userId,
         friendId,
       );
 
-    if (isAlreadyFriendOrRequesting) return;
+    if (isFriendOrRequesting) return;
 
     await this.friendRepository.saveFriendStatusRequestingByUserIdAndFriendId(
       userId,
@@ -98,13 +98,13 @@ export class FriendService {
   @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
   async postUserFriendAccept(postDto: PostUserFriendAcceptDto): Promise<void> {
     const { userId, friendId } = postDto;
-    const hasFriendRequest: boolean =
-      await this.friendRepository.hasFriendRequestsByUserIdAndFriendId(
+    const isRequesting: boolean =
+      await this.friendRepository.checkIsRequestingByUserIdAndFriendId(
         friendId,
         userId,
       );
 
-    if (!hasFriendRequest) return;
+    if (!isRequesting) return;
 
     await this.friendRepository.updateFriendRequestStatusFriendByUserIdAndFriendId(
       userId,
@@ -126,7 +126,7 @@ export class FriendService {
   ): Promise<void> {
     const { userId, friendId } = deleteDto;
     const hasFriendRequest: boolean =
-      await this.friendRepository.hasFriendRequestsByUserIdAndFriendId(
+      await this.friendRepository.checkIsRequestingByUserIdAndFriendId(
         userId,
         friendId,
       );

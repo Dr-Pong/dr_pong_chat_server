@@ -57,11 +57,11 @@ export class FriendRepository {
   /**delete가 아닌 친구 테이블 목록
    * 유저와 친구의 id로 둘이 테이블에 delete가 아닌 Frined[]를 반환합니다.
    */
-  async isAlreadyFriendOrRequestingByUserIdAndFriendId(
+  async checkIsFriendOrRequestingByUserIdAndFriendId(
     userId: number,
     friendId: number,
   ): Promise<boolean> {
-    const isAlreadyFriendOrRequesting: boolean = await this.repository.exist({
+    const isFriendOrRequesting: boolean = await this.repository.exist({
       where: [
         {
           sender: { id: userId },
@@ -70,17 +70,17 @@ export class FriendRepository {
         },
       ],
     });
-    return isAlreadyFriendOrRequesting;
+    return isFriendOrRequesting;
   }
 
   /**친구 requesting 테이블 목록
    * 유저와 친구의 id로 둘이 테이블에 requesting인 Frined[]를 반환합니다.
    */
-  async hasFriendRequestsByUserIdAndFriendId(
+  async checkIsRequestingByUserIdAndFriendId(
     userId: number,
     friendId: number,
   ): Promise<boolean> {
-    const hasFriendRequest: boolean = await this.repository.exist({
+    const isRequesting: boolean = await this.repository.exist({
       where: [
         {
           sender: { id: userId },
@@ -89,7 +89,7 @@ export class FriendRepository {
         },
       ],
     });
-    return hasFriendRequest;
+    return isRequesting;
   }
 
   /**친구 테이블 목록
