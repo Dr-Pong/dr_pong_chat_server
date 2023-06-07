@@ -38,7 +38,7 @@ import {
   ORDER_CHANNEL_RESENT,
 } from 'src/global/type/type.order.channel';
 import { DeleteChannelInviteDto } from './dto/delete.channel.invite.dto';
-import { PostChannelMessageDto } from '../channel-message/post.channel-message.dto';
+import { PostChannelMessageDto } from '../channel-message/dto/post.channel-message.dto';
 import { CHAT_MESSAGE } from 'src/global/type/type.chat';
 import { ChannelMessage } from '../channel-message/channel-message.entity';
 import { ChannlUserTestModule } from './test/channel-user.test.module';

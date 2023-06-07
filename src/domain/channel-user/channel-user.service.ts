@@ -53,7 +53,7 @@ import { ChannelExitDto } from './dto/channel.exit.dto';
 import { DeleteChannelUserDto } from './dto/delete.channel.user.dto';
 import { ChannelMessageRepository } from '../channel-message/channel-message.repository';
 import { SaveChannelMessageDto } from '../channel-message/save.channel-message.dto';
-import { PostChannelMessageDto } from '../channel-message/post.channel-message.dto';
+import { PostChannelMessageDto } from '../channel-message/dto/post.channel-message.dto';
 import { ChatGateWay } from 'src/gateway/chat.gateway';
 import { MessageDto } from 'src/gateway/dto/message.dto';
 import { DeleteChannelInviteDto } from './dto/delete.channel.invite.dto';

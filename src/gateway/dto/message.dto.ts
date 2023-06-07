@@ -1,4 +1,4 @@
-import { PostChannelMessageDto } from 'src/domain/channel-message/post.channel-message.dto';
+import { PostChannelMessageDto } from 'src/domain/channel-message/dto/post.channel-message.dto';
 import { CHAT_MESSAGE, ChatType } from 'src/global/type/type.chat';
 
 export class MessageDto {
