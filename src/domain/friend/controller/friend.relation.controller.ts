@@ -106,7 +106,11 @@ export class FriendRelationController {
     @Requestor() requestor: UserIdCardDto,
     @Param('nickname') nickname: string,
   ): Promise<void> {
-    return;
+    const { id: userId } = requestor;
+    const { id: friendId } = await this.userService.getIdFromNickname({
+      nickname,
+    });
+    await this.friendService.postUserFriendAccept({ userId, friendId });
   }
 
   /* 친구 요청 거절
