@@ -112,7 +112,19 @@ describe('FriendController - Relation', () => {
           'POST',
           `/users/friends/pendings/${receiver.nickname}`,
         );
-        expect(response.status).toBe(200);
+        expect(response.status).toBe(201);
+      });
+      it('친구 요청 성공(이미 친구)', async () => {
+        const user = friendTestService.users[0];
+        const receiver = friendTestService.users[1];
+        await friendTestService.createUser0ToFriends(receiver.id);
+        const token = await friendTestService.giveTokenToUser(user);
+        const response = await req(
+          token,
+          'POST',
+          `/users/friends/pendings/${receiver.nickname}`,
+        );
+        expect(response.status).toBe(201);
       });
       it('친구 요청 실패(없는 아이디)', async () => {
         const user = friendTestService.users[0];
@@ -122,18 +134,6 @@ describe('FriendController - Relation', () => {
           token,
           'POST',
           `/users/friends/pendings/${receiver}`,
-        );
-        expect(response.status).toBe(400);
-      });
-      it('친구 요청 실패(이미 친구)', async () => {
-        const user = friendTestService.users[0];
-        const receiver = friendTestService.users[1];
-        await friendTestService.createUser0ToFriends(receiver.id);
-        const token = await friendTestService.giveTokenToUser(user);
-        const response = await req(
-          token,
-          'POST',
-          `/users/friends/pendings/${receiver.nickname}`,
         );
         expect(response.status).toBe(400);
       });
@@ -150,7 +150,7 @@ describe('FriendController - Relation', () => {
           'POST',
           `/users/friends/${sender.nickname}`,
         );
-        expect(response.status).toBe(200);
+        expect(response.status).toBe(201);
       });
       it('친구 요청 수락 실패(이미 친구)', async () => {
         const user = friendTestService.users[0];
