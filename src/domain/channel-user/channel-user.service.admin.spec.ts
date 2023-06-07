@@ -120,11 +120,11 @@ describe('ChannelUserService', () => {
           user.joinedChannel,
         );
 
-        const postAdminRequest: PostChannelAdminDto = {
-          requestUserId: channel.ownerId,
-          channelId: channel.id,
-          targetUserId: user.id,
-        };
+        const postAdminRequest: PostChannelAdminDto = new PostChannelAdminDto(
+          channel.ownerId,
+          channel.id,
+          user.id,
+        );
 
         await service.postChannelAdmin(postAdminRequest);
         const savedMessage: ChannelMessage =
@@ -136,7 +136,7 @@ describe('ChannelUserService', () => {
             },
           });
 
-        expect(savedMessage.content).toBe('is admin now');
+        expect(savedMessage.content).toBe('setadmin');
         const savedChannelFt: ChannelModel = channelFactory.findById(
           channel.id,
         );
@@ -150,12 +150,8 @@ describe('ChannelUserService', () => {
         iteratror.next();
         const user: UserModel = userFactory.findById(iteratror.next().value);
 
-        const deleteAdminRequest: DeleteChannelAdminDto = {
-          requestUserId: channel.ownerId,
-          channelId: channel.id,
-          targetUserId: user.id,
-        };
-
+        const deleteAdminRequest: DeleteChannelAdminDto =
+          new DeleteChannelAdminDto(channel.ownerId, channel.id, user.id);
         await service.deleteChannelAdmin(deleteAdminRequest);
         const savedMessage: ChannelMessage =
           await channelMessageRepository.findOne({
@@ -165,7 +161,7 @@ describe('ChannelUserService', () => {
               type: CHAT_UNSETADMIN,
             },
           });
-        expect(savedMessage.content).toBe('is not admin anymore');
+        expect(savedMessage.content).toBe('unsetadmin');
 
         const savedChannelFt: ChannelModel = channelFactory.findById(
           channel.id,
@@ -182,11 +178,8 @@ describe('ChannelUserService', () => {
           user.joinedChannel,
         );
 
-        const deleteUserInChannelRequest: DeleteChannelKickDto = {
-          requestUserId: channel.ownerId,
-          channelId: channel.id,
-          targetUserId: user.id,
-        };
+        const deleteUserInChannelRequest: DeleteChannelKickDto =
+          new DeleteChannelKickDto(channel.ownerId, channel.id, user.id);
 
         await service.deleteChannelKick(deleteUserInChannelRequest);
         const savedMessage: ChannelMessage =
@@ -198,7 +191,7 @@ describe('ChannelUserService', () => {
             },
           });
 
-        expect(savedMessage.content).toBe('is kicked');
+        expect(savedMessage.content).toBe('kick');
 
         const savedChannelFt: ChannelModel = channelFactory.findById(
           channel.id,
@@ -213,11 +206,8 @@ describe('ChannelUserService', () => {
         iterator.next();
         const user: UserModel = userFactory.findById(iterator.next().value);
 
-        const deleteUserInChannelRequest: DeleteChannelKickDto = {
-          requestUserId: channel.ownerId,
-          channelId: channel.id,
-          targetUserId: user.id,
-        };
+        const deleteUserInChannelRequest: DeleteChannelKickDto =
+          new DeleteChannelKickDto(channel.ownerId, channel.id, user.id);
 
         await service.deleteChannelKick(deleteUserInChannelRequest);
         const savedMessage: ChannelMessage =
@@ -229,7 +219,7 @@ describe('ChannelUserService', () => {
             },
           });
 
-        expect(savedMessage.content).toBe('is kicked');
+        expect(savedMessage.content).toBe('kick');
 
         const savedChannelFt: ChannelModel = channelFactory.findById(
           channel.id,
@@ -247,11 +237,8 @@ describe('ChannelUserService', () => {
         iterator.next();
         const user: UserModel = userFactory.findById(iterator.next().value);
 
-        const deleteUserInChannelRequest: DeleteChannelKickDto = {
-          requestUserId: iterator.next().value,
-          channelId: channel.id,
-          targetUserId: user.id,
-        };
+        const deleteUserInChannelRequest: DeleteChannelKickDto =
+          new DeleteChannelKickDto(iterator.next().value, channel.id, user.id);
 
         await expect(
           service.deleteChannelKick(deleteUserInChannelRequest),
@@ -276,11 +263,11 @@ describe('ChannelUserService', () => {
           user.joinedChannel,
         );
 
-        const postChannelBanRequest: PostChannelBanDto = {
-          requestUserId: channel.ownerId,
-          channelId: channel.id,
-          targetUserId: user.id,
-        };
+        const postChannelBanRequest: PostChannelBanDto = new PostChannelBanDto(
+          channel.ownerId,
+          channel.id,
+          user.id,
+        );
 
         await service.postChannelBan(postChannelBanRequest);
         const savedMessage: ChannelMessage =
@@ -292,7 +279,7 @@ describe('ChannelUserService', () => {
             },
           });
 
-        expect(savedMessage.content).toBe('is banned');
+        expect(savedMessage.content).toBe('ban');
         const savedChannelFt: ChannelModel = channelFactory.findById(
           channel.id,
         );
@@ -309,11 +296,11 @@ describe('ChannelUserService', () => {
         iterator.next();
         const user: UserModel = userFactory.findById(iterator.next().value);
 
-        const postChannelBanRequest: PostChannelBanDto = {
-          requestUserId: channel.ownerId,
-          channelId: channel.id,
-          targetUserId: user.id,
-        };
+        const postChannelBanRequest: PostChannelBanDto = new PostChannelBanDto(
+          channel.ownerId,
+          channel.id,
+          user.id,
+        );
 
         await service.postChannelBan(postChannelBanRequest);
         const savedMessage: ChannelMessage =
@@ -325,7 +312,7 @@ describe('ChannelUserService', () => {
             },
           });
 
-        expect(savedMessage.content).toBe('is banned');
+        expect(savedMessage.content).toBe('ban');
         const savedChannelFt: ChannelModel = channelFactory.findById(
           channel.id,
         );
@@ -342,11 +329,11 @@ describe('ChannelUserService', () => {
         const admin: UserModel = userFactory.findById(iterator.next().value);
         const user: UserModel = userFactory.findById(iterator.next().value);
 
-        const postChannelBanRequest: PostChannelBanDto = {
-          requestUserId: admin.id,
-          channelId: channel.id,
-          targetUserId: user.id,
-        };
+        const postChannelBanRequest: PostChannelBanDto = new PostChannelBanDto(
+          admin.id,
+          channel.id,
+          user.id,
+        );
 
         await expect(
           service.postChannelBan(postChannelBanRequest),
@@ -372,11 +359,8 @@ describe('ChannelUserService', () => {
           user.joinedChannel,
         );
 
-        const postChannelMuteRequest: PostChannelMuteDto = {
-          requestUserId: channel.ownerId,
-          channelId: channel.id,
-          targetUserId: user.id,
-        };
+        const postChannelMuteRequest: PostChannelMuteDto =
+          new PostChannelMuteDto(channel.ownerId, channel.id, user.id);
 
         await service.postChannelMute(postChannelMuteRequest);
         const savedMessage: ChannelMessage =
@@ -387,7 +371,7 @@ describe('ChannelUserService', () => {
               type: CHAT_MUTE,
             },
           });
-        expect(savedMessage.content).toBe('is muted');
+        expect(savedMessage.content).toBe('mute');
         const savedChannelFt: ChannelModel = channelFactory.findById(
           channel.id,
         );
@@ -402,11 +386,8 @@ describe('ChannelUserService', () => {
         const admin: UserModel = userFactory.findById(iterator.next().value);
         const user: UserModel = userFactory.findById(iterator.next().value);
 
-        const postChannelMuteRequest: PostChannelMuteDto = {
-          requestUserId: admin.id,
-          channelId: channel.id,
-          targetUserId: user.id,
-        };
+        const postChannelMuteRequest: PostChannelMuteDto =
+          new PostChannelMuteDto(admin.id, channel.id, user.id);
 
         await expect(
           service.postChannelMute(postChannelMuteRequest),
@@ -425,16 +406,13 @@ describe('ChannelUserService', () => {
 
     describe('UNMUTE TEST', () => {
       it('[Valid Case] 일반 유저 UNMUTE', async () => {
-        const user: UserModel = await testData.createUserInChannel(9);
+        const user: UserModel = await testData.createMutedUserInChannel(9);
         const channel: ChannelModel = channelFactory.findById(
           user.joinedChannel,
         );
 
-        const deleteChannelMuteRequest: DeleteChannelMuteDto = {
-          requestUserId: channel.ownerId,
-          channelId: channel.id,
-          targetUserId: user.id,
-        };
+        const deleteChannelMuteRequest: DeleteChannelMuteDto =
+          new DeleteChannelMuteDto(channel.ownerId, channel.id, user.id);
 
         await service.deleteChannelMute(deleteChannelMuteRequest);
         const savedMessage: ChannelMessage =
@@ -443,8 +421,9 @@ describe('ChannelUserService', () => {
               channel: { id: channel.id },
               user: { id: user.id },
             },
+            order: { id: 'DESC' },
           });
-        expect(savedMessage.content).toBe('is unmuted');
+        expect(savedMessage.content).toBe('unmute');
         const savedChannelFt: ChannelModel = channelFactory.findById(
           channel.id,
         );
@@ -460,11 +439,8 @@ describe('ChannelUserService', () => {
         const admin: UserModel = userFactory.findById(iterator.next().value);
         const user: UserModel = userFactory.findById(iterator.next().value);
 
-        const deleteChannelMuteRequest: DeleteChannelMuteDto = {
-          requestUserId: admin.id,
-          channelId: channel.id,
-          targetUserId: user.id,
-        };
+        const deleteChannelMuteRequest: DeleteChannelMuteDto =
+          new DeleteChannelMuteDto(admin.id, channel.id, user.id);
 
         await expect(
           service.deleteChannelMute(deleteChannelMuteRequest),
