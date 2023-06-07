@@ -93,7 +93,7 @@ function checkIfAccessToOwner(
   }
 }
 
-function checkUserHaveAuthority(requestUser: UserModel): void {
+export function checkUserHaveAuthority(requestUser: UserModel): void {
   if (
     requestUser.roleType !== CHANNEL_PARTICIPANT_ADMIN &&
     requestUser.roleType !== CHANNEL_PARTICIPANT_OWNER
