@@ -219,10 +219,9 @@ export class ChannelUserTestService {
       'channel',
       userNum,
     );
-    channel.users.values().next();
-    const user: UserModel = this.userFactory.findById(
-      channel.users.values().next().value,
-    );
+    const iterator = channel.users.values();
+    iterator.next();
+    const user: UserModel = this.userFactory.findById(iterator.next().value);
     this.channelFactory.setMute(user.id, channel.id);
     await this.messageRepository.save({
       user: { id: user.id },
