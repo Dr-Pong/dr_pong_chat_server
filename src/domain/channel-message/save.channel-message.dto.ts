@@ -17,6 +17,8 @@ import { DeleteChannelAdminDto } from '../channel-user/dto/delete.channel.admin.
 import { DeleteChannelKickDto } from '../channel-user/dto/delete.channel.kick.dto';
 import { PostChannelBanDto } from '../channel-user/dto/post.channel.ban.dto';
 import { PostChannelMuteDto } from '../channel-user/dto/post.channel.mute.dto';
+import { ChannelAdminCommandDto } from '../channel-user/dto/channel.admin.command.dto';
+import { DeleteChannelMuteDto } from '../channel-user/dto/delete.channel.mute.dto';
 
 export class SaveChannelMessageDto {
   userId: number;
@@ -52,72 +54,30 @@ export class SaveChannelMessageDto {
     );
   }
 
-  static fromMuteDto(muteDto: PostChannelMuteDto): SaveChannelMessageDto {
-    const { targetUserId: userId, channelId } = muteDto;
-    return new SaveChannelMessageDto(
-      userId,
-      channelId,
-      CHAT_MUTE,
-      'is muted',
-      new Date(),
-    );
-  }
-
-  static fromUnmuteDto(muteDto: PostChannelMuteDto): SaveChannelMessageDto {
-    const { targetUserId: userId, channelId } = muteDto;
-    return new SaveChannelMessageDto(
-      userId,
-      channelId,
-      CHAT_UNMUTE,
-      'is unmuted',
-      new Date(),
-    );
-  }
-
-  static fromKickDto(kickDto: DeleteChannelKickDto): SaveChannelMessageDto {
-    const { targetUserId: userId, channelId } = kickDto;
-    return new SaveChannelMessageDto(
-      userId,
-      channelId,
-      CHAT_KICK,
-      'is kicked',
-      new Date(),
-    );
-  }
-
-  static fromBanDto(banDto: PostChannelBanDto): SaveChannelMessageDto {
-    const { targetUserId: userId, channelId } = banDto;
-    return new SaveChannelMessageDto(
-      userId,
-      channelId,
-      CHAT_BAN,
-      'is banned',
-      new Date(),
-    );
-  }
-
-  static fromPostAdminDto(postDto: PostChannelAdminDto): SaveChannelMessageDto {
-    const { targetUserId: userId, channelId } = postDto;
-    return new SaveChannelMessageDto(
-      userId,
-      channelId,
-      CHAT_SETADMIN,
-      'is admin now',
-      new Date(),
-    );
-  }
-
-  static fromDeleteAdminDto(
-    deleteDto: DeleteChannelAdminDto,
-  ): SaveChannelMessageDto {
-    const { targetUserId: userId, channelId } = deleteDto;
-    return new SaveChannelMessageDto(
-      userId,
-      channelId,
-      CHAT_UNSETADMIN,
-      'is not admin anymore',
-      new Date(),
-    );
+  static fromCommandDto(dto: ChannelAdminCommandDto): SaveChannelMessageDto {
+    const { targetUserId: userId, channelId } = dto;
+    let type: ChatType;
+    switch (dto.typeof()) {
+      case PostChannelMuteDto.name:
+        type = CHAT_MUTE;
+        break;
+      case DeleteChannelMuteDto.name:
+        type = CHAT_UNMUTE;
+        break;
+      case PostChannelBanDto.name:
+        type = CHAT_BAN;
+        break;
+      case DeleteChannelKickDto.name:
+        type = CHAT_KICK;
+        break;
+      case PostChannelAdminDto.name:
+        type = CHAT_SETADMIN;
+        break;
+      case DeleteChannelAdminDto.name:
+        type = CHAT_UNSETADMIN;
+        break;
+    }
+    return new SaveChannelMessageDto(userId, channelId, type, type, new Date());
   }
 
   constructor(

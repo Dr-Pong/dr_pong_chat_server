@@ -1,5 +1,7 @@
-export class DeleteChannelAdminDto {
-  requestUserId: number;
-  channelId: string;
-  targetUserId: number;
+import { ChannelAdminCommandDto } from './channel.admin.command.dto';
+
+export class DeleteChannelAdminDto extends ChannelAdminCommandDto {
+  typeof(): string {
+    return DeleteChannelAdminDto.name;
+  }
 }

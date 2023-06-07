@@ -1,5 +1,7 @@
-export class DeleteChannelKickDto {
-  requestUserId: number;
-  channelId: string;
-  targetUserId: number;
+import { ChannelAdminCommandDto } from './channel.admin.command.dto';
+
+export class DeleteChannelKickDto extends ChannelAdminCommandDto {
+  typeof(): string {
+    return DeleteChannelKickDto.name;
+  }
 }

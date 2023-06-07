@@ -347,7 +347,7 @@ export class ChannelUserService {
     }
 
     await this.messageRepository.save(
-      SaveChannelMessageDto.fromPostAdminDto(postDto),
+      SaveChannelMessageDto.fromCommandDto(postDto),
     );
 
     /** 트랜잭션이 성공하면 Factory에도 결과를 반영한다 */
@@ -385,7 +385,7 @@ export class ChannelUserService {
     }
 
     await this.messageRepository.save(
-      SaveChannelMessageDto.fromDeleteAdminDto(deleteDto),
+      SaveChannelMessageDto.fromCommandDto(deleteDto),
     );
 
     /** 트랜잭션이 성공하면 Factory에도 결과를 반영한다 */
@@ -420,7 +420,7 @@ export class ChannelUserService {
     await this.exitChannel(new ChannelExitDto(dto.targetUserId, channel.id));
 
     await this.messageRepository.save(
-      SaveChannelMessageDto.fromKickDto(deleteDto),
+      SaveChannelMessageDto.fromCommandDto(deleteDto),
     );
 
     /** 트랜잭션이 성공하면 Factory에도 결과를 반영한다 */
@@ -456,7 +456,7 @@ export class ChannelUserService {
     );
 
     await this.messageRepository.save(
-      SaveChannelMessageDto.fromBanDto(postDto),
+      SaveChannelMessageDto.fromCommandDto(postDto),
     );
 
     /** 트랜잭션이 성공하면 Factory에도 결과를 반영한다 */
@@ -487,7 +487,7 @@ export class ChannelUserService {
     }
 
     await this.messageRepository.save(
-      SaveChannelMessageDto.fromMuteDto(postDto),
+      SaveChannelMessageDto.fromCommandDto(postDto),
     );
 
     /** 트랜잭션이 성공하면 Factory에도 결과를 반영한다 */
@@ -517,7 +517,7 @@ export class ChannelUserService {
     }
 
     await this.messageRepository.save(
-      SaveChannelMessageDto.fromUnmuteDto(deleteDto),
+      SaveChannelMessageDto.fromCommandDto(deleteDto),
     );
 
     /** 트랜잭션이 성공하면 Factory에도 결과를 반영한다 */
