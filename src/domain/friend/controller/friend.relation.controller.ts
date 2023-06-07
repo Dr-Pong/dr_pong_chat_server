@@ -1,22 +1,14 @@
 import {
-  Body,
   Controller,
-  DefaultValuePipe,
   Delete,
   Get,
   Param,
-  ParseIntPipe,
   Post,
-  Query,
   UseGuards,
 } from '@nestjs/common';
 import { FriendService } from 'src/domain/friend/friend.service';
 import { FriendListResponseDto } from 'src/domain/friend/dto/friend.list.response.dto';
 import { FriendPendingListResponseDto } from 'src/domain/friend/dto/friend.pending.list.response.dto';
-import { FriendDirectMessageChatListResponseDto } from 'src/domain/friend/dto/friend.direct.message.chat.list.response.dto';
-import { PostFriendChatRequestDto } from 'src/domain/friend/dto/post.friend.chat.request.dto';
-import { FriendDirectMessageRoomListResponseDto } from 'src/domain/friend/dto/friend.direct.message.room.list.response.dto';
-import { FriendDirectMessageNewResponseDto } from 'src/domain/friend/dto/friend.direct.message.new.response';
 import { UserFriendsDto } from '../dto/user.friends.dto';
 import { Requestor } from '../../auth/jwt/auth.requestor.decorator';
 import { UserIdCardDto } from '../../auth/jwt/auth.user.id-card.dto';
