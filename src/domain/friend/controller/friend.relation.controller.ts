@@ -8,6 +8,7 @@ import {
   ParseIntPipe,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { FriendService } from 'src/domain/friend/friend.service';
 import { FriendListResponseDto } from 'src/domain/friend/dto/friend.list.response.dto';
@@ -19,6 +20,7 @@ import { FriendDirectMessageNewResponseDto } from 'src/domain/friend/dto/friend.
 import { UserFriendsDto } from '../dto/user.friends.dto';
 import { Requestor } from '../../auth/jwt/auth.requestor.decorator';
 import { UserIdCardDto } from '../../auth/jwt/auth.user.id-card.dto';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('users/friends')
 export class FriendRelationController {
@@ -39,11 +41,15 @@ export class FriendRelationController {
    * }
    * */
   @Get('/')
-  async friendListGet(): Promise<FriendListResponseDto> {
-    const friendList: FriendListResponseDto = {
-      users: [],
-    };
-    return friendList;
+  @UseGuards(AuthGuard('jwt'))
+  async friendListGet(
+    @Requestor() requestor: UserIdCardDto,
+  ): Promise<FriendListResponseDto> {
+    const { id } = requestor;
+    const { friends }: UserFriendsDto = await this.friendService.getUserFriends(
+      { userId: id },
+    );
+    return { users: [...friends] };
   }
 
   /* 친구 요청
