@@ -127,15 +127,15 @@ export class FriendService {
     const { userId, friendId } = deleteDto;
     const isRequesting: boolean =
       await this.friendRepository.checkIsRequestingByUserIdAndFriendId(
-        userId,
         friendId,
+        userId,
       );
 
     if (!isRequesting) return;
 
     await this.friendRepository.updateFriendRequestStatusDeletedByUserIdAndFriendId(
-      userId,
       friendId,
+      userId,
     );
   }
 
