@@ -3,7 +3,6 @@ import { ChannelUserService } from './channel-user.service';
 import { ChannelFactory } from '../factory/channel.factory';
 import { UserFactory } from '../factory/user.factory';
 import { DataSource, Repository } from 'typeorm';
-import { Channel } from 'diagnostics_channel';
 import { ChannelUserModule } from './channel-user.module';
 import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
 import { ChannelModel } from '../factory/model/channel.model';
@@ -36,6 +35,8 @@ import { DeleteChannelKickDto } from './dto/delete.channel.kick.dto';
 import { PostChannelBanDto } from './dto/post.channel.ban.dto';
 import { PostChannelMuteDto } from './dto/post.channel.mute.dto';
 import { DeleteChannelMuteDto } from './dto/delete.channel.mute.dto';
+import { PatchChannelDto } from './dto/patch.channel.dto';
+import { Channel } from '../channel/channel.entity';
 
 describe('ChannelUserService', () => {
   let service: ChannelUserService;
@@ -461,10 +462,10 @@ describe('ChannelUserService', () => {
     //     const channel: ChannelModel = await testData.createBasicChannel();
     //     const user: UserModel = userFactory.users.get(channel.ownerId);
 
-    //     const deleteChannelRequest: DeleteChannelDto = {
-    //       userId: user.id,
-    //       channelId: channel.id,
-    //     };
+    //     const deleteChannelRequest: DeleteChannelDto = new DeleteChannelDto(
+    //       user.id,
+    //       channel.id,
+    //     );
 
     //     await service.deleteChannel(deleteChannelRequest);
     //     const savedChannelFt: ChannelModel = channelFactory.findById(
@@ -475,115 +476,163 @@ describe('ChannelUserService', () => {
     //     expect(savedChannelFt.muteList).toContain(user.id);
     //   });
     // });
-    // describe('채팅방 수정', () => {
-    //   it('[Valid Case] public -> private', async () => {
-    //     const channel: ChannelModel = await testData.createBasicChannel();
-    //     const user: UserModel = userFactory.users.get(channel.ownerId);
+    describe('채팅방 수정', () => {
+      it('[Valid Case] public -> private', async () => {
+        const channel: ChannelModel = await testData.createBasicChannel(
+          'public',
+          6,
+        );
+        const user: UserModel = userFactory.users.get(channel.ownerId);
 
-    //     const patchChannelRequest: patchChannelDto = {
-    //       userId: user.id,
-    //       channelId: channel.id,
-    //       password: null,
-    //       access: CHANNEL_PRIVATE,
-    //     };
+        const patchChannelRequest: PatchChannelDto = new PatchChannelDto(
+          user.id,
+          channel.id,
+          null,
+          CHANNEL_PRIVATE,
+        );
 
-    //     await service.patchChannel(patchChannelRequest);
-    //     const savedChannelFt: ChannelModel = channelFactory.findById(
-    //       channel.id,
-    //     );
+        await service.patchChannel(patchChannelRequest);
+        const savedChannelDb: Channel = await channelRepository.findOne({
+          where: { id: channel.id },
+        });
+        expect(savedChannelDb.type).toBe(CHANNEL_PRIVATE);
 
-    //     expect(savedChannelFt.type).toBe(CHANNEL_PRIVATE);
-    //   });
-    //   it('[Valid Case] public -> protected', async () => {
-    //     const channel: ChannelModel = await testData.createBasicChannel();
-    //     const user: UserModel = userFactory.users.get(channel.ownerId);
+        const savedChannelFt: ChannelModel = channelFactory.findById(
+          channel.id,
+        );
 
-    //     const patchChannelRequest: patchChannelDto = {
-    //       userId: user.id,
-    //       channelId: channel.id,
-    //       password: '1234',
-    //       access: CHANNEL_PROTECTED,
-    //     };
+        expect(savedChannelFt.type).toBe(CHANNEL_PRIVATE);
+      });
+      it('[Valid Case] public -> protected', async () => {
+        const channel: ChannelModel = await testData.createBasicChannel(
+          'public',
+          6,
+        );
+        const user: UserModel = userFactory.users.get(channel.ownerId);
 
-    //     await service.patchChannel(patchChannelRequest);
-    //     const savedChannelFt: ChannelModel = channelFactory.findById(
-    //       channel.id,
-    //     );
+        const patchChannelRequest: PatchChannelDto = {
+          userId: user.id,
+          channelId: channel.id,
+          password: '1234',
+          access: CHANNEL_PROTECTED,
+        };
 
-    //     expect(savedChannelFt.type).toBe(CHANNEL_PROTECTED);
-    //     expect(savedChannelFt.password).toBe('1234');
-    //   });
-    //   it('[Valid Case] private -> public', async () => {
-    //     const channel: ChannelModel = await testData.createPrivateChannel();
+        await service.patchChannel(patchChannelRequest);
+        const savedChannelDb: Channel = await channelRepository.findOne({
+          where: { id: channel.id },
+        });
+        expect(savedChannelDb.type).toBe(CHANNEL_PROTECTED);
 
-    //     const patchChannelRequest: patchChannelDto = {
-    //       userId: channel.ownerId,
-    //       channelId: channel.id,
-    //       password: null,
-    //       access: CHANNEL_PUBLIC,
-    //     };
+        const savedChannelFt: ChannelModel = channelFactory.findById(
+          channel.id,
+        );
 
-    //     await service.patchChannel(patchChannelRequest);
-    //     const savedChannelFt: ChannelModel = channelFactory.findById(
-    //       channel.id,
-    //     );
+        expect(savedChannelFt.type).toBe(CHANNEL_PROTECTED);
+        expect(savedChannelFt.password).toBe('1234');
+      });
+      it('[Valid Case] private -> public', async () => {
+        const channel: ChannelModel = await testData.createPrivateChannel(
+          'private',
+          6,
+        );
 
-    //     expect(savedChannelFt.type).toBe(CHANNEL_PUBLIC);
-    //   });
-    //   it('[Valid Case] private -> protected', async () => {
-    //     const channel: ChannelModel = await testData.createPrivateChannel();
+        const patchChannelRequest: PatchChannelDto = new PatchChannelDto(
+          channel.ownerId,
+          channel.id,
+          null,
+          CHANNEL_PUBLIC,
+        );
 
-    //     const patchChannelRequest: patchChannelDto = {
-    //       userId: channel.ownerId,
-    //       channelId: channel.id,
-    //       password: '1234',
-    //       access: CHANNEL_PROTECTED,
-    //     };
+        await service.patchChannel(patchChannelRequest);
+        const savedChannelDb: Channel = await channelRepository.findOne({
+          where: { id: channel.id },
+        });
+        expect(savedChannelDb.type).toBe(CHANNEL_PUBLIC);
 
-    //     await service.patchChannel(patchChannelRequest);
-    //     const savedChannelFt: ChannelModel = channelFactory.findById(
-    //       channel.id,
-    //     );
+        const savedChannelFt: ChannelModel = channelFactory.findById(
+          channel.id,
+        );
 
-    //     expect(savedChannelFt.type).toBe(CHANNEL_PUBLIC);
-    //     expect(savedChannelFt.password).toBe('1234');
-    //   });
-    //   it('[Valid Case] protected -> public', async () => {
-    //     const channel: ChannelModel = await testData.createPrivateChannel();
+        expect(savedChannelFt.type).toBe(CHANNEL_PUBLIC);
+      });
+      it('[Valid Case] private -> protected', async () => {
+        const channel: ChannelModel = await testData.createPrivateChannel(
+          'private',
+          6,
+        );
 
-    //     const patchChannelRequest: patchChannelDto = {
-    //       userId: channel.ownerId,
-    //       channelId: channel.id,
-    //       password: null,
-    //       access: CHANNEL_PUBLIC,
-    //     };
+        const patchChannelRequest: PatchChannelDto = new PatchChannelDto(
+          channel.ownerId,
+          channel.id,
+          '1234',
+          CHANNEL_PROTECTED,
+        );
 
-    //     await service.patchChannel(patchChannelRequest);
-    //     const savedChannelFt: ChannelModel = channelFactory.findById(
-    //       channel.id,
-    //     );
+        await service.patchChannel(patchChannelRequest);
+        const savedChannelDb: Channel = await channelRepository.findOne({
+          where: { id: channel.id },
+        });
+        expect(savedChannelDb.type).toBe(CHANNEL_PROTECTED);
 
-    //     expect(savedChannelFt.type).toBe(CHANNEL_PUBLIC);
-    //     expect(savedChannelFt.password).toBe(null);
-    //   });
-    //   it('[Valid Case] protected -> private', async () => {
-    //     const channel: ChannelModel = await testData.createPrivateChannel();
+        const savedChannelFt: ChannelModel = channelFactory.findById(
+          channel.id,
+        );
 
-    //     const patchChannelRequest: patchChannelDto = {
-    //       userId: channel.ownerId,
-    //       channelId: channel.id,
-    //       password: null,
-    //       access: CHANNEL_PRIVATE,
-    //     };
+        expect(savedChannelFt.type).toBe(CHANNEL_PROTECTED);
+        expect(savedChannelFt.password).toBe('1234');
+      });
+      it('[Valid Case] protected -> public', async () => {
+        const channel: ChannelModel = await testData.createProtectedChannel(
+          'protected',
+          6,
+        );
 
-    //     await service.patchChannel(patchChannelRequest);
-    //     const savedChannelFt: ChannelModel = channelFactory.findById(
-    //       channel.id,
-    //     );
+        const patchChannelRequest: PatchChannelDto = new PatchChannelDto(
+          channel.ownerId,
+          channel.id,
+          null,
+          CHANNEL_PUBLIC,
+        );
 
-    //     expect(savedChannelFt.type).toBe(CHANNEL_PRIVATE);
-    //     expect(savedChannelFt.password).toBe(null);
-    //   });
-    // });
+        await service.patchChannel(patchChannelRequest);
+        const savedChannelDb: Channel = await channelRepository.findOne({
+          where: { id: channel.id },
+        });
+        expect(savedChannelDb.type).toBe(CHANNEL_PUBLIC);
+
+        const savedChannelFt: ChannelModel = channelFactory.findById(
+          channel.id,
+        );
+
+        expect(savedChannelFt.type).toBe(CHANNEL_PUBLIC);
+        expect(savedChannelFt.password).toBe(null);
+      });
+      it('[Valid Case] protected -> private', async () => {
+        const channel: ChannelModel = await testData.createProtectedChannel(
+          'protected',
+          6,
+        );
+
+        const patchChannelRequest: PatchChannelDto = new PatchChannelDto(
+          channel.ownerId,
+          channel.id,
+          null,
+          CHANNEL_PRIVATE,
+        );
+
+        await service.patchChannel(patchChannelRequest);
+        const savedChannelDb: Channel = await channelRepository.findOne({
+          where: { id: channel.id },
+        });
+        expect(savedChannelDb.type).toBe(CHANNEL_PRIVATE);
+
+        const savedChannelFt: ChannelModel = channelFactory.findById(
+          channel.id,
+        );
+
+        expect(savedChannelFt.type).toBe(CHANNEL_PRIVATE);
+        expect(savedChannelFt.password).toBe(null);
+      });
+    });
   });
 });

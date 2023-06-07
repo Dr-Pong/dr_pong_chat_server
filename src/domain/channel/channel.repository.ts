@@ -7,6 +7,7 @@ import { FindChannelPageDto } from '../channel-user/dto/find.channel.page.dto';
 import { CHANNEL_PROTECTED } from 'src/global/type/type.channel';
 import { SaveChannelDto } from './dto/save.channel.dto';
 import { UpdateChannelHeadCountDto } from '../channel-user/dto/update.channel.headcount.dto';
+import { UpdateChannelDto } from '../channel-user/dto/update.channel.dto';
 
 @Injectable()
 export class ChannelRepository {
@@ -126,6 +127,18 @@ export class ChannelRepository {
       },
       {
         isDeleted: true,
+      },
+    );
+  }
+
+  async updateAccessAndPassword(updateDto: UpdateChannelDto): Promise<void> {
+    await this.repository.update(
+      {
+        id: updateDto.channelId,
+      },
+      {
+        type: updateDto.type,
+        password: updateDto.password,
       },
     );
   }
