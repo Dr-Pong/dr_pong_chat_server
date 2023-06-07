@@ -27,33 +27,22 @@ export class FriendService {
    */
   @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
   async getUserFriends(getDto: GetUserFriendDto): Promise<UserFriendsDto> {
+    const { userId: myId } = getDto;
     const userFriends: Friend[] =
-      await this.friendRepository.findFriendsByUserId(getDto.userId);
+      await this.friendRepository.findFriendsByUserId(myId);
+
     const friends: FriendDto[] = userFriends.map((friend) => {
-      if (friend.receiver.id === getDto.userId) {
-        return {
-          nickname: friend.sender.nickname,
-          imgUrl: friend.sender.image.url,
-        };
+      const { sender, receiver } = friend;
+      if (friend.receiver.id === myId) {
+        return FriendDto.fromUser(sender);
       }
-      return {
-        nickname: friend.receiver.nickname,
-        imgUrl: friend.receiver.image.url,
-      };
+      return FriendDto.fromUser(receiver);
     });
-    friends.sort((a, b) => {
-      if (a.nickname > b.nickname) {
-        return 1;
-      }
-      if (a.nickname < b.nickname) {
-        return -1;
-      }
-      return 0;
-    });
+    friends.sort(this.compareNicknames);
+
     const responseDto: UserFriendsDto = {
       friends: friends,
     };
-
     return responseDto;
   }
 
@@ -86,34 +75,23 @@ export class FriendService {
   async getUserPendingFriendRequests(
     getDto: GetUserPendingFriendDto,
   ): Promise<UserPendingFriendsDto> {
+    const { userId: myId } = getDto;
     const userFriends: Friend[] =
-      await this.friendRepository.findFriendRequestingsByUserId(getDto.userId);
+      await this.friendRepository.findFriendRequestingsByUserId(myId);
 
     const friends: FriendDto[] = userFriends.map((friend) => {
-      if (friend.receiver.id === getDto.userId) {
-        return {
-          nickname: friend.sender.nickname,
-          imgUrl: friend.sender.image.url,
-        };
+      const { sender, receiver } = friend;
+      if (friend.receiver.id === myId) {
+        return FriendDto.fromUser(sender);
       }
-      return {
-        nickname: friend.receiver.nickname,
-        imgUrl: friend.receiver.image.url,
-      };
+      return FriendDto.fromUser(receiver);
     });
-    friends.sort((a, b) => {
-      if (a.nickname > b.nickname) {
-        return 1;
-      }
-      if (a.nickname < b.nickname) {
-        return -1;
-      }
-      return 0;
-    });
+
+    friends.sort(this.compareNicknames);
+
     const responseDto: UserPendingFriendsDto = {
       friends: friends,
     };
-
     return responseDto;
   }
 
@@ -213,4 +191,14 @@ export class FriendService {
     };
     return responseDto;
   }
+
+  private compareNicknames = (a, b) => {
+    if (a.nickname > b.nickname) {
+      return 1;
+    }
+    if (a.nickname < b.nickname) {
+      return -1;
+    }
+    return 0;
+  };
 }
