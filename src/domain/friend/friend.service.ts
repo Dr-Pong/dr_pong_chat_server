@@ -29,31 +29,19 @@ export class FriendService {
   async getUserFriends(getDto: GetUserFriendDto): Promise<UserFriendsDto> {
     const userFriends: Friend[] =
       await this.friendRepository.findFriendsByUserId(getDto.userId);
+
     const friends: FriendDto[] = userFriends.map((friend) => {
+      const { sender, receiver } = friend;
       if (friend.receiver.id === getDto.userId) {
-        return {
-          nickname: friend.sender.nickname,
-          imgUrl: friend.sender.image.url,
-        };
+        return FriendDto.fromUser(sender);
       }
-      return {
-        nickname: friend.receiver.nickname,
-        imgUrl: friend.receiver.image.url,
-      };
+      return FriendDto.fromUser(receiver);
     });
-    friends.sort((a, b) => {
-      if (a.nickname > b.nickname) {
-        return 1;
-      }
-      if (a.nickname < b.nickname) {
-        return -1;
-      }
-      return 0;
-    });
+    friends.sort(this.compareNicknames);
+
     const responseDto: UserFriendsDto = {
       friends: friends,
     };
-
     return responseDto;
   }
 
@@ -90,30 +78,18 @@ export class FriendService {
       await this.friendRepository.findFriendRequestingsByUserId(getDto.userId);
 
     const friends: FriendDto[] = userFriends.map((friend) => {
+      const { sender, receiver } = friend;
       if (friend.receiver.id === getDto.userId) {
-        return {
-          nickname: friend.sender.nickname,
-          imgUrl: friend.sender.image.url,
-        };
+        return FriendDto.fromUser(sender);
       }
-      return {
-        nickname: friend.receiver.nickname,
-        imgUrl: friend.receiver.image.url,
-      };
+      return FriendDto.fromUser(receiver);
     });
-    friends.sort((a, b) => {
-      if (a.nickname > b.nickname) {
-        return 1;
-      }
-      if (a.nickname < b.nickname) {
-        return -1;
-      }
-      return 0;
-    });
+
+    friends.sort(this.compareNicknames);
+
     const responseDto: UserPendingFriendsDto = {
       friends: friends,
     };
-
     return responseDto;
   }
 
@@ -213,4 +189,14 @@ export class FriendService {
     };
     return responseDto;
   }
+
+  private compareNicknames = (a, b) => {
+    if (a.nickname > b.nickname) {
+      return 1;
+    }
+    if (a.nickname < b.nickname) {
+      return -1;
+    }
+    return 0;
+  };
 }
