@@ -37,6 +37,7 @@ import { PostChannelMuteDto } from './dto/post.channel.mute.dto';
 import { DeleteChannelMuteDto } from './dto/delete.channel.mute.dto';
 import { PatchChannelDto } from './dto/patch.channel.dto';
 import { Channel } from '../channel/channel.entity';
+import { DeleteChannelDto } from './dto/delete.channel.dto';
 
 describe('ChannelUserService', () => {
   let service: ChannelUserService;
@@ -614,6 +615,30 @@ describe('ChannelUserService', () => {
         expect(savedChannelFt.type).toBe(CHANNEL_PRIVATE);
         expect(savedChannelFt.password).toBe(null);
       });
+    });
+  });
+
+  describe('채팅방 삭제', () => {
+    it('[Valid Case] 채팅방 삭제(오너가 삭제하는 경우)', async () => {
+      const channel: ChannelModel = await testData.createBasicChannel(
+        'public',
+        8,
+      );
+      const user: UserModel = userFactory.users.get(channel.ownerId);
+
+      const deleteChannelRequest: DeleteChannelDto = new DeleteChannelDto(
+        user.id,
+        channel.id,
+      );
+
+      await service.deleteChannel(deleteChannelRequest);
+      const savedChannelDb: Channel = await channelRepository.findOne({
+        where: { id: channel.id, isDeleted: false },
+      });
+      expect(savedChannelDb).toBe(null);
+
+      const savedChannelFt: ChannelModel = channelFactory.findById(channel.id);
+      expect(savedChannelFt).toBeUndefined();
     });
   });
 });
