@@ -9,7 +9,6 @@ import {
 } from 'typeorm-transactional';
 import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
 import { typeORMConfig } from 'src/configs/typeorm.config';
-import { TestModule } from './test/block.test.module';
 import { BlockModule } from './block.module';
 import { GetUserBlocksDto } from './dto/get.user.blocks.dto';
 import { UserBlocksDto } from './dto/user.blocks.dto';
@@ -18,6 +17,7 @@ import { UserFactory } from '../factory/user.factory';
 import { PostUserBlockDto } from './dto/post.user.block.dto';
 import { BadRequestException } from '@nestjs/common';
 import { DeleteUserBlockDto } from './dto/delete.user.block.dto';
+import { BlockTestModule } from './test/block.test.module';
 
 describe('BlockService', () => {
   let service: BlockService;
@@ -44,7 +44,7 @@ describe('BlockService', () => {
           },
         }),
         BlockModule,
-        TestModule,
+        BlockTestModule,
       ],
       providers: [
         {
