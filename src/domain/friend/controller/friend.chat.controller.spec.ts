@@ -49,7 +49,9 @@ describe('FriendController - Chat', () => {
       it('DM 대화 내역 조회', async () => {
         const user = testService.users[0];
         const sender = testService.users[1];
-        await testService.createDirectMessageToUser0(30);
+        await testService.createDirectMessageToUser0(10);
+        await testService.createDirectMessageToUser1(10);
+        await testService.createDirectMessageToUser0(10);
         const token = await testService.giveTokenToUser(user);
         const count = 20;
         const offset = 0;
@@ -60,37 +62,49 @@ describe('FriendController - Chat', () => {
         );
         let result = response.body;
         expect(response.status).toBe(200);
-        expect(result).toHaveProperty('chatList');
-        expect(result.chatList).toBe(20);
+        expect(result).toHaveProperty('chats');
+        expect(result.chats.length).toBe(20);
         expect(result).toHaveProperty('isLastPage');
         expect(result.isLastPage).toBe(false);
-        for (const chat of result.chatList) {
+        for (const chat of result.chats) {
           expect(chat).toHaveProperty('id');
           expect(chat).toHaveProperty('message');
           expect(chat).toHaveProperty('nickname');
-          expect(chat.nickname).toBe(sender.nickname);
-          expect(chat).toHaveProperty('createdAt');
+          expect(chat).toHaveProperty('time');
+          expect(chat).toHaveProperty('type');
+          if (chat.type === 'me') {
+            expect(chat.nickname).toBe(user.nickname);
+          } else if (chat.type === 'others') {
+            expect(chat.nickname).toBe(sender.nickname);
+          }
+          expect(chat).toHaveProperty('time');
         }
 
         response = await req(
           token,
           'GET',
           `/users/friends/${sender.nickname}/chats?count=${count}&offset=${
-            result.chatList[result.chatList.length - 1].id
+            result.chats[result.chats.length - 1].id
           }`,
         );
         result = response.body;
         expect(response.status).toBe(200);
-        expect(result).toHaveProperty('chatList');
-        expect(result.chatList).toBe(10);
+        expect(result).toHaveProperty('chats');
+        expect(result.chats.length).toBe(10);
         expect(result).toHaveProperty('isLastPage');
         expect(result.isLastPage).toBe(true);
-        for (const chat of result.chatList) {
+        for (const chat of result.chats) {
           expect(chat).toHaveProperty('id');
           expect(chat).toHaveProperty('message');
           expect(chat).toHaveProperty('nickname');
-          expect(chat.nickname).toBe(sender.nickname);
-          expect(chat).toHaveProperty('createdAt');
+          expect(chat).toHaveProperty('time');
+          expect(chat).toHaveProperty('type');
+          if (chat.type === 'me') {
+            expect(chat.nickname).toBe(user.nickname);
+          } else if (chat.type === 'others') {
+            expect(chat.nickname).toBe(sender.nickname);
+          }
+          expect(chat).toHaveProperty('time');
         }
       });
 
@@ -107,8 +121,8 @@ describe('FriendController - Chat', () => {
         );
         const result = response.body;
         expect(response.status).toBe(200);
-        expect(result).toHaveProperty('chatList');
-        expect(result.chatList).toBe(0);
+        expect(result).toHaveProperty('chats');
+        expect(result.chats.length).toBe(0);
         expect(result).toHaveProperty('isLastPage');
         expect(result.isLastPage).toBe(true);
       });
@@ -157,7 +171,7 @@ describe('FriendController - Chat', () => {
         const result = response.body;
         expect(response.status).toBe(200);
         expect(result).toHaveProperty('chatList');
-        expect(result.chatList).toBe(0);
+        expect(result.chatList.length).toBe(0);
       });
     });
 

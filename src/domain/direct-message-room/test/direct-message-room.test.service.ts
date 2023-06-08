@@ -255,8 +255,7 @@ export class DirectMessageRoomTestService {
         this.users[0].id.toString(),
         this.users[i].id.toString(),
       ),
-      lastReadMessageId:
-        this.directMessage[this.directMessage.length / 2 - 1].id,
+      lastReadMessageId: 0,
       isDisplay: true,
     });
 
