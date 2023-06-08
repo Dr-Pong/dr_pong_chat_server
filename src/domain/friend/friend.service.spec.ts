@@ -189,12 +189,12 @@ describe('FriendService', () => {
     });
     describe('친구요청 목록', () => {
       it('[Valid Case] 친구요청이 없는경우 빈목록', async () => {
-        const userFriendsRequestDto: GetUserPendingFriendDto = {
+        const getUserPendingDto: GetUserPendingFriendDto = {
           userId: testData.users[0].id,
         };
 
         const FriendsList = await service.getUserPendingFriendRequests(
-          userFriendsRequestDto,
+          getUserPendingDto,
         );
 
         expect(FriendsList.friends).toHaveLength(0);
@@ -203,12 +203,12 @@ describe('FriendService', () => {
       it('[Valid Case] 친구요청 목록이 정상적으로 반환 되는지 확인', async () => {
         await testData.createUserRequesting(10);
 
-        const userFriendsRequestDto: GetUserPendingFriendDto = {
+        const getUserPendingDto: GetUserPendingFriendDto = {
           userId: testData.users[0].id,
         };
 
         const FriendsList: UserPendingFriendsDto =
-          await service.getUserPendingFriendRequests(userFriendsRequestDto);
+          await service.getUserPendingFriendRequests(getUserPendingDto);
 
         const friendRequest: Friend = await friendRepository.findOne({
           where: {
@@ -240,12 +240,12 @@ describe('FriendService', () => {
         await testData.createUser0ToRequesting(14); // 친구 테이블 1에 있어야해요
         await testData.createUser0ToRequesting(15); //친구 테이블 2에 있어야해요
 
-        const userFriendsRequestDto: GetUserPendingFriendDto = {
+        const getUserPendingDto: GetUserPendingFriendDto = {
           userId: testData.users[0].id,
         };
 
         const FriendsList: UserPendingFriendsDto =
-          await service.getUserPendingFriendRequests(userFriendsRequestDto);
+          await service.getUserPendingFriendRequests(getUserPendingDto);
 
         expect(FriendsList.friends.length).toBe(11);
         expect(FriendsList.friends[0].nickname).toBe(
@@ -342,12 +342,12 @@ describe('FriendService', () => {
       it('[Valid Case]친구요청 거절', async () => {
         await testData.createUserRequesting(10);
 
-        const userFriendsAcceptDto: DeleteUserFriendRejectDto = {
+        const userFriendRejectDto: DeleteUserFriendRejectDto = {
           userId: testData.users[1].id,
           friendId: testData.users[0].id,
         };
 
-        await service.deleteUserFriendReject(userFriendsAcceptDto);
+        await service.deleteUserFriendReject(userFriendRejectDto);
 
         const friendRequest: Friend = await friendRepository.findOne({
           where: {
@@ -362,12 +362,12 @@ describe('FriendService', () => {
       it('[Valid Case] 이미 친구인 사용자에게 친구요청 거절(백에서 씹기)', async () => {
         await testData.createUserFriends(10);
 
-        const userFriendsAcceptDto: DeleteUserFriendRejectDto = {
+        const userFriendRejectDto: DeleteUserFriendRejectDto = {
           userId: testData.users[0].id,
           friendId: testData.users[1].id,
         };
 
-        await service.deleteUserFriendReject(userFriendsAcceptDto);
+        await service.deleteUserFriendReject(userFriendRejectDto);
 
         const friendRequest: Friend = await friendRepository.findOne({
           where: {
@@ -383,12 +383,12 @@ describe('FriendService', () => {
       it('[Valid Case]친구삭제', async () => {
         await testData.createUserFriends(10);
 
-        const userFriendsAcceptDto: DeleteUserFriendDto = {
+        const deleteFriendDto: DeleteUserFriendDto = {
           userId: testData.users[0].id,
           friendId: testData.users[1].id,
         };
 
-        await service.deleteUserFriend(userFriendsAcceptDto);
+        await service.deleteUserFriend(deleteFriendDto);
 
         const friendRequest: Friend = await friendRepository.findOne({
           where: {
@@ -401,12 +401,12 @@ describe('FriendService', () => {
       });
 
       it('[Valid Case]친구가 아닌 사용자 삭제(백에서 씹기)', async () => {
-        const userFriendsAcceptDto: DeleteUserFriendDto = {
+        const deleteFriendDto: DeleteUserFriendDto = {
           userId: testData.users[0].id,
           friendId: testData.users[3].id,
         };
 
-        await service.deleteUserFriend(userFriendsAcceptDto);
+        await service.deleteUserFriend(deleteFriendDto);
 
         const friendRequest: Friend = await friendRepository.findOne({
           where: {
