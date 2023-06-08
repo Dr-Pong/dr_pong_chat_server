@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ChannelNormalService } from './channel.normal.service';
+import { ChannelNormalService } from '../service/channel.normal.service';
 import { ChannelModel } from '../../factory/model/channel.model';
 import { UserModel } from '../../factory/model/user.model';
 import {
@@ -14,7 +14,7 @@ import { UserFactory } from '../../factory/user.factory';
 import { DataSource, Repository } from 'typeorm';
 import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
 import { InviteModel } from '../../factory/model/invite.model';
-import { ChannelTestService } from '../test/channel.test.service';
+import { ChannelTestService } from './channel.test.service';
 import { typeORMConfig } from 'src/configs/typeorm.config';
 import {
   addTransactionalDataSource,
@@ -29,7 +29,7 @@ import {
 import { PostChannelMessageDto } from '../dto/post/post.channel-message.dto';
 import { CHAT_MESSAGE } from 'src/domain/channel/type/type.channel.action';
 import { ChannelMessage } from '../entity/channel-message.entity';
-import { ChannlTestModule } from '../test/channel.test.module';
+import { ChannlTestModule } from './channel.test.module';
 import {
   CHATTYPE_ME,
   CHATTYPE_OTHERS,

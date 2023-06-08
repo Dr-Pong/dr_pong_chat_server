@@ -30,7 +30,7 @@ import { ChannlTestModule } from '../test/channel.test.module';
 import { Channel } from '../entity/channel.entity';
 import { ChannelMessage } from '../entity/channel-message.entity';
 import { PostChannelAdminDto } from '../dto/post/post.channel.admin.dto';
-import { ChannelAdminService } from './channel.admin.service';
+import { ChannelAdminService } from '../service/channel.admin.service';
 import { DeleteChannelKickDto } from '../dto/delete/delete.channel.kick.dto';
 import { PostChannelBanDto } from '../dto/post/post.channel.ban.dto';
 import { PostChannelMuteDto } from '../dto/post/post.channel.mute.dto';
