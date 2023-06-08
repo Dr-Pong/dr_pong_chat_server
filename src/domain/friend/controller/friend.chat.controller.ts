@@ -29,7 +29,8 @@ export class FriendChatController {
    *     id: number;
    *     message: string;
    *     nickname: string;
-   *     createdAt: Date;
+   *     time: Date;
+   *     type: 'me' | 'others';
    *   }, ...
    * ],
    *   isLastPage: boolean;
