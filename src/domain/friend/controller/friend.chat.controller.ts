@@ -8,18 +8,26 @@ import {
   ParseIntPipe,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
-import { FriendService } from 'src/domain/friend/friend.service';
-import { FriendListResponseDto } from 'src/domain/friend/dto/friend.list.response.dto';
-import { FriendPendingListResponseDto } from 'src/domain/friend/dto/friend.pending.list.response.dto';
 import { FriendDirectMessageChatListResponseDto } from 'src/domain/friend/dto/friend.direct.message.chat.list.response.dto';
 import { PostFriendChatRequestDto } from 'src/domain/friend/dto/post.friend.chat.request.dto';
 import { FriendDirectMessageRoomListResponseDto } from 'src/domain/friend/dto/friend.direct.message.room.list.response.dto';
 import { FriendDirectMessageNewResponseDto } from 'src/domain/friend/dto/friend.direct.message.new.response';
+import { AuthGuard } from '@nestjs/passport';
+import { Requestor } from '../../auth/jwt/auth.requestor.decorator';
+import { UserIdCardDto } from '../../auth/jwt/auth.user.id-card.dto';
+import { UserService } from '../../user/user.service';
+import { DirectMessageService } from '../../direct-message/direct-message.service';
+import { DirectMessageRoomService } from '../../direct-message-room/direct-message-room.service';
 
-@Controller('controller')
+@Controller('/users/friends')
 export class FriendChatController {
-  constructor(private friendService: FriendService) {}
+  constructor(
+    private directMessageService: DirectMessageService,
+    private directMessageRoomService: DirectMessageRoomService,
+    private userService: UserService,
+  ) {}
 
   /* DM 대화 내역
    * GET /users/friends/{nickname}/chats?offset={offset}&count={count}
@@ -38,12 +46,18 @@ export class FriendChatController {
    *   200: ok;
    * }
    * */
-  @Get('/users/friends/:nickname/chats')
+  @Get('/:nickname/chats')
+  @UseGuards(AuthGuard('jwt'))
   async friendChatListGet(
+    @Requestor() requestor: UserIdCardDto,
     @Param('nickname') nickname: string,
     @Query('count', new DefaultValuePipe(40), ParseIntPipe) count: number,
     @Query('offset', new DefaultValuePipe(0), ParseIntPipe) offset: number,
   ): Promise<FriendDirectMessageChatListResponseDto> {
+    const { id: userId } = requestor;
+    const { id: friendId } = await this.userService.getIdFromNickname({
+      nickname,
+    });
     const friendDirectMessageChatList: FriendDirectMessageChatListResponseDto =
       {
         chatList: [],
@@ -63,12 +77,23 @@ export class FriendChatController {
    * }
    * */
 
-  @Post('/users/friends/:nickname/chats')
+  @Post('/:nickname/chats')
+  @UseGuards(AuthGuard('jwt'))
   async friendChatPost(
+    @Requestor() requestor: UserIdCardDto,
     @Param('nickname') nickname: string,
     @Body() postFriendChatRequestDto: PostFriendChatRequestDto,
   ): Promise<void> {
-    return;
+    const { id: userId } = requestor;
+    const { id: friendId } = await this.userService.getIdFromNickname({
+      nickname,
+    });
+    const { message } = postFriendChatRequestDto;
+    await this.directMessageService.postDirectMessage({
+      userId,
+      friendId,
+      message,
+    });
   }
 
   /* 진행 중인 DM 목록 받기
@@ -84,13 +109,21 @@ export class FriendChatController {
    * }
    * */
 
-  @Get('/users/friends/chatlist')
-  async friendDmListGet(): Promise<FriendDirectMessageRoomListResponseDto> {
-    const friendDirectMessageRoomList: FriendDirectMessageRoomListResponseDto =
-      {
-        dmList: [],
-      };
-    return friendDirectMessageRoomList;
+  @Get('/chatlist')
+  @UseGuards(AuthGuard('jwt'))
+  async friendDirectMessageListGet(
+    @Requestor() requestor: UserIdCardDto,
+  ): Promise<FriendDirectMessageRoomListResponseDto> {
+    const { id: userId } = requestor;
+    const { chatList } =
+      await this.directMessageRoomService.getAllDirectMessageRooms({
+        userId,
+      });
+    return {
+      chatList: chatList.map((chat) => {
+        return { ...chat };
+      }),
+    };
   }
 
   /* 진행 중인 DM 리스트에서 특정 방 삭제
@@ -99,11 +132,20 @@ export class FriendChatController {
    *   200: ok;
    * }
    * */
-  @Delete('/users/friends/chats/:nickname')
+  @Delete('/chats/:nickname')
+  @UseGuards(AuthGuard('jwt'))
   async friendDirectMessageDelete(
+    @Requestor() requestor: UserIdCardDto,
     @Param('nickname') nickname: string,
   ): Promise<void> {
-    return;
+    const { id: userId } = requestor;
+    const { id: friendId } = await this.userService.getIdFromNickname({
+      nickname,
+    });
+    await this.directMessageRoomService.deleteDirectMessageRoom({
+      userId,
+      friendId,
+    });
   }
 
   /* 새로운 DM 유무 확인
@@ -113,11 +155,16 @@ export class FriendChatController {
    *   hasNewChat: boolean;
    * }
    * */
-  @Get('/users/friends/chats/new')
-  async friendDirectMessageNewGet(): Promise<FriendDirectMessageNewResponseDto> {
-    const friendDirectMessageNew: FriendDirectMessageNewResponseDto = {
-      hasNewChat: true,
-    };
-    return friendDirectMessageNew;
+  @Get('/chats/new')
+  @UseGuards(AuthGuard('jwt'))
+  async friendDirectMessageNewGet(
+    @Requestor() requestor: UserIdCardDto,
+  ): Promise<FriendDirectMessageNewResponseDto> {
+    const { id: userId } = requestor;
+    const { hasNewChat } =
+      await this.directMessageRoomService.getDirectMessageRoomsNotification({
+        userId,
+      });
+    return { hasNewChat };
   }
 }
