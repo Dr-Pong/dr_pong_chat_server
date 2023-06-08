@@ -31,7 +31,7 @@ export class ChannelMessageRepository {
         channel: { id: findDto.channelId },
       },
       order: { time: 'DESC' },
-      take: findDto.count + 1,
+      take: findDto.count,
     });
   }
 }

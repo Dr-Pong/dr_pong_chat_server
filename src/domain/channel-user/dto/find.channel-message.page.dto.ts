@@ -6,7 +6,11 @@ export class FindChannelMessagePageDto {
   count: number;
 
   static from(dto: GetChannelMessageHistoryDto): FindChannelMessagePageDto {
-    return new FindChannelMessagePageDto(dto.channelId, dto.offset, dto.count);
+    return new FindChannelMessagePageDto(
+      dto.channelId,
+      dto.offset,
+      dto.count + 1,
+    );
   }
 
   constructor(channelId: string, offset: number, count: number) {
