@@ -987,7 +987,7 @@ describe('ChannelUserService', () => {
     });
   });
 
-  describe('채팅방 채팅 내역 조회', () => {
+  describe.only('채팅방 채팅 내역 조회', () => {
     it('[Valid Case] 일반 유저의 채팅 내역 조회 (last page 아닌 경우)', async () => {
       const channel: ChannelModel = await testData.createChannelWithNormalChats(
         100,
@@ -999,7 +999,7 @@ describe('ChannelUserService', () => {
       const getChannelMessageHistoryRequest = {
         userId: user.id,
         channelId: channel.id,
-        offset: 20,
+        offset: 2147483647,
         count: 10,
       };
 
@@ -1018,6 +1018,7 @@ describe('ChannelUserService', () => {
         } else if (c.type === CHATTYPE_OTHERS) {
           expect(c.nickname).not.toBe(user.nickname);
         }
+        expect(channelChatList.isLastPage).toBe(false);
       }
     });
 
@@ -1032,7 +1033,7 @@ describe('ChannelUserService', () => {
       const getChannelMessageHistoryRequest = {
         userId: user.id,
         channelId: channel.id,
-        offset: 10,
+        offset: 11,
         count: 10,
       };
 
@@ -1052,6 +1053,7 @@ describe('ChannelUserService', () => {
           expect(c.nickname).not.toBe(user.nickname);
         }
       }
+      expect(channelChatList.isLastPage).toBe(true);
     });
 
     it('[Valid Case] 일반 유저의 채팅 내역 조회 (system message 포함)', async () => {
@@ -1065,7 +1067,7 @@ describe('ChannelUserService', () => {
       const getChannelMessageHistoryRequest = {
         userId: user.id,
         channelId: channel.id,
-        offset: 0,
+        offset: 2147483647,
         count: 10,
       };
 
@@ -1098,7 +1100,7 @@ describe('ChannelUserService', () => {
       const getChannelMessageHistoryRequest = {
         userId: user.id,
         channelId: channel.id,
-        offset: 10,
+        offset: 2147483647,
         count: 10,
       };
 

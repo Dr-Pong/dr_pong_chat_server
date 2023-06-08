@@ -597,9 +597,9 @@ export class ChannelUserService {
       await this.messageRepository.findAllByChannelId(
         FindChannelMessagePageDto.from(getDto),
       );
-    let isLastPage = false;
+    let isLastPage = true;
     if (messages.length > getDto.count) {
-      isLastPage = true;
+      isLastPage = false;
       messages.pop();
     }
 
