@@ -2,7 +2,7 @@ export class ChatDto {
   id: number;
   nickname: string;
   message: string;
-  createdAt: Date;
+  time: Date;
 }
 
 export class GetDirectMessageHistoryResponseDto {

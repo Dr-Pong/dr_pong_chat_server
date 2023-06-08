@@ -99,7 +99,7 @@ describe('DmLogService', () => {
         expect(directMessagehistory).toHaveProperty('chats');
         expect(directMessagehistory.chats[0]).toHaveProperty('nickname');
         expect(directMessagehistory.chats[0]).toHaveProperty('message');
-        expect(directMessagehistory.chats[0]).toHaveProperty('createdAt');
+        expect(directMessagehistory.chats[0]).toHaveProperty('time');
       });
 
       it('[Valid Case] 존재하는 대화 내역 조회', async () => {

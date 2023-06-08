@@ -51,7 +51,7 @@ export class DirectMessageService {
           id: directMessage.id,
           nickname: directMessage.sender.nickname,
           message: directMessage.message,
-          createdAt: directMessage.createdAt,
+          time: directMessage.createdAt,
         };
         return chatDto;
       }),
