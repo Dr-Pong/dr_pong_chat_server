@@ -42,6 +42,12 @@ import { PostChannelMessageDto } from '../channel-message/dto/post.channel-messa
 import { CHAT_MESSAGE } from 'src/global/type/type.channel.action';
 import { ChannelMessage } from '../channel-message/channel-message.entity';
 import { ChannlUserTestModule } from './test/channel-user.test.module';
+import {
+  CHATTYPE_ME,
+  CHATTYPE_OTHERS,
+  CHATTYPE_SYSTEM,
+} from 'src/global/type/type.chat';
+import { ChannelMessagesHistoryDto } from './dto/channel-message.history.dto';
 
 describe('ChannelUserService', () => {
   let service: ChannelUserService;
@@ -109,9 +115,9 @@ describe('ChannelUserService', () => {
   });
 
   afterEach(async () => {
-    await dataSource.synchronize(true);
     userFactory.users.clear();
     channelFactory.channels.clear();
+    await dataSource.synchronize(true);
   });
 
   afterAll(async () => {
@@ -997,7 +1003,7 @@ describe('ChannelUserService', () => {
         count: 10,
       };
 
-      const channelChatList: ChannelChatDtos =
+      const channelChatList: ChannelMessagesHistoryDto =
         await service.getChannelMessageHistory(getChannelMessageHistoryRequest);
 
       expect(channelChatList.chats.length).toBe(10);
@@ -1005,11 +1011,11 @@ describe('ChannelUserService', () => {
         expect(c).toHaveProperty('id');
         expect(c).toHaveProperty('message');
         expect(c).toHaveProperty('nickname');
-        expect(c).toHaveProperty('createdAt');
+        expect(c).toHaveProperty('time');
         expect(c).toHaveProperty('type');
-        if (c.type === CHATTYPE_MINE) {
+        if (c.type === CHATTYPE_ME) {
           expect(c.nickname).toBe(user.nickname);
-        } else if (c.type === CHATTYPE_OTHER) {
+        } else if (c.type === CHATTYPE_OTHERS) {
           expect(c.nickname).not.toBe(user.nickname);
         }
       }
@@ -1030,7 +1036,7 @@ describe('ChannelUserService', () => {
         count: 10,
       };
 
-      const channelChatList: ChannelChatDtos =
+      const channelChatList: ChannelMessagesHistoryDto =
         await service.getChannelMessageHistory(getChannelMessageHistoryRequest);
 
       expect(channelChatList.chats.length).toBe(10);
@@ -1038,11 +1044,11 @@ describe('ChannelUserService', () => {
         expect(c).toHaveProperty('id');
         expect(c).toHaveProperty('message');
         expect(c).toHaveProperty('nickname');
-        expect(c).toHaveProperty('createdAt');
+        expect(c).toHaveProperty('time');
         expect(c).toHaveProperty('type');
-        if (c.type === CHATTYPE_MINE) {
+        if (c.type === CHATTYPE_ME) {
           expect(c.nickname).toBe(user.nickname);
-        } else if (c.type === CHATTYPE_OTHER) {
+        } else if (c.type === CHATTYPE_OTHERS) {
           expect(c.nickname).not.toBe(user.nickname);
         }
       }
@@ -1063,7 +1069,7 @@ describe('ChannelUserService', () => {
         count: 10,
       };
 
-      const channelChatList: ChannelChatDtos =
+      const channelChatList: ChannelMessagesHistoryDto =
         await service.getChannelMessageHistory(getChannelMessageHistoryRequest);
 
       expect(channelChatList.chats.length).toBe(10);
@@ -1071,48 +1077,34 @@ describe('ChannelUserService', () => {
         expect(c).toHaveProperty('id');
         expect(c).toHaveProperty('message');
         expect(c).toHaveProperty('nickname');
-        expect(c).toHaveProperty('createdAt');
+        expect(c).toHaveProperty('time');
         expect(c).toHaveProperty('type');
-        if (c.type === CHATTYPE_MINE) {
+        if (c.type === CHATTYPE_ME) {
           expect(c.nickname).toBe(user.nickname);
-        } else if (CHATTYPE_OTHER) {
+        } else if (c.type === CHATTYPE_OTHERS) {
           expect(c.nickname).not.toBe(user.nickname);
+        } else {
+          expect(c.type).toBe(CHATTYPE_SYSTEM);
         }
       }
     });
 
     it('[Error Case] 채팅방에 없는 유저가 조회 요청을 보낸 경우', async () => {
-      it('[Valid Case] 일반 유저의 채팅 내역 조회 (last page인 경우)', async () => {
-        const channel: ChannelModel =
-          await testData.createChannelWithNormalChats(100);
-        const user: UserModel = await testData.createBasicUser('user');
+      const channel: ChannelModel = await testData.createChannelWithNormalChats(
+        100,
+      );
+      const user: UserModel = await testData.createBasicUser('user');
 
-        const getChannelMessageHistoryRequest = {
-          userId: user.id,
-          channelId: channel.id,
-          offset: 10,
-          count: 10,
-        };
+      const getChannelMessageHistoryRequest = {
+        userId: user.id,
+        channelId: channel.id,
+        offset: 10,
+        count: 10,
+      };
 
-        const channelChatList: ChannelChatDtos =
-          await service.getChannelMessageHistory(
-            getChannelMessageHistoryRequest,
-          );
-
-        expect(channelChatList.chats.length).toBe(10);
-        for (const c of channelChatList.chats) {
-          expect(c).toHaveProperty('id');
-          expect(c).toHaveProperty('message');
-          expect(c).toHaveProperty('nickname');
-          expect(c).toHaveProperty('createdAt');
-          expect(c).toHaveProperty('type');
-          if (c.type === CHATTYPE_MINE) {
-            expect(c.nickname).toBe(user.nickname);
-          } else if (c.type === CHATTYPE_OTHER) {
-            expect(c.nickname).not.toBe(user.nickname);
-          }
-        }
-      });
+      await expect(
+        service.getChannelMessageHistory(getChannelMessageHistoryRequest),
+      ).rejects.toThrow(new BadRequestException('You are not in this channel'));
     });
   });
 });

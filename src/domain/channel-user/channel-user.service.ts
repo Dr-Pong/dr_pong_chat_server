@@ -66,6 +66,13 @@ import { UpdateChannelDto } from './dto/update.channel.dto';
 import { PatchChannelDto } from './dto/patch.channel.dto';
 import { DeleteChannelDto } from './dto/delete.channel.dto';
 import { SaveChannelMessageDto } from '../channel-message/dto/save.channel-message.dto';
+import { GetChannelMessageHistoryDto } from './dto/get.channel-message.history.dto';
+import {
+  ChannelMessageHistoryDto,
+  ChannelMessagesHistoryDto,
+} from './dto/channel-message.history.dto';
+import { ChannelMessage } from '../channel-message/channel-message.entity';
+import { FindChannelMessagePageDto } from './dto/find.channel-message.page.dto';
 
 @Injectable()
 export class ChannelUserService {
@@ -575,6 +582,31 @@ export class ChannelUserService {
     });
   }
 
+  @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
+  async getChannelMessageHistory(
+    getDto: GetChannelMessageHistoryDto,
+  ): Promise<ChannelMessagesHistoryDto> {
+    const channel: ChannelModel = this.channelFactory.findById(
+      getDto.channelId,
+    );
+
+    checkChannelExist(channel);
+    checkUserInChannel(channel, getDto.userId);
+
+    const messages: ChannelMessage[] =
+      await this.messageRepository.findPageByChannelId(
+        FindChannelMessagePageDto.from(getDto),
+      );
+
+    const responseDto: ChannelMessagesHistoryDto = {
+      chats: messages.map((message) => {
+        return ChannelMessageHistoryDto.fromEntity(getDto.userId, message);
+      }),
+      isLastPage: false,
+    };
+    return responseDto;
+  }
+
   /**
    * 채널 초대를 거절하는 함수
    * userModel의 invite에서 해당 채널을 삭제한다
@@ -616,9 +648,9 @@ export class ChannelUserService {
       dto.userId,
       dto.channelId,
     );
-    await this.channelRepository.updateHeadCount(
-      new UpdateChannelHeadCountDto(dto.channelId, -1),
-    );
+    // await this.channelRepository.updateHeadCount(
+    //   new UpdateChannelHeadCountDto(dto.channelId, -1),
+    // );
     await this.messageRepository.save(SaveChannelMessageDto.fromExitDto(dto));
   }
 

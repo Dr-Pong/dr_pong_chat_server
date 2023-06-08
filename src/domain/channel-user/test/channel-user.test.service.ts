@@ -17,7 +17,13 @@ import {
 } from 'src/global/type/type.channel';
 import { UserModel } from 'src/domain/factory/model/user.model';
 import { InviteModel } from 'src/domain/factory/model/invite.model';
-import { CHAT_MUTE } from 'src/global/type/type.channel.action';
+import {
+  CHAT_JOIN,
+  CHAT_LEAVE,
+  CHAT_MESSAGE,
+  CHAT_MUTE,
+  ChannelActionType,
+} from 'src/global/type/type.channel.action';
 
 @Injectable()
 export class ChannelUserTestService {
@@ -231,5 +237,56 @@ export class ChannelUserTestService {
       type: CHAT_MUTE,
     });
     return user;
+  }
+
+  async createChannelWithNormalChats(chatNum: number): Promise<ChannelModel> {
+    const channel: ChannelModel = await this.createBasicChannel('channel', 10);
+
+    for (let i = 0; i < chatNum; i++) {
+      const user: UserModel = this.userFactory.findById(
+        channel.users.values().next().value,
+      );
+      await this.messageRepository.save({
+        user: { id: user.id },
+        channel: { id: channel.id },
+        content: 'chat ' + i,
+        time: new Date(),
+        type: CHAT_MESSAGE,
+      });
+    }
+    return this.channelFactory.findById(channel.id);
+  }
+
+  async createChannelWithSystemChats(chatNum: number): Promise<ChannelModel> {
+    const channel: ChannelModel = await this.createBasicChannel('channel', 10);
+
+    for (let i = 0; i < chatNum; i++) {
+      const user: UserModel = this.userFactory.findById(
+        channel.users.values().next().value,
+      );
+      let type: ChannelActionType;
+      switch (i % 3) {
+        case 0:
+          type = CHAT_JOIN;
+          break;
+        case 1:
+          type = CHAT_LEAVE;
+          break;
+        case 2:
+          type = CHAT_MUTE;
+          break;
+        default:
+          type = CHAT_MESSAGE;
+      }
+
+      await this.messageRepository.save({
+        user: { id: user.id },
+        channel: { id: channel.id },
+        content: 'chat ' + i,
+        time: new Date(),
+        type: type,
+      });
+    }
+    return this.channelFactory.findById(channel.id);
   }
 }
