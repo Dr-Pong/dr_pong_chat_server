@@ -35,16 +35,14 @@ export class DirectMessageService {
         userId,
         friendId,
         offset,
-        count,
+        count + 1,
       );
 
-    let lastPage = false;
-    for (const directMessage of directMessagesHistory) {
-      if (directMessage.id === getDto.offset) {
-        lastPage = true;
-        break;
-      }
+    const lastPage: boolean = directMessagesHistory.length < count + 1;
+    if (!lastPage) {
+      directMessagesHistory.pop();
     }
+
     const responseDto: GetDirectMessageHistoryResponseDto = {
       chats: directMessagesHistory.map((directMessage: DirectMessage) => {
         const chatDto: ChatDto = {
