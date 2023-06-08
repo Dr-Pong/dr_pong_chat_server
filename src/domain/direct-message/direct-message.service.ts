@@ -88,10 +88,11 @@ export class DirectMessageService {
   async postDirectMessage(postDto: PostDirectMessageDto): Promise<void> {
     const { userId, friendId, message } = postDto;
 
-    const isFriend: boolean = await this.friendRepository.isFriend(
-      userId,
-      friendId,
-    );
+    const isFriend: boolean =
+      await this.friendRepository.checkIsFriendByUserIdAndFriendId(
+        userId,
+        friendId,
+      );
 
     //친구 여부 확인
     if (!isFriend) throw new BadRequestException('not a friend');

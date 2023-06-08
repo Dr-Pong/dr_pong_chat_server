@@ -156,17 +156,4 @@ export class FriendRepository {
       { status: FRIENDSTATUS_DELETED },
     );
   }
-
-  async isFriend(userId: number, friendId: number): Promise<boolean> {
-    const isFriend: boolean = await this.repository.exist({
-      where: [
-        {
-          sender: { id: In([userId, friendId]) },
-          receiver: { id: In([userId, friendId]) },
-          status: FRIENDSTATUS_FRIEND,
-        },
-      ],
-    });
-    return isFriend;
-  }
 }
