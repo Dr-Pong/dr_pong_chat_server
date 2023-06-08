@@ -321,6 +321,9 @@ export class ChannelUserService {
     await this.exitChannel(
       new ChannelExitDto(deleteDto.userId, channelUser.channel.id),
     );
+    if (channelUser.channel.headCount === 1) {
+      await this.channelRepository.deleteById(channelUser.channel.id);
+    }
 
     /** 트랜잭션이 성공하면 Factory에도 결과를 반영한다 */
     runOnTransactionComplete(() => {
@@ -570,11 +573,8 @@ export class ChannelUserService {
     checkChannelExist(channel);
     checkUserIsOwner(channel, deleteDto.userId);
 
-    channel.users.forEach(async (user) => {
-      await this.exitChannel(new ChannelExitDto(user, channel.id));
-    });
-
-    await this.channelRepository.deleteById(deleteDto.channelId);
+    await this.channelUserRepository.deleteByChannelId(channel.id);
+    await this.channelRepository.deleteById(channel.id);
 
     /** 트랜잭션이 성공하면 Factory에도 결과를 반영한다 */
     runOnTransactionComplete(() => {
@@ -649,7 +649,7 @@ export class ChannelUserService {
    * message - 채널 퇴장 메시지를 저장한다
    * */
   private async exitChannel(dto: ChannelExitDto): Promise<void> {
-    await this.channelUserRepository.deleteChannelUser(
+    await this.channelUserRepository.deleteByUserIdAndChannelId(
       dto.userId,
       dto.channelId,
     );
