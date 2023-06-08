@@ -145,6 +145,21 @@ export class DirectMessageTestService {
     }
   }
 
+  async createDirectMessageFromUser1ToMe(messageCount: number): Promise<void> {
+    for (let i = 0; i < messageCount; i++) {
+      const directMessage = await this.directMessageRepository.save({
+        sender: this.users[1],
+        roomId: FriendChatManager.generateRoomId(
+          this.users[1].id.toString(),
+          this.users[0].id.toString(),
+        ),
+        message: 'message' + i.toString(),
+        time: new Date().toISOString(),
+      });
+      this.directMessage.push(directMessage);
+    }
+  }
+
   //FriendDirectMessage만들기 list
   async createDirectMessageRoom(): Promise<void> {
     const friendDirectMessages: DirectMessageRoom[] = [];

@@ -13,6 +13,12 @@ import { FRIENDSTATUS_FRIEND } from 'src/global/type/type.friend.status';
 import { DirectMessageRoom } from '../direct-message-room/direct-message-room.entity';
 import { DirectMessageRoomRepository } from '../direct-message-room/direct-message-room.repository';
 import { IsolationLevel, Transactional } from 'typeorm-transactional';
+import {
+  CHATTYPE_ME,
+  CHATTYPE_OTHERS,
+  CHATTYPE_SYSTEM,
+  ChatType,
+} from 'src/global/type/type.chat';
 
 @Injectable()
 export class DirectMessageService {
@@ -25,7 +31,6 @@ export class DirectMessageService {
   /** DirectMessage 히스토리조회
    * offset과 count 를 이용해서 사용자 간의 DirectMessage 히스토리를 조회합니다.
    */
-  @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
   async getDirectMessagesHistory(
     getDto: GetDirectMessageHistoryDto,
   ): Promise<GetDirectMessageHistoryResponseDto> {
@@ -35,26 +40,40 @@ export class DirectMessageService {
         userId,
         friendId,
         offset,
-        count,
+        count + 1,
       );
 
-    let lastPage = false;
-    for (const directMessage of directMessagesHistory) {
-      if (directMessage.id === getDto.offset) {
-        lastPage = true;
-        break;
-      }
+    const lastPage: boolean = directMessagesHistory.length < count + 1;
+    if (!lastPage) {
+      directMessagesHistory.pop();
     }
+
+    const getType = (
+      senderId: number,
+      userId: number,
+      friendId: number,
+    ): ChatType => {
+      if (senderId === userId) {
+        return CHATTYPE_ME;
+      } else if (senderId === friendId) {
+        return CHATTYPE_OTHERS;
+      } else {
+        return CHATTYPE_SYSTEM;
+      }
+    };
+
+    const createChatDto = (directMessage: DirectMessage): ChatDto => {
+      return {
+        id: directMessage.id,
+        nickname: directMessage.sender.nickname,
+        message: directMessage.message,
+        time: directMessage.createdAt,
+        type: getType(directMessage.sender.id, userId, friendId),
+      };
+    };
+
     const responseDto: GetDirectMessageHistoryResponseDto = {
-      chats: directMessagesHistory.map((directMessage: DirectMessage) => {
-        const chatDto: ChatDto = {
-          id: directMessage.id,
-          nickname: directMessage.sender.nickname,
-          message: directMessage.message,
-          createdAt: directMessage.createdAt,
-        };
-        return chatDto;
-      }),
+      chats: directMessagesHistory.map(createChatDto),
       isLastPage: lastPage,
     };
 

@@ -16,6 +16,7 @@ import { GetDirectMessageHistoryDto } from './dto/get.direct-message.history.dto
 import { GetDirectMessageHistoryResponseDto } from './dto/get.direct-message.history.response.dto';
 import { DirectMessageRoomModule } from '../direct-message-room/direct-message-room.module';
 import { DirectMessageRoom } from '../direct-message-room/direct-message-room.entity';
+import { CHATTYPE_ME, CHATTYPE_OTHERS } from 'src/global/type/type.chat';
 
 describe('DmLogService', () => {
   let service: DirectMessageService;
@@ -99,7 +100,8 @@ describe('DmLogService', () => {
         expect(directMessagehistory).toHaveProperty('chats');
         expect(directMessagehistory.chats[0]).toHaveProperty('nickname');
         expect(directMessagehistory.chats[0]).toHaveProperty('message');
-        expect(directMessagehistory.chats[0]).toHaveProperty('createdAt');
+        expect(directMessagehistory.chats[0]).toHaveProperty('time');
+        expect(directMessagehistory.chats[0]).toHaveProperty('type');
       });
 
       it('[Valid Case] 존재하는 대화 내역 조회', async () => {
@@ -151,6 +153,93 @@ describe('DmLogService', () => {
           await service.getDirectMessagesHistory(userDirectMessegeDto);
 
         expect(directMessagehistory.chats.length).toBe(0);
+      });
+
+      it('[Valid Case] 유저 두명이서 보내는 경우', async () => {
+        await testData.createUserFriends(10);
+        await testData.createDirectMessageToUser1(20);
+        await testData.createDirectMessageFromUser1ToMe(20);
+
+        const userDirectMessegeDto: GetDirectMessageHistoryDto = {
+          userId: testData.users[0].id,
+          friendId: testData.users[1].id,
+          offset: null,
+          count: 40,
+        };
+
+        const directMessagehistory: GetDirectMessageHistoryResponseDto =
+          await service.getDirectMessagesHistory(userDirectMessegeDto);
+
+        for (let i = 0; i < directMessagehistory.chats.length; i++) {
+          expect(directMessagehistory.chats[i]).toHaveProperty('nickname');
+          expect(directMessagehistory.chats[i]).toHaveProperty('message');
+          expect(directMessagehistory.chats[i]).toHaveProperty('time');
+          expect(directMessagehistory.chats[i]).toHaveProperty('type');
+          if (directMessagehistory.chats[i].type === CHATTYPE_ME) {
+            expect(directMessagehistory.chats[i].nickname).toBe(
+              testData.users[0].nickname,
+            );
+          } else if (directMessagehistory.chats[i].type === CHATTYPE_OTHERS) {
+            expect(directMessagehistory.chats[i].nickname).toBe(
+              testData.users[1].nickname,
+            );
+          }
+        }
+      });
+
+      it('[Valid Case] isLastPage 일때', async () => {
+        await testData.createUserFriends(10);
+        await testData.createDirectMessageToUser1(2);
+        await testData.createDirectMessageFromUser1ToMe(2);
+
+        const userDirectMessegeDto: GetDirectMessageHistoryDto = {
+          userId: testData.users[0].id,
+          friendId: testData.users[1].id,
+          offset: 0,
+          count: 10,
+        };
+
+        const directMessagehistory: GetDirectMessageHistoryResponseDto =
+          await service.getDirectMessagesHistory(userDirectMessegeDto);
+
+        expect(directMessagehistory.chats.length).toBe(4);
+        expect(directMessagehistory.isLastPage).toBe(true);
+      });
+
+      it('[Valid Case] isLastPage 일때 특: 카운트랑 딱맞을때', async () => {
+        await testData.createUserFriends(10);
+        await testData.createDirectMessageToUser1(10);
+
+        const userDirectMessegeDto: GetDirectMessageHistoryDto = {
+          userId: testData.users[0].id,
+          friendId: testData.users[1].id,
+          offset: 0,
+          count: 10,
+        };
+
+        const directMessagehistory: GetDirectMessageHistoryResponseDto =
+          await service.getDirectMessagesHistory(userDirectMessegeDto);
+
+        expect(directMessagehistory.chats.length).toBe(10);
+        expect(directMessagehistory.isLastPage).toBe(true);
+      });
+
+      it('[Valid Case] isLastPage 아닐때', async () => {
+        await testData.createUserFriends(10);
+        await testData.createDirectMessageToUser1(11);
+
+        const userDirectMessegeDto: GetDirectMessageHistoryDto = {
+          userId: testData.users[0].id,
+          friendId: testData.users[1].id,
+          offset: 0,
+          count: 10,
+        };
+
+        const directMessagehistory: GetDirectMessageHistoryResponseDto =
+          await service.getDirectMessagesHistory(userDirectMessegeDto);
+
+        expect(directMessagehistory.chats.length).toBe(10);
+        expect(directMessagehistory.isLastPage).toBe(false);
       });
     });
     describe('Direct Message 전송', () => {
