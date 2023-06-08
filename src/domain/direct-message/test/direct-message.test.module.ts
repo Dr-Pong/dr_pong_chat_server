@@ -17,7 +17,7 @@ import { DirectMessageRoom } from 'src/domain/direct-message-room/direct-message
       Block,
       ProfileImage,
       DirectMessage,
-      // DirectMessageRoom,
+      DirectMessageRoom,
     ]),
   ],
   providers: [DirectMessageTestService],
