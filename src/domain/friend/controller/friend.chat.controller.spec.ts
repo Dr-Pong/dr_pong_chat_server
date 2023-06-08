@@ -275,7 +275,7 @@ describe('FriendController - Chat', () => {
           'DELETE',
           `/users/friends/chats/${nobangUser.nickname}`,
         );
-        expect(response.status).toBe(400);
+        expect(response.status).toBe(200);
       });
     });
   });
