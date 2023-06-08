@@ -13,6 +13,12 @@ import { FRIENDSTATUS_FRIEND } from 'src/global/type/type.friend.status';
 import { DirectMessageRoom } from '../direct-message-room/direct-message-room.entity';
 import { DirectMessageRoomRepository } from '../direct-message-room/direct-message-room.repository';
 import { IsolationLevel, Transactional } from 'typeorm-transactional';
+import {
+  CHATTYPE_ME,
+  CHATTYPE_OTHERS,
+  CHATTYPE_SYSTEM,
+  ChatType,
+} from 'src/global/type/type.chat';
 
 @Injectable()
 export class DirectMessageService {
@@ -43,6 +49,20 @@ export class DirectMessageService {
       directMessagesHistory.pop();
     }
 
+    const getType = (
+      senderId: number,
+      userId: number,
+      friendId: number,
+    ): ChatType => {
+      if (senderId === userId) {
+        return CHATTYPE_ME;
+      } else if (senderId === friendId) {
+        return CHATTYPE_OTHERS;
+      } else {
+        return CHATTYPE_SYSTEM;
+      }
+    };
+
     const responseDto: GetDirectMessageHistoryResponseDto = {
       chats: directMessagesHistory.map((directMessage: DirectMessage) => {
         const chatDto: ChatDto = {
@@ -50,6 +70,7 @@ export class DirectMessageService {
           nickname: directMessage.sender.nickname,
           message: directMessage.message,
           time: directMessage.createdAt,
+          type: getType(directMessage.sender.id, userId, friendId),
         };
         return chatDto;
       }),
