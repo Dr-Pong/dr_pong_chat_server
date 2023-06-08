@@ -10,15 +10,15 @@ import {
   ChannelActionType,
 } from 'src/global/type/type.channel.action';
 import { MessageDto } from 'src/gateway/dto/message.dto';
-import { PostChannelJoinDto } from '../channel-user/dto/post.channel.join.dto';
-import { DeleteChannelUserDto } from '../channel-user/dto/delete.channel.user.dto';
-import { PostChannelAdminDto } from '../channel-user/dto/post.channel.admin.dto';
-import { DeleteChannelAdminDto } from '../channel-user/dto/delete.channel.admin.dto';
-import { DeleteChannelKickDto } from '../channel-user/dto/delete.channel.kick.dto';
-import { PostChannelBanDto } from '../channel-user/dto/post.channel.ban.dto';
-import { PostChannelMuteDto } from '../channel-user/dto/post.channel.mute.dto';
-import { ChannelAdminCommandDto } from '../channel-user/dto/channel.admin.command.dto';
-import { DeleteChannelMuteDto } from '../channel-user/dto/delete.channel.mute.dto';
+import { PostChannelJoinDto } from 'src/domain/channel-user/dto/post.channel.join.dto';
+import { DeleteChannelUserDto } from 'src/domain/channel-user/dto/delete.channel.user.dto';
+import { ChannelAdminCommandDto } from 'src/domain/channel-user/dto/channel.admin.command.dto';
+import { PostChannelMuteDto } from 'src/domain/channel-user/dto/post.channel.mute.dto';
+import { DeleteChannelMuteDto } from 'src/domain/channel-user/dto/delete.channel.mute.dto';
+import { PostChannelBanDto } from 'src/domain/channel-user/dto/post.channel.ban.dto';
+import { DeleteChannelKickDto } from 'src/domain/channel-user/dto/delete.channel.kick.dto';
+import { PostChannelAdminDto } from 'src/domain/channel-user/dto/post.channel.admin.dto';
+import { DeleteChannelAdminDto } from 'src/domain/channel-user/dto/delete.channel.admin.dto';
 
 export class SaveChannelMessageDto {
   userId: number;
@@ -38,7 +38,7 @@ export class SaveChannelMessageDto {
       userId,
       channelId,
       CHAT_JOIN,
-      'joined channel',
+      CHAT_JOIN,
       new Date(),
     );
   }
@@ -49,7 +49,7 @@ export class SaveChannelMessageDto {
       userId,
       channelId,
       CHAT_LEAVE,
-      'exited channel',
+      CHAT_LEAVE,
       new Date(),
     );
   }

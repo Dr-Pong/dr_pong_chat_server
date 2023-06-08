@@ -66,6 +66,13 @@ import { UpdateChannelDto } from './dto/update.channel.dto';
 import { PatchChannelDto } from './dto/patch.channel.dto';
 import { DeleteChannelDto } from './dto/delete.channel.dto';
 import { SaveChannelMessageDto } from '../channel-message/dto/save.channel-message.dto';
+import { GetChannelMessageHistoryDto } from './dto/get.channel-message.history.dto';
+import {
+  ChannelMessageHistoryDto,
+  ChannelMessagesHistoryDto,
+} from './dto/channel-message.history.dto';
+import { ChannelMessage } from '../channel-message/channel-message.entity';
+import { FindChannelMessagePageDto } from './dto/find.channel-message.page.dto';
 
 @Injectable()
 export class ChannelUserService {
@@ -573,6 +580,36 @@ export class ChannelUserService {
     runOnTransactionComplete(() => {
       this.channelFactory.delete(deleteDto.channelId);
     });
+  }
+
+  @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
+  async getChannelMessageHistory(
+    getDto: GetChannelMessageHistoryDto,
+  ): Promise<ChannelMessagesHistoryDto> {
+    const channel: ChannelModel = this.channelFactory.findById(
+      getDto.channelId,
+    );
+
+    checkChannelExist(channel);
+    checkUserInChannel(channel, getDto.userId);
+
+    const messages: ChannelMessage[] =
+      await this.messageRepository.findAllByChannelId(
+        FindChannelMessagePageDto.from(getDto),
+      );
+    let isLastPage = true;
+    if (messages.length > getDto.count) {
+      isLastPage = false;
+      messages.pop();
+    }
+
+    const responseDto: ChannelMessagesHistoryDto = {
+      chats: messages.map((message) => {
+        return ChannelMessageHistoryDto.fromEntity(getDto.userId, message);
+      }),
+      isLastPage,
+    };
+    return responseDto;
   }
 
   /**
