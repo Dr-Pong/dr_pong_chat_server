@@ -181,8 +181,8 @@ export class DirectMessageRoomTestService {
     const friendDirectMessages: DirectMessageRoom[] = [];
 
     const friendDirectMessage = await this.directMessageRoomRepository.save({
-      userId: this.users[0],
-      friendId: this.users[i],
+      user: this.users[0],
+      friend: this.users[i],
       roomId: FriendChatManager.generateRoomId(
         this.users[0].id.toString(),
         this.users[i].id.toString(),
@@ -215,8 +215,8 @@ export class DirectMessageRoomTestService {
     const friendDirectMessages: DirectMessageRoom[] = [];
 
     const friendDirectMessage = await this.directMessageRoomRepository.save({
-      userId: this.users[0],
-      friendId: this.users[i],
+      user: this.users[0],
+      friend: this.users[i],
       roomId: FriendChatManager.generateRoomId(
         this.users[0].id.toString(),
         this.users[i].id.toString(),
@@ -249,8 +249,8 @@ export class DirectMessageRoomTestService {
     const friendDirectMessages: DirectMessageRoom[] = [];
 
     const friendDirectMessage = await this.directMessageRoomRepository.save({
-      userId: this.users[0],
-      friendId: this.users[i],
+      user: this.users[0],
+      friend: this.users[i],
       roomId: FriendChatManager.generateRoomId(
         this.users[0].id.toString(),
         this.users[i].id.toString(),
