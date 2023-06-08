@@ -2,7 +2,7 @@ interface Chat {
   id: number;
   message: string;
   nickname: string;
-  createdAt: Date;
+  time: Date;
 }
 
 export class FriendDirectMessageChatListResponseDto {
