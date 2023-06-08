@@ -142,9 +142,9 @@ describe('FriendController - Chat', () => {
         const response = await req(token, 'GET', `/users/friends/chatlist`);
         const result = response.body;
         expect(response.status).toBe(200);
-        expect(result).toHaveProperty('dmList');
-        expect(result.dmList.length).toBe(6);
-        for (const dm of result.dmList) {
+        expect(result).toHaveProperty('chatList');
+        expect(result.chatList.length).toBe(6);
+        for (const dm of result.chatList) {
           expect(dm).toHaveProperty('imgUrl');
           expect(dm).toHaveProperty('nickname');
           expect(dm).toHaveProperty('newChats');
@@ -156,8 +156,8 @@ describe('FriendController - Chat', () => {
         const response = await req(token, 'GET', `/users/friends/chatlist`);
         const result = response.body;
         expect(response.status).toBe(200);
-        expect(result).toHaveProperty('dmList');
-        expect(result.dmList).toBe(0);
+        expect(result).toHaveProperty('chatList');
+        expect(result.chatList).toBe(0);
       });
     });
 
@@ -165,8 +165,8 @@ describe('FriendController - Chat', () => {
       it('새로운 DM이 있는 경우', async () => {
         const user = testService.users[0];
         const token = await testService.giveTokenToUser(user);
-        await testService.createDirectMessageToUser0(30);
-        await testService.createHalfReadDirectMessageRoomToUserI(2);
+        await testService.createDirectMessageToUser1(10);
+        await testService.createDirectMessageRoomToUser1();
         const response = await req(token, 'GET', `/users/friends/chats/new`);
         const result = response.body;
         expect(response.status).toBe(200);
@@ -201,7 +201,7 @@ describe('FriendController - Chat', () => {
           `/users/friends/${receiver.nickname}/chats`,
           body,
         );
-        expect(response.status).toBe(200);
+        expect(response.status).toBe(201);
       });
       it('DM 전송 실패(안친구)', async () => {
         const user = testService.users[0];
