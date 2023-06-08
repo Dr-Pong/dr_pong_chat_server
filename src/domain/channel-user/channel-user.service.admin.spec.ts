@@ -15,7 +15,6 @@ import { PostChannelAdminDto } from './dto/post.channel.admin.dto';
 import { DeleteChannelAdminDto } from './dto/delete.channel.admin.dto';
 import { ChannelUserTestService } from './test/channel-user.test.service';
 import { ChannelUser } from './channel-user.entity';
-import { ChannelMessage } from './channel-message.entity';
 import { FactoryModule } from '../factory/factory.module';
 import { GatewayModule } from 'src/gateway/gateway.module';
 import { typeORMConfig } from 'src/configs/typeorm.config';
@@ -38,6 +37,7 @@ import { DeleteChannelMuteDto } from './dto/delete.channel.mute.dto';
 import { PatchChannelDto } from './dto/patch.channel.dto';
 import { Channel } from '../channel/channel.entity';
 import { DeleteChannelDto } from './dto/delete.channel.dto';
+import { ChannelMessage } from '../channel-message/channel-message.entity';
 
 describe('ChannelUserService', () => {
   let service: ChannelUserService;
@@ -46,7 +46,6 @@ describe('ChannelUserService', () => {
   let testData: ChannelUserTestService;
   let dataSource: DataSource;
   let channelRepository: Repository<Channel>;
-  let channelUserRepository: Repository<ChannelUser>;
   let channelMessageRepository: Repository<ChannelMessage>;
 
   initializeTransactionalContext();
@@ -95,9 +94,6 @@ describe('ChannelUserService', () => {
     channelRepository = module.get<Repository<Channel>>(
       getRepositoryToken(Channel),
     );
-    channelUserRepository = module.get<Repository<ChannelUser>>(
-      getRepositoryToken(ChannelUser),
-    );
     channelMessageRepository = module.get<Repository<ChannelMessage>>(
       getRepositoryToken(ChannelMessage),
     );
@@ -105,9 +101,9 @@ describe('ChannelUserService', () => {
   });
 
   afterEach(async () => {
-    await dataSource.synchronize(true);
     userFactory.users.clear();
     channelFactory.channels.clear();
+    await dataSource.synchronize(true);
   });
 
   afterAll(async () => {
