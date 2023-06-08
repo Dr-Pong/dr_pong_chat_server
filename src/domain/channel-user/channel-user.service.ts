@@ -594,15 +594,20 @@ export class ChannelUserService {
     checkUserInChannel(channel, getDto.userId);
 
     const messages: ChannelMessage[] =
-      await this.messageRepository.findPageByChannelId(
+      await this.messageRepository.findAllByChannelId(
         FindChannelMessagePageDto.from(getDto),
       );
+    let isLastPage = false;
+    if (messages.length > getDto.count) {
+      isLastPage = true;
+      messages.pop();
+    }
 
     const responseDto: ChannelMessagesHistoryDto = {
       chats: messages.map((message) => {
         return ChannelMessageHistoryDto.fromEntity(getDto.userId, message);
       }),
-      isLastPage: false,
+      isLastPage,
     };
     return responseDto;
   }

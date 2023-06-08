@@ -22,14 +22,14 @@ export class ChannelMessageRepository {
     });
   }
 
-  async findPageByChannelId(
+  async findAllByChannelId(
     findDto: FindChannelMessagePageDto,
   ): Promise<ChannelMessage[]> {
     return this.repository.find({
       where: { channel: { id: findDto.channelId } },
       order: { time: 'DESC' },
       skip: findDto.offset,
-      take: findDto.count,
+      take: findDto.count + 1,
     });
   }
 }
