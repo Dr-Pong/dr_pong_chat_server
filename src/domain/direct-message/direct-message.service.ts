@@ -31,7 +31,6 @@ export class DirectMessageService {
   /** DirectMessage 히스토리조회
    * offset과 count 를 이용해서 사용자 간의 DirectMessage 히스토리를 조회합니다.
    */
-  @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
   async getDirectMessagesHistory(
     getDto: GetDirectMessageHistoryDto,
   ): Promise<GetDirectMessageHistoryResponseDto> {
@@ -63,17 +62,18 @@ export class DirectMessageService {
       }
     };
 
+    const createChatDto = (directMessage: DirectMessage): ChatDto => {
+      return {
+        id: directMessage.id,
+        nickname: directMessage.sender.nickname,
+        message: directMessage.message,
+        time: directMessage.createdAt,
+        type: getType(directMessage.sender.id, userId, friendId),
+      };
+    };
+
     const responseDto: GetDirectMessageHistoryResponseDto = {
-      chats: directMessagesHistory.map((directMessage: DirectMessage) => {
-        const chatDto: ChatDto = {
-          id: directMessage.id,
-          nickname: directMessage.sender.nickname,
-          message: directMessage.message,
-          time: directMessage.createdAt,
-          type: getType(directMessage.sender.id, userId, friendId),
-        };
-        return chatDto;
-      }),
+      chats: directMessagesHistory.map(createChatDto),
       isLastPage: lastPage,
     };
 
