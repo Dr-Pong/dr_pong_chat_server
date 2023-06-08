@@ -52,9 +52,19 @@ export class ChannelUserRepository {
     });
   }
 
-  async deleteChannelUser(userId: number, channelId: string): Promise<void> {
+  async deleteByUserIdAndChannelId(
+    userId: number,
+    channelId: string,
+  ): Promise<void> {
     await this.repository.update(
       { user: { id: userId }, channel: { id: channelId }, isDeleted: false },
+      { isDeleted: true },
+    );
+  }
+
+  async deleteByChannelId(channelId: string): Promise<void> {
+    await this.repository.update(
+      { channel: { id: channelId }, isDeleted: false },
       { isDeleted: true },
     );
   }
