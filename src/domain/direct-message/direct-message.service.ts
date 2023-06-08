@@ -132,7 +132,7 @@ export class DirectMessageService {
       }
     }
   }
-  //
+
   /**
    * 주어진 친구와 friendId가 유효한 친구인지 확인합니다.
    * @returns boolean - 유효한 친구인 경우 true를 반환하고, 그렇지 않은 경우 false를 반환합니다.
