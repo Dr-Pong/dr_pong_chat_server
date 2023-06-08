@@ -33,10 +33,7 @@ export class FriendRepository {
    * */
   async findFriendRequestingsByUserId(userId: number): Promise<Friend[]> {
     const friends: Friend[] = await this.repository.find({
-      where: [
-        { sender: { id: userId }, status: FRIENDSTATUS_REQUESTING },
-        { receiver: { id: userId }, status: FRIENDSTATUS_REQUESTING },
-      ],
+      where: { receiver: { id: userId }, status: FRIENDSTATUS_REQUESTING },
     });
     return friends;
   }
@@ -46,10 +43,7 @@ export class FriendRepository {
    * */
   async countFriendRequestingsByUserId(userId: number): Promise<number> {
     const friendCount: number = await this.repository.count({
-      where: [
-        { sender: { id: userId }, status: FRIENDSTATUS_REQUESTING },
-        { receiver: { id: userId }, status: FRIENDSTATUS_REQUESTING },
-      ],
+      where: { receiver: { id: userId }, status: FRIENDSTATUS_REQUESTING },
     });
     return friendCount;
   }
@@ -61,7 +55,21 @@ export class FriendRepository {
     userId: number,
     friendId: number,
   ): Promise<boolean> {
-    const isFriendOrRequesting: boolean = await this.repository.exist({
+    const isFriend = await this.repository.exist({
+      where: [
+        {
+          sender: { id: userId },
+          receiver: { id: friendId },
+          status: FRIENDSTATUS_FRIEND,
+        },
+        {
+          sender: { id: friendId },
+          receiver: { id: userId },
+          status: FRIENDSTATUS_FRIEND,
+        },
+      ],
+    });
+    const isRequesting: boolean = await this.repository.exist({
       where: [
         {
           sender: { id: userId },
@@ -70,7 +78,7 @@ export class FriendRepository {
         },
       ],
     });
-    return isFriendOrRequesting;
+    return isFriend || isRequesting;
   }
 
   /**친구 requesting 테이블 목록
@@ -104,6 +112,11 @@ export class FriendRepository {
         {
           sender: { id: userId },
           receiver: { id: friendId },
+          status: FRIENDSTATUS_FRIEND,
+        },
+        {
+          sender: { id: friendId },
+          receiver: { id: userId },
           status: FRIENDSTATUS_FRIEND,
         },
       ],
