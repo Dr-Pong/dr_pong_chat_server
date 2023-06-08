@@ -15,23 +15,12 @@ import { DirectMessageRoom } from 'src/domain/direct-message-room/direct-message
       User,
       Friend,
       Block,
-      ProfileImageRepository,
       ProfileImage,
       DirectMessage,
-      DirectMessageRoom,
+      // DirectMessageRoom,
     ]),
   ],
   providers: [DirectMessageTestService],
-  exports: [
-    DirectMessageTestService,
-    TypeOrmModule.forFeature([
-      User,
-      Friend,
-      Block,
-      ProfileImage,
-      ProfileImageRepository,
-      DirectMessage,
-    ]),
-  ],
+  exports: [DirectMessageTestService],
 })
-export class TestModule {}
+export class DirectMessageTestModule {}
