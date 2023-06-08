@@ -29,7 +29,7 @@ import {
   CHAT_MUTE,
   CHAT_SETADMIN,
   CHAT_UNSETADMIN,
-} from 'src/global/type/type.chat';
+} from 'src/global/type/type.channel.action';
 import { ChannlUserTestModule } from './test/channel-user.test.module';
 import { DeleteChannelKickDto } from './dto/delete.channel.kick.dto';
 import { PostChannelBanDto } from './dto/post.channel.ban.dto';

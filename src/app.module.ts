@@ -5,7 +5,6 @@ import { UserModule } from './domain/user/user.module';
 import { ProfileImageModule } from './domain/profile-image/profile-image.module';
 import { BlockModule } from './domain/block/block.module';
 import { ChannelModule } from './domain/channel/channel.module';
-import { ChannelLogModule } from './domain/channel-log/channel-log.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { typeORMConfig } from './configs/typeorm.config';
 import { addTransactionalDataSource } from 'typeorm-transactional';
@@ -39,7 +38,6 @@ import { BlockTestModule } from './domain/block/test/block.test.module';
     ProfileImageModule,
     BlockModule,
     ChannelModule,
-    ChannelLogModule,
     DirectMessageModule,
     ChannelMessageModule,
     DirectMessageRoomModule,

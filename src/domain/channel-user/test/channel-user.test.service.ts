@@ -17,7 +17,7 @@ import {
 } from 'src/global/type/type.channel';
 import { UserModel } from 'src/domain/factory/model/user.model';
 import { InviteModel } from 'src/domain/factory/model/invite.model';
-import { CHAT_MUTE } from 'src/global/type/type.chat';
+import { CHAT_MUTE } from 'src/global/type/type.channel.action';
 
 @Injectable()
 export class ChannelUserTestService {

@@ -1,10 +1,13 @@
-import { PostChannelMessageDto } from 'src/domain/channel-message/post.channel-message.dto';
-import { CHAT_MESSAGE, ChatType } from 'src/global/type/type.chat';
+import { PostChannelMessageDto } from 'src/domain/channel-message/dto/post.channel-message.dto';
+import {
+  CHAT_MESSAGE,
+  ChannelActionType,
+} from 'src/global/type/type.channel.action';
 
 export class MessageDto {
   userId: number;
   channelId: string;
-  type: ChatType;
+  type: ChannelActionType;
   content: string;
   time: Date;
 
@@ -17,7 +20,7 @@ export class MessageDto {
   constructor(
     userId: number,
     channelId: string,
-    type: ChatType,
+    type: ChannelActionType,
     content: string,
   ) {
     this.userId = userId;

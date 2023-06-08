@@ -52,8 +52,7 @@ import {
 import { ChannelExitDto } from './dto/channel.exit.dto';
 import { DeleteChannelUserDto } from './dto/delete.channel.user.dto';
 import { ChannelMessageRepository } from '../channel-message/channel-message.repository';
-import { SaveChannelMessageDto } from '../channel-message/save.channel-message.dto';
-import { PostChannelMessageDto } from '../channel-message/post.channel-message.dto';
+import { PostChannelMessageDto } from '../channel-message/dto/post.channel-message.dto';
 import { ChatGateWay } from 'src/gateway/chat.gateway';
 import { MessageDto } from 'src/gateway/dto/message.dto';
 import { DeleteChannelInviteDto } from './dto/delete.channel.invite.dto';
@@ -66,6 +65,7 @@ import { DeleteChannelMuteDto } from './dto/delete.channel.mute.dto';
 import { UpdateChannelDto } from './dto/update.channel.dto';
 import { PatchChannelDto } from './dto/patch.channel.dto';
 import { DeleteChannelDto } from './dto/delete.channel.dto';
+import { SaveChannelMessageDto } from '../channel-message/dto/save.channel-message.dto';
 
 @Injectable()
 export class ChannelUserService {

@@ -2,7 +2,7 @@ import { BaseTimeEntity } from 'src/global/base-entity/base-time.entity';
 import { Column, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Channel } from '../channel/channel.entity';
 import { User } from '../user/user.entity';
-import { ChatType } from 'src/global/type/type.chat';
+import { ChannelActionType } from 'src/global/type/type.channel.action';
 
 export class ChannelMessage extends BaseTimeEntity {
   @PrimaryGeneratedColumn()
@@ -23,5 +23,5 @@ export class ChannelMessage extends BaseTimeEntity {
   content: string;
 
   @Column({ name: 'type' })
-  type: ChatType;
+  type: ChannelActionType;
 }

@@ -38,8 +38,8 @@ import {
   ORDER_CHANNEL_RESENT,
 } from 'src/global/type/type.order.channel';
 import { DeleteChannelInviteDto } from './dto/delete.channel.invite.dto';
-import { PostChannelMessageDto } from '../channel-message/post.channel-message.dto';
-import { CHAT_MESSAGE } from 'src/global/type/type.chat';
+import { PostChannelMessageDto } from '../channel-message/dto/post.channel-message.dto';
+import { CHAT_MESSAGE } from 'src/global/type/type.channel.action';
 import { ChannelMessage } from '../channel-message/channel-message.entity';
 import { ChannlUserTestModule } from './test/channel-user.test.module';
 
@@ -977,6 +977,141 @@ describe('ChannelUserService', () => {
 
         expect(savedChannelFt.users.has(user.id)).toBe(false);
         expect(savedChannelFt.muteList.get(user.id)).toBe(user.id);
+      });
+    });
+  });
+
+  describe('채팅방 채팅 내역 조회', () => {
+    it('[Valid Case] 일반 유저의 채팅 내역 조회 (last page 아닌 경우)', async () => {
+      const channel: ChannelModel = await testData.createChannelWithNormalChats(
+        100,
+      );
+      const user: UserModel = userFactory.findById(
+        channel.users.values().next().value,
+      );
+
+      const getChannelMessageHistoryRequest = {
+        userId: user.id,
+        channelId: channel.id,
+        offset: 20,
+        count: 10,
+      };
+
+      const channelChatList: ChannelChatDtos =
+        await service.getChannelMessageHistory(getChannelMessageHistoryRequest);
+
+      expect(channelChatList.chats.length).toBe(10);
+      for (const c of channelChatList.chats) {
+        expect(c).toHaveProperty('id');
+        expect(c).toHaveProperty('message');
+        expect(c).toHaveProperty('nickname');
+        expect(c).toHaveProperty('createdAt');
+        expect(c).toHaveProperty('type');
+        if (c.type === CHATTYPE_MINE) {
+          expect(c.nickname).toBe(user.nickname);
+        } else if (c.type === CHATTYPE_OTHER) {
+          expect(c.nickname).not.toBe(user.nickname);
+        }
+      }
+    });
+
+    it('[Valid Case] 일반 유저의 채팅 내역 조회 (last page인 경우)', async () => {
+      const channel: ChannelModel = await testData.createChannelWithNormalChats(
+        100,
+      );
+      const user: UserModel = userFactory.findById(
+        channel.users.values().next().value,
+      );
+
+      const getChannelMessageHistoryRequest = {
+        userId: user.id,
+        channelId: channel.id,
+        offset: 10,
+        count: 10,
+      };
+
+      const channelChatList: ChannelChatDtos =
+        await service.getChannelMessageHistory(getChannelMessageHistoryRequest);
+
+      expect(channelChatList.chats.length).toBe(10);
+      for (const c of channelChatList.chats) {
+        expect(c).toHaveProperty('id');
+        expect(c).toHaveProperty('message');
+        expect(c).toHaveProperty('nickname');
+        expect(c).toHaveProperty('createdAt');
+        expect(c).toHaveProperty('type');
+        if (c.type === CHATTYPE_MINE) {
+          expect(c.nickname).toBe(user.nickname);
+        } else if (c.type === CHATTYPE_OTHER) {
+          expect(c.nickname).not.toBe(user.nickname);
+        }
+      }
+    });
+
+    it('[Valid Case] 일반 유저의 채팅 내역 조회 (system message 포함)', async () => {
+      const channel: ChannelModel = await testData.createChannelWithSystemChats(
+        100,
+      );
+      const user: UserModel = userFactory.findById(
+        channel.users.values().next().value,
+      );
+
+      const getChannelMessageHistoryRequest = {
+        userId: user.id,
+        channelId: channel.id,
+        offset: 0,
+        count: 10,
+      };
+
+      const channelChatList: ChannelChatDtos =
+        await service.getChannelMessageHistory(getChannelMessageHistoryRequest);
+
+      expect(channelChatList.chats.length).toBe(10);
+      for (const c of channelChatList.chats) {
+        expect(c).toHaveProperty('id');
+        expect(c).toHaveProperty('message');
+        expect(c).toHaveProperty('nickname');
+        expect(c).toHaveProperty('createdAt');
+        expect(c).toHaveProperty('type');
+        if (c.type === CHATTYPE_MINE) {
+          expect(c.nickname).toBe(user.nickname);
+        } else if (CHATTYPE_OTHER) {
+          expect(c.nickname).not.toBe(user.nickname);
+        }
+      }
+    });
+
+    it('[Error Case] 채팅방에 없는 유저가 조회 요청을 보낸 경우', async () => {
+      it('[Valid Case] 일반 유저의 채팅 내역 조회 (last page인 경우)', async () => {
+        const channel: ChannelModel =
+          await testData.createChannelWithNormalChats(100);
+        const user: UserModel = await testData.createBasicUser('user');
+
+        const getChannelMessageHistoryRequest = {
+          userId: user.id,
+          channelId: channel.id,
+          offset: 10,
+          count: 10,
+        };
+
+        const channelChatList: ChannelChatDtos =
+          await service.getChannelMessageHistory(
+            getChannelMessageHistoryRequest,
+          );
+
+        expect(channelChatList.chats.length).toBe(10);
+        for (const c of channelChatList.chats) {
+          expect(c).toHaveProperty('id');
+          expect(c).toHaveProperty('message');
+          expect(c).toHaveProperty('nickname');
+          expect(c).toHaveProperty('createdAt');
+          expect(c).toHaveProperty('type');
+          if (c.type === CHATTYPE_MINE) {
+            expect(c.nickname).toBe(user.nickname);
+          } else if (c.type === CHATTYPE_OTHER) {
+            expect(c.nickname).not.toBe(user.nickname);
+          }
+        }
       });
     });
   });
