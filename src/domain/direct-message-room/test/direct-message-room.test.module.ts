@@ -24,17 +24,6 @@ import { AuthModule } from '../../auth/auth.module';
     AuthModule,
   ],
   providers: [DirectMessageRoomTestService],
-  exports: [
-    DirectMessageRoomTestService,
-    TypeOrmModule.forFeature([
-      User,
-      Friend,
-      Block,
-      ProfileImage,
-      ProfileImageRepository,
-      DirectMessage,
-      DirectMessageRoom,
-    ]),
-  ],
+  exports: [DirectMessageRoomTestService],
 })
-export class TestModule {}
+export class DirectMessageRoomTestModule {}

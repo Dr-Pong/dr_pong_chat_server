@@ -10,7 +10,7 @@ import {
 } from 'typeorm-transactional';
 import { DirectMessageRoomModule } from './direct-message-room.module';
 import { DirectMessageRoomTestService } from './test/direct-message-room.test.service';
-import { TestModule } from './test/direct-message-room.test.module';
+import { DirectMessageRoomTestModule } from './test/direct-message-room.test.module';
 import { GetDirectMessageRoomsDto } from './dto/get.direct-message-rooms.dto';
 import { DeleteDirectMessageRoomDto } from './dto/delete.direct-message-room.dto';
 import { GetDirectMessageRoomsNotificationDto } from './dto/get.direct-message-rooms.notification.dto';
@@ -41,7 +41,7 @@ describe('DmLogService', () => {
           },
         }),
         DirectMessageRoomModule,
-        TestModule,
+        DirectMessageRoomTestModule,
       ],
     }).compile();
 

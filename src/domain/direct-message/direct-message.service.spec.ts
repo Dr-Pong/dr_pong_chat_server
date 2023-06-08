@@ -10,7 +10,7 @@ import {
   initializeTransactionalContext,
 } from 'typeorm-transactional';
 import { DirectMessageModule } from './direct-message.module';
-import { TestModule } from './test/direct-message.test.module';
+import { DirectMessageTestModule } from './test/direct-message.test.module';
 import { PostDirectMessageDto } from './dto/post.direct-message.dto';
 import { GetDirectMessageHistoryDto } from './dto/get.direct-message.history.dto';
 import { GetDirectMessageHistoryResponseDto } from './dto/get.direct-message.history.response.dto';
@@ -43,7 +43,7 @@ describe('DmLogService', () => {
         }),
         DirectMessageModule,
         DirectMessageRoomModule,
-        TestModule,
+        DirectMessageTestModule,
       ],
       providers: [
         {
