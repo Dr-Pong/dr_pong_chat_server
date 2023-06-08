@@ -987,7 +987,7 @@ describe('ChannelUserService', () => {
     });
   });
 
-  describe.only('채팅방 채팅 내역 조회', () => {
+  describe('채팅방 채팅 내역 조회', () => {
     it('[Valid Case] 일반 유저의 채팅 내역 조회 (last page 아닌 경우)', async () => {
       const channel: ChannelModel = await testData.createChannelWithNormalChats(
         100,
