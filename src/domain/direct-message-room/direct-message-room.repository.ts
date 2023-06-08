@@ -32,12 +32,16 @@ export class DirectMessageRoomRepository {
    * 사용자 ID로 검색하여 DM Rooms 을 가져옵니다.
    */
   async findAllByUserId(userId: number): Promise<DirectMessageRoom[]> {
-    const directMessageRooms: DirectMessageRoom[] = await this.repository.find({
+    const asUser: DirectMessageRoom[] = await this.repository.find({
       where: { user: { id: userId } },
     });
-    return directMessageRooms;
+    const asFriend: DirectMessageRoom[] = await this.repository.find({
+      where: { friend: { id: userId } },
+    });
+    return [...asUser, ...asFriend].sort((a, b) => {
+      return a.lastReadMessageId - b.lastReadMessageId;
+    });
   }
-
   /** DM Room 을 생성하는 함수
    * 사용자 ID와 친구 ID로 검색하여 DM Room 을 생성합니다.
    */
