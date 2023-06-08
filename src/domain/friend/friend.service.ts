@@ -150,7 +150,7 @@ export class FriendService {
       (await this.friendRepository.checkIsFriendByUserIdAndFriendId(
         userId,
         friendId,
-      )) &&
+      )) ||
       (await this.friendRepository.checkIsFriendByUserIdAndFriendId(
         friendId,
         userId,

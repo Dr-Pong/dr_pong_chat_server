@@ -343,8 +343,8 @@ describe('FriendService', () => {
         await testData.createUserRequesting(10);
 
         const userFriendsAcceptDto: DeleteUserFriendRejectDto = {
-          userId: testData.users[0].id,
-          friendId: testData.users[1].id,
+          userId: testData.users[1].id,
+          friendId: testData.users[0].id,
         };
 
         await service.deleteUserFriendReject(userFriendsAcceptDto);
