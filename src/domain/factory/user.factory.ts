@@ -8,7 +8,7 @@ import {
   CHANNEL_PARTICIPANT_ADMIN,
   CHANNEL_PARTICIPANT_NORMAL,
   CHANNEL_PARTICIPANT_OWNER,
-} from 'src/global/type/type.channel-participant';
+} from '../channel/type/type.channel-participant';
 
 @Injectable()
 export class UserFactory {

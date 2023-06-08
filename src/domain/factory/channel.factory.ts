@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ChannelModel } from './model/channel.model';
 import { UserModel } from './model/user.model';
-import { ChannelType } from 'src/global/type/type.channel';
+import { ChannelType } from 'src/domain/channel/type/type.channel';
 import { UserFactory } from './user.factory';
 
 @Injectable()

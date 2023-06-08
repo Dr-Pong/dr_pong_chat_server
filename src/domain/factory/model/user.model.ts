@@ -4,8 +4,8 @@ import {
   UserStatusType,
 } from 'src/global/type/type.user.status';
 import { User } from '../../user/user.entity';
-import { ChannelParticipantType } from 'src/global/type/type.channel-participant';
 import { InviteModel } from './invite.model';
+import { ChannelParticipantType } from 'src/domain/channel/type/type.channel-participant';
 
 export class UserModel {
   id: number;
