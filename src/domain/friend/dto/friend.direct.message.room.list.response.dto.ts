@@ -4,5 +4,5 @@ interface DirectMessageRoom {
   newChats: number;
 }
 export class FriendDirectMessageRoomListResponseDto {
-  dmList: DirectMessageRoom[];
+  chatList: DirectMessageRoom[];
 }
