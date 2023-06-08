@@ -5,9 +5,10 @@ import { BlockService } from './block.service';
 import { BlockRepository } from './block.repository';
 import { FactoryModule } from '../factory/factory.module';
 import { BlockController } from './controller/block.controller';
+import { UserModule } from '../user/user.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Block]), FactoryModule],
+  imports: [TypeOrmModule.forFeature([Block]), FactoryModule, UserModule],
   providers: [BlockService, BlockRepository],
   exports: [BlockService],
   controllers: [BlockController],
