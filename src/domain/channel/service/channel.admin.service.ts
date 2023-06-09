@@ -31,6 +31,7 @@ import { PatchChannelDto } from '../dto/patch/patch.channel.dto';
 import { DeleteChannelDto } from '../dto/delete/delete.channel.dto';
 import { UpdateChannelDto } from '../dto/patch/update.channel.dto';
 import { UpdateChannelHeadCountDto } from '../dto/patch/update.channel.headcount.dto';
+import { DeleteChannelAdminDto } from '../dto/delete/delete.channel.admin.dto';
 
 @Injectable()
 export class ChannelAdminService {
@@ -80,7 +81,7 @@ export class ChannelAdminService {
    * 이미 관리자가 아닌 경우 아무런 동작을 하지 않는다
    * */
   @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
-  async deleteChannelAdmin(deleteDto: PostChannelAdminDto): Promise<void> {
+  async deleteChannelAdmin(deleteDto: DeleteChannelAdminDto): Promise<void> {
     const channel: ChannelModel = this.channelFactory.findById(
       deleteDto.channelId,
     );
