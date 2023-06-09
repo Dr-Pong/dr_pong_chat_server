@@ -12,7 +12,7 @@ import { UserService } from '../user/user.service';
 import { AuthGuard } from '@nestjs/passport';
 import { UserIdCardDto } from '../auth/jwt/auth.user.id-card.dto';
 import { Requestor } from '../auth/jwt/auth.requestor.decorator';
-import { ChannelPatchRequestDto } from './dto/channel.patch.request.dto';
+import { ChannelPatchRequestDto } from './dto/patch/channel.patch.request.dto';
 import { PostChannelAdminDto } from './dto/post/post.channel.admin.dto';
 import { PostChannelBanDto } from './dto/post/post.channel.ban.dto';
 import { DeleteChannelKickDto } from './dto/delete/delete.channel.kick.dto';
