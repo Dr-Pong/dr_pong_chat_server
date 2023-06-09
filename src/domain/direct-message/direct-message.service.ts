@@ -97,9 +97,25 @@ export class DirectMessageService {
     //친구 여부 확인
     if (!isFriend) throw new BadRequestException('not a friend');
 
+    // 대화방 확인
+    await this.checkRoomExistsAndDisplayed(userId, friendId);
+
     await this.directRepository.save(userId, friendId, message);
 
-    // 대화방 확인
+    // TODO: 가장 최근 메시지 업데이트는 소켓에서 진행하기로 수정되어야 함니다
+    // const lastmessage: DirectMessage =
+    //   await this.directRepository.findByUserIdAndFriendIdOrderByIdDesc(
+    //     userId,
+    //     friendId,
+    //   );
+    // await this.directMessageRoomRepository.updateLastMessageIdByUserIdAndFriendId(
+    //   userId,
+    //   friendId,
+    //   lastmessage.id,
+    // );
+  }
+
+  private async checkRoomExistsAndDisplayed(userId: number, friendId: number) {
     const directMessageRoom: DirectMessageRoom =
       await this.directMessageRoomRepository.findByUserIdAndFriendId(
         userId,
@@ -109,25 +125,12 @@ export class DirectMessageService {
     if (!directMessageRoom) {
       // 대화방이 존재하지 않는 경우 새로 생성
       await this.directMessageRoomRepository.save(userId, friendId);
-    } else {
-      if (!directMessageRoom.isDisplay) {
-        // 대화방이 표시되지 않는 경우 표시 여부 업데이트
-        await this.directMessageRoomRepository.updateIsDisplayTrueByUserIdAndFriendId(
-          userId,
-          friendId,
-        );
-      }
-
-      // 가장 최근 메시지 업데이트
-      const lastmessage: DirectMessage =
-        await this.directRepository.findByUserIdAndFriendIdOrderByIdDesc(
-          userId,
-          friendId,
-        );
-      await this.directMessageRoomRepository.updateLastMessageIdByUserIdAndFriendId(
+    }
+    if (!directMessageRoom.isDisplay) {
+      // 대화방이 표시되지 않는 경우 표시 여부 업데이트
+      await this.directMessageRoomRepository.updateIsDisplayTrueByUserIdAndFriendId(
         userId,
         friendId,
-        lastmessage.id,
       );
     }
   }
