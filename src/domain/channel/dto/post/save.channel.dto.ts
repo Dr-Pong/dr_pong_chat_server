@@ -13,7 +13,7 @@ export class SaveChannelDto {
   maxCount: number;
 
   static from(dto: PostChannelDto): SaveChannelDto {
-    const { userId, name, maxCount } = dto;
+    const { userId, title: name, maxCount } = dto;
     let type: ChannelType = dto.access;
     if (type === CHANNEL_PUBLIC && dto.password) type = CHANNEL_PROTECTED;
     let password: string = null;
