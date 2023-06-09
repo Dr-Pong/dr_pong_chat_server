@@ -201,7 +201,8 @@ describe('FriendService', () => {
       });
 
       it('[Valid Case] 친구요청 목록이 정상적으로 반환 되는지 확인', async () => {
-        await testData.createUserRequesting(10);
+        await testData.createUser0ToBeRequested(1);
+        await testData.createUser0ToBeRequested(2);
 
         const getUserPendingDto: GetUserPendingFriendDto = {
           userId: testData.users[0].id,
@@ -212,8 +213,8 @@ describe('FriendService', () => {
 
         const friendRequest: Friend = await friendRepository.findOne({
           where: {
-            sender: { id: testData.users[0].id },
-            receiver: { id: testData.users[1].id },
+            sender: { id: testData.users[1].id },
+            receiver: { id: testData.users[0].id },
             status: Not(FRIENDSTATUS_DELETED),
           },
         });
@@ -236,9 +237,11 @@ describe('FriendService', () => {
       });
 
       it('[Valid Case] 친구요청 목록이 알파벳순서로 정렬되는지 확인', async () => {
-        await testData.createUserRequesting(10);
-        await testData.createUser0ToRequesting(14); // 친구 테이블 1에 있어야해요
-        await testData.createUser0ToRequesting(15); //친구 테이블 2에 있어야해요
+        for (let i = 1; i < 10; i++) {
+          await testData.createUser0ToBeRequested(i);
+        }
+        await testData.createUser0ToBeRequested(14); // 친구 테이블 1에 있어야해요
+        await testData.createUser0ToBeRequested(15); //친구 테이블 2에 있어야해요
 
         const getUserPendingDto: GetUserPendingFriendDto = {
           userId: testData.users[0].id,
@@ -290,7 +293,7 @@ describe('FriendService', () => {
 
       it('[Valid Case] 양쪽에서 친구 요청 보낸경우', async () => {
         await testData.createUserRequesting(10);
-        await testData.createUser0ToRequesting(1);
+        await testData.createUser0ToBeRequested(1);
 
         const userFriendsAcceptDto: PostUserFriendAcceptDto = {
           userId: testData.users[0].id,
@@ -434,7 +437,9 @@ describe('FriendService', () => {
       });
 
       it('[Valid Case]친구요청이 있는경우', async () => {
-        await testData.createUserRequesting(10);
+        for (let i = 1; i < 10; i++) {
+          await testData.createUser0ToBeRequested(i);
+        }
 
         const userFriendNotificationDto: GetUserFriendNotificationsRequestDto =
           {
@@ -450,7 +455,9 @@ describe('FriendService', () => {
       });
 
       it('[Valid Case]  50개 까지만 요청 받기', async () => {
-        await testData.createUserRequesting(60);
+        for (let i = 1; i < 100; i++) {
+          await testData.createUser0ToBeRequested(i);
+        }
 
         const userFriendNotificationDto: GetUserFriendNotificationsRequestDto =
           {

@@ -83,7 +83,7 @@ export class FriendTestService {
     }
   }
 
-  async createUser0ToRequesting(person: number): Promise<void> {
+  async createUser0ToBeRequested(person: number): Promise<void> {
     const index: number = person;
     const roomId = FriendChatManager.generateRoomId(
       this.users[index].id.toString(),

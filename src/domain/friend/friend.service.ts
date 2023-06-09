@@ -81,11 +81,8 @@ export class FriendService {
       await this.friendRepository.findFriendRequestingsByUserId(myId);
 
     const friends: FriendDto[] = userFriends.map((friend) => {
-      const { sender, receiver } = friend;
-      if (friend.receiver.id === myId) {
-        return FriendDto.fromUser(sender);
-      }
-      return FriendDto.fromUser(receiver);
+      const { sender } = friend;
+      return FriendDto.fromUser(sender);
     });
 
     friends.sort(this.compareNicknames);

@@ -86,7 +86,7 @@ describe('DmLogService', () => {
         expect(directMessageRooms).toHaveProperty('chatList');
         expect(directMessageRooms.chatList[0]).toHaveProperty('nickname');
         expect(directMessageRooms.chatList[0]).toHaveProperty('imgUrl');
-        expect(directMessageRooms.chatList[0]).toHaveProperty('newChat');
+        expect(directMessageRooms.chatList[0]).toHaveProperty('newChats');
       });
 
       it('[Valid Case] 현재 진행중인 DM목록 반환', async () => {
