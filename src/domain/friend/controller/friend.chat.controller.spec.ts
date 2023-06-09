@@ -147,11 +147,11 @@ describe('FriendController - Chat', () => {
         const user = testService.users[0];
         const token = await testService.giveTokenToUser(user);
         await testService.createDirectMessageToUser0(30);
-        await testService.createAllReadDirectMessageRoomToUserI(1);
-        await testService.createHalfReadDirectMessageRoomToUserI(2);
+        await testService.createDirectMessageRoomToUserI(1);
+        await testService.createDirectMessageRoomToUserI(2);
         await testService.createDirectMessageRoomToUserI(3);
-        await testService.createAllReadDirectMessageRoomToUserI(4);
-        await testService.createHalfReadDirectMessageRoomToUserI(5);
+        await testService.createDirectMessageRoomToUserI(4);
+        await testService.createDirectMessageRoomToUserI(5);
         await testService.createDirectMessageRoomToUserI(6);
         const response = await req(token, 'GET', `/users/friends/chatlist`);
         const result = response.body;
@@ -257,7 +257,7 @@ describe('FriendController - Chat', () => {
         const token = await testService.giveTokenToUser(user);
         await testService.createDirectMessageToUser0(30);
         const deleted = testService.users[1];
-        await testService.createAllReadDirectMessageRoomToUserI(deleted.id);
+        await testService.createDirectMessageRoomToUserI(deleted.id);
         const response = await req(
           token,
           'DELETE',
