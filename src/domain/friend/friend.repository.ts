@@ -33,48 +33,23 @@ export class FriendRepository {
    * */
   async findFriendRequestingsByUserId(userId: number): Promise<Friend[]> {
     const friends: Friend[] = await this.repository.find({
-      where: [
-        { sender: { id: userId }, status: FRIENDSTATUS_REQUESTING },
-        { receiver: { id: userId }, status: FRIENDSTATUS_REQUESTING },
-      ],
+      where: { receiver: { id: userId }, status: FRIENDSTATUS_REQUESTING },
     });
     return friends;
   }
 
   /**친구 요청 목록
-   * 사용자의 친구 요청목록을 가져옵니다.
+   * 사용자의 친구 요청목록의 개수를 가져옵니다.
    * */
   async countFriendRequestingsByUserId(userId: number): Promise<number> {
     const friendCount: number = await this.repository.count({
-      where: [
-        { sender: { id: userId }, status: FRIENDSTATUS_REQUESTING },
-        { receiver: { id: userId }, status: FRIENDSTATUS_REQUESTING },
-      ],
+      where: { receiver: { id: userId }, status: FRIENDSTATUS_REQUESTING },
     });
     return friendCount;
   }
 
-  /**delete가 아닌 친구 테이블 목록
-   * 유저와 친구의 id로 둘이 테이블에 delete가 아닌 Frined[]를 반환합니다.
-   */
-  async checkIsFriendOrRequestingByUserIdAndFriendId(
-    userId: number,
-    friendId: number,
-  ): Promise<boolean> {
-    const isFriendOrRequesting: boolean = await this.repository.exist({
-      where: [
-        {
-          sender: { id: userId },
-          receiver: { id: friendId },
-          status: In([FRIENDSTATUS_FRIEND, FRIENDSTATUS_REQUESTING]),
-        },
-      ],
-    });
-    return isFriendOrRequesting;
-  }
-
   /**친구 requesting 테이블 목록
-   * 유저와 친구의 id로 둘이 테이블에 requesting인 Frined[]를 반환합니다.
+   * 유저가 friendId에게 requesting 상태인지 boolean을 반환합니다.
    */
   async checkIsRequestingByUserIdAndFriendId(
     userId: number,
@@ -92,8 +67,8 @@ export class FriendRepository {
     return isRequesting;
   }
 
-  /**친구 테이블 목록
-   * 유저와 친구의 id로 둘이 테이블에 friend인 Frined[]를 반환합니다.
+  /**친구 여부 확인
+   * 유저와 친구의 id로 둘이 친구인지 boolean을 반환합니다.
    */
   async checkIsFriendByUserIdAndFriendId(
     userId: number,
@@ -104,6 +79,11 @@ export class FriendRepository {
         {
           sender: { id: userId },
           receiver: { id: friendId },
+          status: FRIENDSTATUS_FRIEND,
+        },
+        {
+          sender: { id: friendId },
+          receiver: { id: userId },
           status: FRIENDSTATUS_FRIEND,
         },
       ],
