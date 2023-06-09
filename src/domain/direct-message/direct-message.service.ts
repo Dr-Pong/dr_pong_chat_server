@@ -116,7 +116,7 @@ export class DirectMessageService {
   }
 
   private async checkRoomExistsAndDisplayed(userId: number, friendId: number) {
-    const directMessageRoom: DirectMessageRoom =
+    let directMessageRoom: DirectMessageRoom =
       await this.directMessageRoomRepository.findByUserIdAndFriendId(
         userId,
         friendId,
@@ -124,7 +124,10 @@ export class DirectMessageService {
 
     if (!directMessageRoom) {
       // 대화방이 존재하지 않는 경우 새로 생성
-      await this.directMessageRoomRepository.save(userId, friendId);
+      directMessageRoom = await this.directMessageRoomRepository.save(
+        userId,
+        friendId,
+      );
     }
     if (!directMessageRoom.isDisplay) {
       // 대화방이 표시되지 않는 경우 표시 여부 업데이트
