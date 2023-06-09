@@ -10,11 +10,14 @@ import { ChannelUserRepository } from './repository/channel-user.repository';
 import { ChannelMessageRepository } from './repository/channel-message.repository';
 import { ChannelNormalService } from './service/channel.normal.service';
 import { Channel } from './entity/channel.entity';
+import { ChannelNormalController } from './channel.normal.controller';
+import { UserModule } from '../user/user.module';
 
 @Module({
   imports: [
     FactoryModule,
     GatewayModule,
+    UserModule,
     TypeOrmModule.forFeature([Channel, ChannelUser, ChannelMessage]),
   ],
   providers: [
@@ -24,6 +27,7 @@ import { Channel } from './entity/channel.entity';
     ChannelUserRepository,
     ChannelMessageRepository,
   ],
+  controllers: [ChannelNormalController],
   exports: [ChannelAdminService, ChannelNormalService],
 })
 export class ChannelModule {}

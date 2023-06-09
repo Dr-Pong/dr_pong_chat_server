@@ -44,7 +44,7 @@ import { FindChannelMessagePageDto } from '../dto/get/find.channel-message.page.
 import { GetChannelParticipantsDto } from '../dto/get/get.channel-participants.dto';
 import {
   ChannelParticipantDto,
-  ChannelParticipantDtos,
+  ChannelParticipantsDto,
 } from '../dto/channel-participant.dto';
 import { GetChannelMyDto } from '../dto/get/get.channel.my.dto';
 import { ChannelMeDto } from '../dto/channel.me.dto';
@@ -80,14 +80,14 @@ export class ChannelNormalService {
    */
   getChannelParticipants(
     getDto: GetChannelParticipantsDto,
-  ): ChannelParticipantDtos {
+  ): ChannelParticipantsDto {
     const channel: ChannelModel = this.channelFactory.findById(
       getDto.channelId,
     );
     const users: UserModel[] = this.channelFactory.getUsers(channel.id);
     checkUserInChannel(channel, getDto.userId);
 
-    const responseDto: ChannelParticipantDtos = new ChannelParticipantDtos();
+    const responseDto: ChannelParticipantsDto = new ChannelParticipantsDto();
     users.map((user) => {
       if (user.id === getDto.userId) {
         responseDto.me = ChannelParticipantDto.fromModel(user);
@@ -127,7 +127,7 @@ export class ChannelNormalService {
     checkChannelExist(channel);
 
     const host: UserModel = this.userFactory.findById(postDto.userId);
-    const target: UserModel = this.userFactory.findById(postDto.tragetId);
+    const target: UserModel = this.userFactory.findById(postDto.targetId);
     checkUserExist(host);
     checkUserExist(target);
 
@@ -205,7 +205,7 @@ export class ChannelNormalService {
    */
   @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
   async postChannel(postDto: PostChannelDto): Promise<void> {
-    await checkChannelNameIsDuplicate(this.channelRepository, postDto.name);
+    await checkChannelNameIsDuplicate(this.channelRepository, postDto.title);
 
     this.exitIfUserIsInChannel(postDto.userId);
 

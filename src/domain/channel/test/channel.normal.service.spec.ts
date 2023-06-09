@@ -41,7 +41,7 @@ import { ChannelMessagesHistoryDto } from '../dto/channel-message.history.dto';
 import { GetChannelPageDto } from '../dto/get/get.channel.page.dto';
 import { ChannelPageDtos } from '../dto/channel.page.dto';
 import { GetChannelParticipantsDto } from '../dto/get/get.channel-participants.dto';
-import { ChannelParticipantDtos } from '../dto/channel-participant.dto';
+import { ChannelParticipantsDto } from '../dto/channel-participant.dto';
 import { PostChannelDto } from '../dto/post/post.channel.dto';
 import { PostChannelJoinDto } from '../dto/post/post.channel.join.dto';
 import { PostInviteDto } from '../dto/post/post.invite.dto';
@@ -253,7 +253,7 @@ describe('ChannelUserService', () => {
           channelId: basicChannel.id,
         };
 
-        const participants: ChannelParticipantDtos =
+        const participants: ChannelParticipantsDto =
           await service.getChannelParticipants(getChannelParticipantsRequest);
 
         expect(participants).toHaveProperty('me');
@@ -279,7 +279,7 @@ describe('ChannelUserService', () => {
           channelId: channel.id,
         };
 
-        const participants: ChannelParticipantDtos =
+        const participants: ChannelParticipantsDto =
           service.getChannelParticipants(getChannelParticipantsRequest);
 
         expect(participants).toHaveProperty('me');
@@ -317,7 +317,7 @@ describe('ChannelUserService', () => {
         const user = await testData.createBasicUser('user');
         const postChannelRequest: PostChannelDto = {
           userId: user.id,
-          name: 'channel',
+          title: 'channel',
           access: CHANNEL_PUBLIC,
           password: null,
           maxCount: 10,
@@ -330,9 +330,9 @@ describe('ChannelUserService', () => {
         });
 
         expect(savedChannelDb.operator.id).toBe(user.id);
-        expect(savedChannelDb.name).toBe(postChannelRequest.name);
+        expect(savedChannelDb.name).toBe(postChannelRequest.title);
         expect(savedChannelDb.type).toBe(postChannelRequest.access);
-        expect(savedChannelDb.name).toBe(postChannelRequest.name);
+        expect(savedChannelDb.name).toBe(postChannelRequest.title);
         expect(savedChannelDb.password).toBe(null);
         expect(savedChannelDb.maxHeadCount).toBe(postChannelRequest.maxCount);
 
@@ -341,9 +341,9 @@ describe('ChannelUserService', () => {
         );
 
         expect(savedChannelFt.ownerId).toBe(user.id);
-        expect(savedChannelFt.name).toBe(postChannelRequest.name);
+        expect(savedChannelFt.name).toBe(postChannelRequest.title);
         expect(savedChannelFt.type).toBe(postChannelRequest.access);
-        expect(savedChannelFt.name).toBe(postChannelRequest.name);
+        expect(savedChannelFt.name).toBe(postChannelRequest.title);
         expect(savedChannelFt.password).toBe(null);
         expect(savedChannelFt.maxHeadCount).toBe(postChannelRequest.maxCount);
       });
@@ -352,7 +352,7 @@ describe('ChannelUserService', () => {
         const user = await testData.createBasicUser('user');
         const postChannelRequest: PostChannelDto = {
           userId: user.id,
-          name: 'channel',
+          title: 'channel',
           access: CHANNEL_PROTECTED,
           password: 'null',
           maxCount: 10,
@@ -365,9 +365,9 @@ describe('ChannelUserService', () => {
         });
 
         expect(savedChannelDb.operator.id).toBe(user.id);
-        expect(savedChannelDb.name).toBe(postChannelRequest.name);
+        expect(savedChannelDb.name).toBe(postChannelRequest.title);
         expect(savedChannelDb.type).toBe(postChannelRequest.access);
-        expect(savedChannelDb.name).toBe(postChannelRequest.name);
+        expect(savedChannelDb.name).toBe(postChannelRequest.title);
         expect(savedChannelDb.password).toBe(postChannelRequest.password);
         expect(savedChannelDb.maxHeadCount).toBe(postChannelRequest.maxCount);
 
@@ -376,9 +376,9 @@ describe('ChannelUserService', () => {
         );
 
         expect(savedChannelFt.ownerId).toBe(user.id);
-        expect(savedChannelFt.name).toBe(postChannelRequest.name);
+        expect(savedChannelFt.name).toBe(postChannelRequest.title);
         expect(savedChannelFt.type).toBe(postChannelRequest.access);
-        expect(savedChannelFt.name).toBe(postChannelRequest.name);
+        expect(savedChannelFt.name).toBe(postChannelRequest.title);
         expect(savedChannelFt.password).toBe(postChannelRequest.password);
         expect(savedChannelFt.maxHeadCount).toBe(postChannelRequest.maxCount);
       });
@@ -387,7 +387,7 @@ describe('ChannelUserService', () => {
         const user = await testData.createBasicUser('user');
         const postChannelRequest: PostChannelDto = {
           userId: user.id,
-          name: 'channel',
+          title: 'channel',
           access: CHANNEL_PRIVATE,
           password: 'null',
           maxCount: 10,
@@ -400,9 +400,9 @@ describe('ChannelUserService', () => {
         });
 
         expect(savedChannelDb.operator.id).toBe(user.id);
-        expect(savedChannelDb.name).toBe(postChannelRequest.name);
+        expect(savedChannelDb.name).toBe(postChannelRequest.title);
         expect(savedChannelDb.type).toBe(postChannelRequest.access);
-        expect(savedChannelDb.name).toBe(postChannelRequest.name);
+        expect(savedChannelDb.name).toBe(postChannelRequest.title);
         expect(savedChannelDb.password).toBe(null);
         expect(savedChannelDb.maxHeadCount).toBe(postChannelRequest.maxCount);
 
@@ -411,9 +411,9 @@ describe('ChannelUserService', () => {
         );
 
         expect(savedChannelFt.ownerId).toBe(user.id);
-        expect(savedChannelFt.name).toBe(postChannelRequest.name);
+        expect(savedChannelFt.name).toBe(postChannelRequest.title);
         expect(savedChannelFt.type).toBe(postChannelRequest.access);
-        expect(savedChannelFt.name).toBe(postChannelRequest.name);
+        expect(savedChannelFt.name).toBe(postChannelRequest.title);
         expect(savedChannelFt.password).toBe(null);
         expect(savedChannelFt.maxHeadCount).toBe(postChannelRequest.maxCount);
       });
@@ -423,14 +423,14 @@ describe('ChannelUserService', () => {
         const user2 = await testData.createBasicUser('user2');
         const postChannelRequest: PostChannelDto = {
           userId: user.id,
-          name: 'channel',
+          title: 'channel',
           access: CHANNEL_PUBLIC,
           password: null,
           maxCount: 10,
         };
         const duplicatedRequest: PostChannelDto = {
           userId: user2.id,
-          name: 'channel',
+          title: 'channel',
           access: CHANNEL_PUBLIC,
           password: null,
           maxCount: 10,
@@ -443,13 +443,13 @@ describe('ChannelUserService', () => {
         );
 
         const savedChannelFt: ChannelModel = channelFactory.findByChannelName(
-          duplicatedRequest.name,
+          duplicatedRequest.title,
         );
 
         expect(savedChannelFt.ownerId).toBe(user.id);
-        expect(savedChannelFt.name).toBe(postChannelRequest.name);
+        expect(savedChannelFt.name).toBe(postChannelRequest.title);
         expect(savedChannelFt.type).toBe(postChannelRequest.access);
-        expect(savedChannelFt.name).toBe(postChannelRequest.name);
+        expect(savedChannelFt.name).toBe(postChannelRequest.title);
         expect(savedChannelFt.password).toBe(null);
         expect(savedChannelFt.maxHeadCount).toBe(postChannelRequest.maxCount);
       });
@@ -616,7 +616,7 @@ describe('ChannelUserService', () => {
         const inviteRequest: PostInviteDto = {
           userId: basicChannel.ownerId,
           channelId: basicChannel.id,
-          tragetId: user.id,
+          targetId: user.id,
         };
 
         service.postInvite(inviteRequest);

@@ -25,7 +25,7 @@ export class ChannelParticipantDto {
   }
 }
 
-export class ChannelParticipantDtos {
+export class ChannelParticipantsDto {
   me: ChannelParticipantDto;
   participants: ChannelParticipantDto[] = [];
   headCount: number;
