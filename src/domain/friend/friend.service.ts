@@ -147,14 +147,10 @@ export class FriendService {
   async deleteUserFriend(deleteDto: DeleteUserFriendDto): Promise<void> {
     const { userId, friendId } = deleteDto;
     const isFriend: boolean =
-      (await this.friendRepository.checkIsFriendByUserIdAndFriendId(
+      await this.friendRepository.checkIsFriendByUserIdAndFriendId(
         userId,
         friendId,
-      )) &&
-      (await this.friendRepository.checkIsFriendByUserIdAndFriendId(
-        friendId,
-        userId,
-      ));
+      );
 
     if (!isFriend) return;
 
