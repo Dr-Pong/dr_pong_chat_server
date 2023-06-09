@@ -1,8 +1,8 @@
-import { PostChannelMessageDto } from 'src/domain/channel-message/dto/post.channel-message.dto';
+import { PostChannelMessageDto } from 'src/domain/channel/dto/post/post.channel-message.dto';
 import {
   CHAT_MESSAGE,
   ChannelActionType,
-} from 'src/global/type/type.channel.action';
+} from 'src/domain/channel/type/type.channel.action';
 
 export class MessageDto {
   userId: number;

@@ -9,7 +9,7 @@ import { Server, Socket } from 'socket.io';
 import { ChannelFactory } from 'src/domain/factory/channel.factory';
 import { UserFactory } from 'src/domain/factory/user.factory';
 import { UserModel } from 'src/domain/factory/model/user.model';
-import { ChannelActionType } from 'src/global/type/type.channel.action';
+import { ChannelActionType } from 'src/domain/channel/type/type.channel.action';
 import { MessageDto } from './dto/message.dto';
 
 @Injectable()
