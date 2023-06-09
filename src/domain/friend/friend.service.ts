@@ -50,13 +50,18 @@ export class FriendService {
     postDto: PostUserFriendRequestDto,
   ): Promise<void> {
     const { userId, friendId } = postDto;
-    const isFriendOrRequesting: boolean =
-      await this.friendRepository.checkIsFriendOrRequestingByUserIdAndFriendId(
+    const isFriend: boolean =
+      await this.friendRepository.checkIsFriendByUserIdAndFriendId(
+        userId,
+        friendId,
+      );
+    const isRequesting =
+      await this.friendRepository.checkIsRequestingByUserIdAndFriendId(
         userId,
         friendId,
       );
 
-    if (isFriendOrRequesting) return;
+    if (isFriend || isRequesting) return;
 
     await this.friendRepository.saveFriendStatusRequestingByUserIdAndFriendId(
       userId,
