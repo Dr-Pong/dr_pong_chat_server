@@ -17,6 +17,7 @@ import { GetDirectMessageHistoryResponseDto } from './dto/get.direct-message.his
 import { DirectMessageRoomModule } from '../direct-message-room/direct-message-room.module';
 import { DirectMessageRoom } from '../direct-message-room/direct-message-room.entity';
 import { CHATTYPE_ME, CHATTYPE_OTHERS } from 'src/global/type/type.chat';
+import { BadRequestException } from '@nestjs/common';
 
 describe('DmLogService', () => {
   let service: DirectMessageService;
@@ -321,15 +322,9 @@ describe('DmLogService', () => {
           message: '안가야하는log0',
         };
 
-        await service.postDirectMessage(userDirectMessegeDto);
-
-        const dmLog: DirectMessage[] = await dmlogRepository.find({
-          where: {
-            sender: { id: testData.users[0].id },
-          },
-        });
-
-        expect(dmLog.length).toBe(0);
+        await expect(
+          service.postDirectMessage(userDirectMessegeDto),
+        ).rejects.toThrow(new BadRequestException('not a friend'));
       });
     });
   });
