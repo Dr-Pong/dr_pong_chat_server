@@ -181,8 +181,8 @@ export class DirectMessageRoomTestService {
     const friendDirectMessages: DirectMessageRoom[] = [];
 
     const friendDirectMessage = await this.directMessageRoomRepository.save({
-      userId: this.users[0],
-      friendId: this.users[i],
+      user: this.users[0],
+      friend: this.users[i],
       roomId: FriendChatManager.generateRoomId(
         this.users[0].id.toString(),
         this.users[i].id.toString(),
@@ -211,23 +211,6 @@ export class DirectMessageRoomTestService {
     friendDirectMessages.push(friendDirectMessage);
   }
 
-  async createAllReadDirectMessageRoomToUserI(i: number): Promise<void> {
-    const friendDirectMessages: DirectMessageRoom[] = [];
-
-    const friendDirectMessage = await this.directMessageRoomRepository.save({
-      userId: this.users[0],
-      friendId: this.users[i],
-      roomId: FriendChatManager.generateRoomId(
-        this.users[0].id.toString(),
-        this.users[i].id.toString(),
-      ),
-      lastReadMessageId: this.directMessage[this.directMessage.length - 1].id,
-      isDisplay: true,
-    });
-
-    friendDirectMessages.push(friendDirectMessage);
-  }
-
   async createHalfReadDirectMessageRoomToUser1(): Promise<void> {
     const friendDirectMessages: DirectMessageRoom[] = [];
 
@@ -239,24 +222,6 @@ export class DirectMessageRoomTestService {
         this.users[1].id.toString(),
       ),
       lastReadMessageId: this.directMessage[4].id,
-      isDisplay: true,
-    });
-
-    friendDirectMessages.push(friendDirectMessage);
-  }
-
-  async createHalfReadDirectMessageRoomToUserI(i: number): Promise<void> {
-    const friendDirectMessages: DirectMessageRoom[] = [];
-
-    const friendDirectMessage = await this.directMessageRoomRepository.save({
-      userId: this.users[0],
-      friendId: this.users[i],
-      roomId: FriendChatManager.generateRoomId(
-        this.users[0].id.toString(),
-        this.users[i].id.toString(),
-      ),
-      lastReadMessageId:
-        this.directMessage[this.directMessage.length / 2 - 1].id,
       isDisplay: true,
     });
 

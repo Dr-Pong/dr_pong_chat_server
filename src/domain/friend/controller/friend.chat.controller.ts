@@ -59,12 +59,14 @@ export class FriendChatController {
     const { id: friendId } = await this.userService.getIdFromNickname({
       nickname,
     });
-    const friendDirectMessageChatList: FriendDirectMessageChatListResponseDto =
-      {
-        chatList: [],
-        isLastPage: true,
-      };
-    return friendDirectMessageChatList;
+    const { chats, isLastPage } =
+      await this.directMessageService.getDirectMessagesHistory({
+        userId,
+        friendId,
+        offset,
+        count,
+      });
+    return { chats, isLastPage };
   }
 
   /* DM 전송

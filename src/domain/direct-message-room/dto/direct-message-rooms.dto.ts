@@ -1,7 +1,7 @@
 export class DirectMessageRoomInfoDto {
   nickname: string;
   imgUrl: string;
-  newChat: number;
+  newChats: number;
 }
 
 export class DirectMessageRoomsDto {

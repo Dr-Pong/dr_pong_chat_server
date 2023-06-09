@@ -9,6 +9,6 @@ interface Chat {
 }
 
 export class FriendDirectMessageChatListResponseDto {
-  chatList: Chat[];
+  chats: Chat[];
   isLastPage: boolean;
 }

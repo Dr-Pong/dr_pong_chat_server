@@ -110,7 +110,7 @@ describe('DmLogService', () => {
         expect(directMessageRooms.chatList[0].imgUrl).toBe(
           testData.users[1].image.url,
         );
-        expect(directMessageRooms.chatList[0].newChat).toBe(10);
+        expect(directMessageRooms.chatList[0].newChats).toBe(10);
 
         expect(directMessageRooms.chatList[1].nickname).toBe(
           testData.users[2].nickname,
@@ -118,7 +118,7 @@ describe('DmLogService', () => {
         expect(directMessageRooms.chatList[1].imgUrl).toBe(
           testData.users[2].image.url,
         );
-        expect(directMessageRooms.chatList[1].newChat).toBe(10);
+        expect(directMessageRooms.chatList[1].newChats).toBe(10);
       });
 
       it('[Valid Case] 진행중인 DM목록이 없을때 확인', async () => {
