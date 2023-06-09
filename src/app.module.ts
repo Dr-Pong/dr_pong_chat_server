@@ -9,7 +9,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { typeORMConfig } from './configs/typeorm.config';
 import { addTransactionalDataSource } from 'typeorm-transactional';
 import { DataSource } from 'typeorm';
-import { ChannelMessageModule } from './domain/channel-message/channel-message.module';
 import { DirectMessageRoomModule } from './domain/direct-message-room/direct-message-room.module';
 import { DirectMessageModule } from './domain/direct-message/direct-message.module';
 import { FriendModule } from './domain/friend/friend.module';
@@ -39,7 +38,6 @@ import { BlockTestModule } from './domain/block/test/block.test.module';
     BlockModule,
     ChannelModule,
     DirectMessageModule,
-    ChannelMessageModule,
     DirectMessageRoomModule,
     AuthModule,
     BlockTestModule,
