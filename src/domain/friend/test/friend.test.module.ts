@@ -10,6 +10,7 @@ import { AuthModule } from '../../auth/auth.module';
 import { DirectMessageRoomTestService } from '../../direct-message-room/test/direct-message-room.test.service';
 import { DirectMessage } from '../../direct-message/direct-message.entity';
 import { DirectMessageRoom } from '../../direct-message-room/direct-message-room.entity';
+import { DirectMessageTestService } from '../../direct-message/test/direct-message.test.service';
 
 @Module({
   imports: [
@@ -24,7 +25,15 @@ import { DirectMessageRoom } from '../../direct-message-room/direct-message-room
     ]),
     AuthModule,
   ],
-  providers: [FriendTestService, DirectMessageRoomTestService],
-  exports: [FriendTestService, DirectMessageRoomTestService],
+  providers: [
+    FriendTestService,
+    DirectMessageTestService,
+    DirectMessageRoomTestService,
+  ],
+  exports: [
+    FriendTestService,
+    DirectMessageTestService,
+    DirectMessageRoomTestService,
+  ],
 })
 export class FriendTestModule {}
