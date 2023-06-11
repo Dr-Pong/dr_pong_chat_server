@@ -4,7 +4,6 @@ import { ProfileImage } from 'src/domain/profile-image/profile-image.entity';
 import { User } from 'src/domain/user/user.entity';
 import { Repository } from 'typeorm';
 import { Friend } from '../friend.entity';
-import { Block } from 'src/domain/block/block.entity';
 import {
   FRIENDSTATUS_FRIEND,
   FRIENDSTATUS_REQUESTING,
@@ -21,8 +20,6 @@ export class FriendTestService {
     private profileImageRepository: Repository<ProfileImage>,
     @InjectRepository(Friend)
     private friendRepository: Repository<Friend>,
-    @InjectRepository(Block)
-    private blockRepository: Repository<Block>,
   ) {}
   users: User[] = [];
   profileImages: ProfileImage[] = [];
