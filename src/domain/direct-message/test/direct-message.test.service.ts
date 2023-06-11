@@ -4,10 +4,6 @@ import { ProfileImage } from 'src/domain/profile-image/profile-image.entity';
 import { User } from 'src/domain/user/user.entity';
 import { Repository } from 'typeorm';
 import { Block } from 'src/domain/block/block.entity';
-import {
-  FRIENDSTATUS_FRIEND,
-  FRIENDSTATUS_REQUESTING,
-} from 'src/global/type/type.friend.status';
 import { FriendChatManager } from 'src/global/utils/generate.room.id';
 import { Friend } from 'src/domain/friend/friend.entity';
 import { DirectMessage } from '../direct-message.entity';
@@ -29,152 +25,35 @@ export class DirectMessageTestService {
     @InjectRepository(DirectMessageRoom)
     private friendDirectMessageRepository: Repository<DirectMessageRoom>,
   ) {}
-  users: User[] = [];
-  profileImages: ProfileImage[] = [];
-  friends: Friend[] = [];
-  blocks: Block[] = [];
   directMessage: DirectMessage[] = [];
-  friendDirectMessage: DirectMessageRoom[] = [];
+  private count: number = 0;
 
   clear() {
-    this.users.splice(0);
-    this.profileImages.splice(0);
-    this.friends.splice(0);
-    this.blocks.splice(0);
-    this.directMessage.splice(0);
-    this.friendDirectMessage.splice(0);
+    this.directMessage = [];
   }
 
-  async createProfileImages(): Promise<void> {
-    const index: number = this.users.length;
-    for (let i = 0; i < index; i++) {
-      const profileImage = await this.profileImageRepository.save({
-        url: 'profileImage' + i.toString(),
-      });
-      this.profileImages.push(profileImage);
-    }
-  }
-
-  async createBasicUsers(person: number): Promise<void> {
-    const index: number = person;
-    for (let i = 0; i < index; i++) {
-      const user = await this.userRepository.save({
-        nickname: 'user' + i.toString(),
-        image: this.profileImages[i],
-      });
-      this.users.push(user);
-    }
-  }
-
-  async createBasicUser() {
-    const index: number = this.users.length;
-    const user = await this.userRepository.save({
-      nickname: 'user' + index.toString(),
-      image: this.profileImages[0],
-    });
-    this.users.push(user);
-  }
-
-  async createUserRequesting(): Promise<Friend[]> {
-    const index: number = this.users.length;
-    for (let i = 1; i < index; i++) {
-      const friend = await this.friendRepository.save({
-        user: this.users[0],
-        friend: this.users[i],
-        status: FRIENDSTATUS_REQUESTING,
-      });
-      this.friends.push(friend);
-      return this.friends;
-    }
-  }
-
-  async createAnotherUsersRequesting(): Promise<Friend[]> {
-    const index: number = this.users.length;
-    for (let i = 1; i < index; i++) {
-      const friend = await this.friendRepository.save({
-        user: this.users[i],
-        friend: this.users[0],
-        status: FRIENDSTATUS_REQUESTING,
-      });
-      this.friends.push(friend);
-      return this.friends;
-    }
-  }
-
-  async createUserFriends(person: number): Promise<void> {
-    const index: number = person;
-    for (let i = 1; i < index; i++) {
-      const roomId = FriendChatManager.generateRoomId(
-        this.users[0].id.toString(),
-        this.users[i].id.toString(),
-      );
-      const friend = await this.friendRepository.save({
-        sender: this.users[0],
-        receiver: this.users[i],
-        status: FRIENDSTATUS_FRIEND,
-        roomId: roomId,
-      });
-      this.friends.push(friend);
-    }
-  }
-
-  async createUserBlocks(): Promise<void> {
-    const index: number = this.blocks.length;
-    for (let i = 1; i < index; i++) {
-      const block = await this.blockRepository.save({
-        user: this.users[0],
-        block: this.users[i],
-      });
-      this.blocks.push(block);
-    }
-  }
-
-  //* dm 유저에게 10개씩 생성/
-  async createDirectMessageToUser1(messageCount: number): Promise<void> {
-    for (let i = 0; i < messageCount; i++) {
-      const directMessage = await this.directMessageRepository.save({
-        sender: this.users[0],
-        roomId: FriendChatManager.generateRoomId(
-          this.users[0].id.toString(),
-          this.users[1].id.toString(),
-        ),
-        message: 'message' + i.toString(),
-        time: new Date().toISOString(),
-      });
-      this.directMessage.push(directMessage);
-    }
-  }
-
-  async createDirectMessageFromUser1ToMe(messageCount: number): Promise<void> {
-    for (let i = 0; i < messageCount; i++) {
-      const directMessage = await this.directMessageRepository.save({
-        sender: this.users[1],
-        roomId: FriendChatManager.generateRoomId(
-          this.users[1].id.toString(),
-          this.users[0].id.toString(),
-        ),
-        message: 'message' + i.toString(),
-        time: new Date().toISOString(),
-      });
-      this.directMessage.push(directMessage);
-    }
-  }
-
-  //FriendDirectMessage만들기 list
-  async createDirectMessageRoom(): Promise<void> {
-    const friendDirectMessages: DirectMessageRoom[] = [];
-
-    const friendDirectMessage = await this.friendDirectMessageRepository.save({
-      userId: this.users[0],
-      friendId: this.users[1],
+  async createDirectMessageFromTo(from: User, to: User): Promise<void> {
+    await this.directMessageRepository.save({
+      sender: from,
       roomId: FriendChatManager.generateRoomId(
-        this.users[0].id.toString(),
-        this.users[1].id.toString(),
+        from.id.toString(),
+        to.id.toString(),
+      ),
+      message: 'message' + (++this.count).toString(),
+      time: new Date().toISOString(),
+    });
+  }
+
+  async createDirectMessageRoom(user1: User, user2: User): Promise<void> {
+    await this.friendDirectMessageRepository.save({
+      user: user1,
+      friend: user2,
+      roomId: FriendChatManager.generateRoomId(
+        user1.id.toString(),
+        user2.id.toString(),
       ),
       lastReadMessageId: null,
       isDisplay: true,
     });
-
-    friendDirectMessages.push(friendDirectMessage);
   }
 }
