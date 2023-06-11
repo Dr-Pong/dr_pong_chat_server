@@ -90,7 +90,9 @@ describe('Direct Message Service', () => {
   });
 
   afterEach(async () => {
+    friendTestService.clear();
     directMessageTestService.clear();
+    directMessageRoomTestService.clear();
     jest.resetAllMocks();
     await dataSources.synchronize(true);
   });
@@ -325,7 +327,10 @@ describe('Direct Message Service', () => {
         const user = friendTestService.users[0];
         const friend = friendTestService.users[1];
         const roomId = `${user.id}+${friend.id}`;
-        await directMessageRoomTestService.createEmptyDirectMessageRoom(user, friend);
+        await directMessageRoomTestService.createEmptyDirectMessageRoom(
+          user,
+          friend,
+        );
         for (let i = 0; i < 12; i++) {
           await directMessageTestService.createDirectMessageFromTo(
             user,
