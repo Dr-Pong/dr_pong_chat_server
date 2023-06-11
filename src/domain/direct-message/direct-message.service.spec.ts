@@ -20,11 +20,14 @@ import { CHATTYPE_ME, CHATTYPE_OTHERS } from 'src/global/type/type.chat';
 import { BadRequestException } from '@nestjs/common';
 import { FriendTestService } from '../friend/test/friend.test.service';
 import { FriendTestModule } from '../friend/test/friend.test.module';
+import { DirectMessageRoomTestModule } from '../direct-message-room/test/direct-message-room.test.module';
+import { DirectMessageRoomTestService } from '../direct-message-room/test/direct-message-room.test.service';
 
 describe('Direct Message Service', () => {
   let service: DirectMessageService;
   let friendTestService: FriendTestService;
   let directMessageTestService: DirectMessageTestService;
+  let directMessageRoomTestService: DirectMessageRoomTestService;
   let dataSources: DataSource;
   let directMessageRepository: Repository<DirectMessage>;
   let directMessageRoomRepository: Repository<DirectMessageRoom>;
@@ -49,6 +52,7 @@ describe('Direct Message Service', () => {
         DirectMessageModule,
         DirectMessageRoomModule,
         DirectMessageTestModule,
+        DirectMessageRoomTestModule,
         FriendTestModule,
       ],
       providers: [
@@ -64,6 +68,9 @@ describe('Direct Message Service', () => {
       DirectMessageTestService,
     );
     friendTestService = module.get<FriendTestService>(FriendTestService);
+    directMessageRoomTestService = module.get<DirectMessageRoomTestService>(
+      DirectMessageRoomTestService,
+    );
     dataSources = module.get<DataSource>(DataSource);
     directMessageRepository = module.get<Repository<DirectMessage>>(
       getRepositoryToken(DirectMessage),
@@ -318,7 +325,7 @@ describe('Direct Message Service', () => {
         const user = friendTestService.users[0];
         const friend = friendTestService.users[1];
         const roomId = `${user.id}+${friend.id}`;
-        await directMessageTestService.createDirectMessageRoom(user, friend);
+        await directMessageRoomTestService.createEmptyDirectMessageRoom(user, friend);
         for (let i = 0; i < 12; i++) {
           await directMessageTestService.createDirectMessageFromTo(
             user,
