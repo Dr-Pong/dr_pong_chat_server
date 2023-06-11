@@ -12,6 +12,7 @@ import { DeleteUserFriendDto } from './dto/delete.user.friend.dto';
 import { IsolationLevel, Transactional } from 'typeorm-transactional';
 import { GetUserFriendNotificationsRequestDto } from './dto/get.user.friend.notifications.request.dto';
 import { UserFriendNotificationsDto } from './dto/user.friend.notifications.dto';
+import { SortUtil } from '../../global/utils/sort.util';
 
 @Injectable()
 export class FriendService {
@@ -33,7 +34,7 @@ export class FriendService {
       }
       return FriendDto.fromUser(receiver);
     });
-    friends.sort(this.compareNicknames);
+    friends.sort(SortUtil.byNicknames);
 
     const responseDto: UserFriendsDto = {
       friends: friends,
@@ -85,7 +86,7 @@ export class FriendService {
       return FriendDto.fromUser(sender);
     });
 
-    friends.sort(this.compareNicknames);
+    friends.sort(SortUtil.byNicknames);
 
     const responseDto: UserPendingFriendsDto = {
       friends: friends,
@@ -181,14 +182,4 @@ export class FriendService {
     };
     return responseDto;
   }
-
-  private compareNicknames = (a, b) => {
-    if (a.nickname > b.nickname) {
-      return 1;
-    }
-    if (a.nickname < b.nickname) {
-      return -1;
-    }
-    return 0;
-  };
 }
