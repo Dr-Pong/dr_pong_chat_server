@@ -5,11 +5,15 @@ import * as request from 'supertest';
 import { initializeTransactionalContext } from 'typeorm-transactional';
 import { DirectMessageRoomTestService } from 'src/domain/direct-message-room/test/direct-message-room.test.service';
 import { AppModule } from '../../../app.module';
+import { FriendTestService } from '../test/friend.test.service';
+import { DirectMessageTestService } from '../../direct-message/test/direct-message.test.service';
 
 describe('FriendController - Chat', () => {
   let app: INestApplication;
   let dataSources: DataSource;
-  let testService: DirectMessageRoomTestService;
+  let friendTestService: FriendTestService;
+  let directMessageTestService: DirectMessageTestService;
+  let directMessageRoomTestService: DirectMessageRoomTestService;
 
   beforeAll(async () => {
     initializeTransactionalContext();
@@ -19,7 +23,11 @@ describe('FriendController - Chat', () => {
 
     app = module.createNestApplication();
     await app.init();
-    testService = module.get<DirectMessageRoomTestService>(
+    friendTestService = module.get<FriendTestService>(FriendTestService);
+    directMessageTestService = module.get<DirectMessageTestService>(
+      DirectMessageTestService,
+    );
+    directMessageRoomTestService = module.get<DirectMessageRoomTestService>(
       DirectMessageRoomTestService,
     );
     dataSources = module.get<DataSource>(DataSource);
@@ -27,9 +35,14 @@ describe('FriendController - Chat', () => {
   });
 
   beforeEach(async () => {
-    await testService.createProfileImages();
-    await testService.createBasicUsers(100);
-    await testService.createUserFriends(10);
+    await friendTestService.createProfileImages();
+    await friendTestService.createBasicUsers(100);
+    for (let i = 1; i <= 10; i++) {
+      await friendTestService.makeFriend(
+        friendTestService.users[0],
+        friendTestService.users[i],
+      );
+    }
   });
 
   afterAll(async () => {
@@ -39,7 +52,9 @@ describe('FriendController - Chat', () => {
   });
 
   afterEach(async () => {
-    testService.clear();
+    friendTestService.clear();
+    directMessageTestService.clear();
+    directMessageRoomTestService.clear();
     jest.resetAllMocks();
     await dataSources.synchronize(true);
   });
@@ -47,12 +62,27 @@ describe('FriendController - Chat', () => {
   describe('[GET]', () => {
     describe('/users/friends/{nickname}/chats', () => {
       it('DM 대화 내역 조회', async () => {
-        const user = testService.users[0];
-        const sender = testService.users[1];
-        await testService.createDirectMessageToUser0(10);
-        await testService.createDirectMessageToUser1(10);
-        await testService.createDirectMessageToUser0(10);
-        const token = await testService.giveTokenToUser(user);
+        const user = friendTestService.users[0];
+        const sender = friendTestService.users[1];
+        for (let i = 0; i < 10; i++) {
+          await directMessageTestService.createDirectMessageFromTo(
+            sender,
+            user,
+          );
+        }
+        for (let i = 0; i < 10; i++) {
+          await directMessageTestService.createDirectMessageFromTo(
+            user,
+            sender,
+          );
+        }
+        for (let i = 0; i < 10; i++) {
+          await directMessageTestService.createDirectMessageFromTo(
+            sender,
+            user,
+          );
+        }
+        const token = await friendTestService.giveTokenToUser(user);
         const count = 20;
         const offset = 0;
         let response = await req(
@@ -109,9 +139,9 @@ describe('FriendController - Chat', () => {
       });
 
       it('DM 대화 내역 빈 경우', async () => {
-        const user = testService.users[0];
-        const sender = testService.users[1];
-        const token = await testService.giveTokenToUser(user);
+        const user = friendTestService.users[0];
+        const sender = friendTestService.users[1];
+        const token = await friendTestService.giveTokenToUser(user);
         const count = 20;
         const offset = 0;
         const response = await req(
@@ -128,9 +158,9 @@ describe('FriendController - Chat', () => {
       });
 
       it('DM 대화 내역 조회 실패(없는 유저)', async () => {
-        const user = testService.users[1];
+        const user = friendTestService.users[0];
         const nobody = 'nobody';
-        const token = await testService.giveTokenToUser(user);
+        const token = await friendTestService.giveTokenToUser(user);
         const count = 20;
         const offset = 0;
         const response = await req(
@@ -144,20 +174,33 @@ describe('FriendController - Chat', () => {
 
     describe('/users/friends/chatlist', () => {
       it('진행 중인 DM 목록 조회', async () => {
-        const user = testService.users[0];
-        const token = await testService.giveTokenToUser(user);
-        await testService.createDirectMessageToUser0(30);
-        await testService.createDirectMessageRoomToUserI(1);
-        await testService.createDirectMessageRoomToUserI(2);
-        await testService.createDirectMessageRoomToUserI(3);
-        await testService.createDirectMessageRoomToUserI(4);
-        await testService.createDirectMessageRoomToUserI(5);
-        await testService.createDirectMessageRoomToUserI(6);
+        const user = friendTestService.users[0];
+        const token = await friendTestService.giveTokenToUser(user);
+        await directMessageRoomTestService.createEmptyDirectMessageRoom(
+          user,
+          friendTestService.users[1],
+        );
+        await directMessageRoomTestService.createEmptyDirectMessageRoom(
+          user,
+          friendTestService.users[2],
+        );
+        await directMessageRoomTestService.createEmptyDirectMessageRoom(
+          user,
+          friendTestService.users[3],
+        );
+        await directMessageRoomTestService.createEmptyDirectMessageRoom(
+          user,
+          friendTestService.users[4],
+        );
+        await directMessageRoomTestService.createEmptyDirectMessageRoom(
+          user,
+          friendTestService.users[5],
+        );
         const response = await req(token, 'GET', `/users/friends/chatlist`);
         const result = response.body;
         expect(response.status).toBe(200);
         expect(result).toHaveProperty('chatList');
-        expect(result.chatList.length).toBe(6);
+        expect(result.chatList.length).toBe(5);
         for (const dm of result.chatList) {
           expect(dm).toHaveProperty('imgUrl');
           expect(dm).toHaveProperty('nickname');
@@ -165,8 +208,8 @@ describe('FriendController - Chat', () => {
         }
       });
       it('진행 중인 DM 목록 빈 경우', async () => {
-        const user = testService.users[0];
-        const token = await testService.giveTokenToUser(user);
+        const user = friendTestService.users[0];
+        const token = await friendTestService.giveTokenToUser(user);
         const response = await req(token, 'GET', `/users/friends/chatlist`);
         const result = response.body;
         expect(response.status).toBe(200);
@@ -177,10 +220,14 @@ describe('FriendController - Chat', () => {
 
     describe('/users/friends/chats/new', () => {
       it('새로운 DM이 있는 경우', async () => {
-        const user = testService.users[0];
-        const token = await testService.giveTokenToUser(user);
-        await testService.createDirectMessageToUser1(10);
-        await testService.createDirectMessageRoomToUser1();
+        const user = friendTestService.users[0];
+        const token = await friendTestService.giveTokenToUser(user);
+        const friend = friendTestService.users[1];
+        await directMessageRoomTestService.createEmptyDirectMessageRoom(
+          user,
+          friend,
+        );
+        await directMessageTestService.createDirectMessageFromTo(friend, user);
         const response = await req(token, 'GET', `/users/friends/chats/new`);
         const result = response.body;
         expect(response.status).toBe(200);
@@ -188,9 +235,14 @@ describe('FriendController - Chat', () => {
         expect(result.hasNewChat).toBe(true);
       });
       it('새로운 DM이 없는 경우', async () => {
-        const user = testService.users[0];
-        const token = await testService.giveTokenToUser(user);
-        await testService.createDirectMessageRoomToUserI(2);
+        const user = friendTestService.users[0];
+        const token = await friendTestService.giveTokenToUser(user);
+        const friend = friendTestService.users[1];
+        await directMessageTestService.createDirectMessageFromTo(friend, user);
+        await directMessageRoomTestService.createAllReadDirectMessageRoom(
+          user,
+          friend,
+        );
         const response = await req(token, 'GET', `/users/friends/chats/new`);
         const result = response.body;
         expect(response.status).toBe(200);
@@ -203,9 +255,9 @@ describe('FriendController - Chat', () => {
   describe('[POST]', () => {
     describe('/users/friends/{nickname}/chats', () => {
       it('DM 전송 성공', async () => {
-        const user = testService.users[0];
-        const token = await testService.giveTokenToUser(user);
-        const receiver = testService.users[1];
+        const user = friendTestService.users[0];
+        const token = await friendTestService.giveTokenToUser(user);
+        const receiver = friendTestService.users[1];
         const body = {
           message: 'hello',
         };
@@ -218,9 +270,9 @@ describe('FriendController - Chat', () => {
         expect(response.status).toBe(201);
       });
       it('DM 전송 실패(안친구)', async () => {
-        const user = testService.users[0];
-        const token = await testService.giveTokenToUser(user);
-        const receiver = testService.users[77];
+        const user = friendTestService.users[0];
+        const token = await friendTestService.giveTokenToUser(user);
+        const receiver = friendTestService.users[77];
         const body = {
           message: 'hello',
         };
@@ -233,8 +285,8 @@ describe('FriendController - Chat', () => {
         expect(response.status).toBe(400);
       });
       it('DM 전송 실패(없는사람)', async () => {
-        const user = testService.users[0];
-        const token = await testService.giveTokenToUser(user);
+        const user = friendTestService.users[0];
+        const token = await friendTestService.giveTokenToUser(user);
         const receiver = 'nobody';
         const body = {
           message: 'hello',
@@ -253,11 +305,19 @@ describe('FriendController - Chat', () => {
   describe('[DELETE]', () => {
     describe('/users/friends/chats/{nickname}', () => {
       it('DM 리스트에서 방 삭제 성공', async () => {
-        const user = testService.users[0];
-        const token = await testService.giveTokenToUser(user);
-        await testService.createDirectMessageToUser0(30);
-        const deleted = testService.users[1];
-        await testService.createDirectMessageRoomToUserI(deleted.id);
+        const user = friendTestService.users[0];
+        const token = await friendTestService.giveTokenToUser(user);
+        const deleted = friendTestService.users[1];
+        for (let i = 0; i < 30; i++) {
+          await directMessageTestService.createDirectMessageFromTo(
+            deleted,
+            user,
+          );
+        }
+        await directMessageRoomTestService.createHalfReadDirectMessageRoom(
+          user,
+          deleted,
+        );
         const response = await req(
           token,
           'DELETE',
@@ -266,10 +326,9 @@ describe('FriendController - Chat', () => {
         expect(response.status).toBe(200);
       });
       it('DM 리스트에서 방 삭제 실패(없는방)', async () => {
-        const user = testService.users[0];
-        const token = await testService.giveTokenToUser(user);
-        await testService.createDirectMessageToUser0(30);
-        const nobangUser = testService.users[2];
+        const user = friendTestService.users[0];
+        const token = await friendTestService.giveTokenToUser(user);
+        const nobangUser = friendTestService.users[2];
         const response = await req(
           token,
           'DELETE',
