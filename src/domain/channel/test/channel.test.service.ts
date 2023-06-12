@@ -24,10 +24,12 @@ import {
   CHAT_MUTE,
   ChannelActionType,
 } from 'src/domain/channel/type/type.channel.action';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class ChannelTestService {
   constructor(
+    private jwtService: JwtService,
     private readonly channelFactory: ChannelFactory,
     private readonly userFactory: UserFactory,
     @InjectRepository(Channel)
@@ -288,5 +290,13 @@ export class ChannelTestService {
       });
     }
     return this.channelFactory.findById(channel.id);
+  }
+
+  async giveTokenToUser(user: UserModel) {
+    const token = this.jwtService.sign({
+      id: user.id,
+      nickname: user.nickname,
+    });
+    return token;
   }
 }
