@@ -51,44 +51,20 @@ export class FriendRepository {
   /**친구 requesting 여부
    * 유저가 friendId에게 requesting 상태인지 boolean을 반환합니다.
    */
-  async checkIsRequestingByUserIdAndFriendId(
-    userId: number,
-    friendId: number,
+  async checkIsRequestingBySenderIdAndReceiverId(
+    senderId: number,
+    receiverId: number,
   ): Promise<boolean> {
     const isRequesting: boolean = await this.repository.exist({
       where: [
         {
-          sender: { id: userId },
-          receiver: { id: friendId },
+          sender: { id: senderId },
+          receiver: { id: receiverId },
           status: FRIENDSTATUS_REQUESTING,
         },
       ],
     });
     return isRequesting;
-  }
-
-  /**친구 requesting 목록
-   * 유저와 friend사이에 존재하는 requesting 상태의 friend를 반환합니다.
-   */
-  async findRequestingsByUserIdAndFriendId(
-    userId: number,
-    friendId: number,
-  ): Promise<Friend[]> {
-    const requests: Friend[] = await this.repository.find({
-      where: [
-        {
-          sender: { id: userId },
-          receiver: { id: friendId },
-          status: FRIENDSTATUS_REQUESTING,
-        },
-        {
-          sender: { id: friendId },
-          receiver: { id: userId },
-          status: FRIENDSTATUS_REQUESTING,
-        },
-      ],
-    });
-    return requests;
   }
 
   /**친구 여부 확인
@@ -113,6 +89,27 @@ export class FriendRepository {
       ],
     });
     return isFriend;
+  }
+
+  async findFriendByUserIdAndFriendId(
+    userId: number,
+    friendId: number,
+  ): Promise<Friend> {
+    const friend: Friend = await this.repository.findOne({
+      where: [
+        {
+          sender: { id: userId },
+          receiver: { id: friendId },
+          status: FRIENDSTATUS_FRIEND,
+        },
+        {
+          sender: { id: friendId },
+          receiver: { id: userId },
+          status: FRIENDSTATUS_FRIEND,
+        },
+      ],
+    });
+    return friend;
   }
 
   /** 친구요청
@@ -159,5 +156,15 @@ export class FriendRepository {
       },
       { status: FRIENDSTATUS_DELETED },
     );
+  }
+
+  async hardDeleteFriendBySenderIdAndReceiverId(
+    senderId: number,
+    receiverId: number,
+  ): Promise<void> {
+    await this.repository.delete({
+      sender: { id: senderId },
+      receiver: { id: receiverId },
+    });
   }
 }
