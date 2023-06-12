@@ -14,4 +14,8 @@ export class UserRepository {
       where: { nickname: nickname },
     });
   }
+
+  async findAll(): Promise<User[]> {
+    return await this.repository.find();
+  }
 }

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ChannelModel } from './model/channel.model';
 import { UserModel } from './model/user.model';
 import { ChannelType } from 'src/domain/channel/type/type.channel';
@@ -8,6 +8,7 @@ import { UserFactory } from './user.factory';
 export class ChannelFactory {
   constructor(private readonly userFactory: UserFactory) {}
   channels: Map<string, ChannelModel> = new Map();
+  logger: Logger = new Logger('ChannelFactory');
 
   findById(id: string): ChannelModel {
     return this.channels.get(id);
@@ -36,6 +37,17 @@ export class ChannelFactory {
       this.channels.set(channel.id, channel);
       this.join(userId, channel.id);
       this.userFactory.joinChannel(userId, channel);
+      this.userFactory.setOwner(userId);
+      return true;
+    }
+    return false;
+  }
+
+  setOwner(userId: number, channelId: string): boolean {
+    const channel: ChannelModel = this.findById(channelId);
+    if (channel.users.has(userId)) {
+      channel.ownerId = userId;
+      this.channels.set(channel.id, channel);
       this.userFactory.setOwner(userId);
       return true;
     }

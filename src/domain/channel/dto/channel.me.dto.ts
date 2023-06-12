@@ -7,7 +7,7 @@ export class ChannelMeDto {
   maxCount: number;
 
   static fromModel(channel: ChannelModel): ChannelMeDto {
-    if (!channel) return null;
+    if (channel === undefined) return null;
 
     const { id, name: title, maxHeadCount: maxCount } = channel;
 

@@ -96,9 +96,9 @@ export class ChannelNormalController {
   @UseGuards(AuthGuard('jwt'))
   async channelParticipantsGet(
     @Requestor() requestor: UserIdCardDto,
-    @Query('roomId') channelId: string,
+    @Param('roomId') channelId: string,
   ): Promise<ChannelParticipantsResponseDto> {
-    const { id: userId } = requestor;
+    const { id: userId }: UserIdCardDto = requestor;
     const { me, participants, headCount, maxCount } =
       await this.channelService.getChannelParticipants({ userId, channelId });
     return { me, participants, headCount, maxCount };
@@ -259,8 +259,8 @@ export class ChannelNormalController {
   async channelMeGet(
     @Requestor() requestor: UserIdCardDto,
   ): Promise<ChannelMeResponseDto> {
-    const { id: userId } = requestor;
-    const myChannel: ChannelMeDto = await this.channelService.getChannelMy({
+    const { id: userId }: UserIdCardDto = requestor;
+    const myChannel: ChannelMeDto = this.channelService.getChannelMy({
       userId,
     });
     return { myChannel };
@@ -293,6 +293,7 @@ export class ChannelNormalController {
     @Query('count') count: number,
   ): Promise<ChannelChatsResponseDto> {
     const { id: userId } = requestor;
+    if (offset) offset = 2147483647;
     const { chats, isLastPage } =
       await this.channelService.getChannelMessageHistory({
         userId,

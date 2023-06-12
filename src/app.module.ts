@@ -15,6 +15,13 @@ import { FriendModule } from './domain/friend/friend.module';
 import { AuthModule } from './domain/auth/auth.module';
 import { FriendTestModule } from './domain/friend/test/friend.test.module';
 import { BlockTestModule } from './domain/block/test/block.test.module';
+import { FactoryModule } from './domain/factory/factory.module';
+import { ChannelRepository } from './domain/channel/repository/channel.repository';
+import { UserRepository } from './domain/user/user.repository';
+import { ChannelUserRepository } from './domain/channel/repository/channel-user.repository';
+import { Channel } from './domain/channel/entity/channel.entity';
+import { User } from './domain/user/user.entity';
+import { ChannelUser } from './domain/channel/entity/channel-user.entity';
 
 @Module({
   imports: [
@@ -41,8 +48,15 @@ import { BlockTestModule } from './domain/block/test/block.test.module';
     DirectMessageRoomModule,
     AuthModule,
     BlockTestModule,
+    FactoryModule,
+    TypeOrmModule.forFeature([Channel, User, ChannelUser]),
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    ChannelRepository,
+    UserRepository,
+    ChannelUserRepository,
+  ],
 })
 export class AppModule {}

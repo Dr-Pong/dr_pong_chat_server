@@ -1,9 +1,12 @@
 import { InjectRepository } from '@nestjs/typeorm';
 import { Channel } from '../entity/channel.entity';
-import { Like, Repository } from 'typeorm';
+import { Like, Not, Repository } from 'typeorm';
 import { Injectable } from '@nestjs/common';
 import { Page } from 'src/global/utils/page';
-import { CHANNEL_PROTECTED } from 'src/domain/channel/type/type.channel';
+import {
+  CHANNEL_PRIVATE,
+  CHANNEL_PROTECTED,
+} from 'src/domain/channel/type/type.channel';
 import { SaveChannelDto } from '../dto/post/save.channel.dto';
 import { UpdateChannelDto } from '../dto/patch/update.channel.dto';
 import { FindChannelPageDto } from '../dto/get/find.channel.page.dto';
@@ -15,6 +18,10 @@ export class ChannelRepository {
     @InjectRepository(Channel)
     private readonly repository: Repository<Channel>,
   ) {}
+
+  async findAll(): Promise<Channel[]> {
+    return await this.repository.find({ where: { isDeleted: false } });
+  }
 
   async findById(channelId: string): Promise<Channel> {
     return await this.repository.findOne({ where: { id: channelId } });
@@ -38,6 +45,7 @@ export class ChannelRepository {
     const totalChannels: number = await this.repository.count({
       where: {
         name: Like(keyword),
+        type: Not(CHANNEL_PRIVATE),
         isDeleted: false,
       },
     });
@@ -45,6 +53,7 @@ export class ChannelRepository {
     const channels: Channel[] = await this.repository.find({
       where: {
         name: Like(keyword),
+        type: Not(CHANNEL_PRIVATE),
         isDeleted: false,
       },
       skip: (findDto.page - 1) * findDto.count,
@@ -72,6 +81,7 @@ export class ChannelRepository {
     const totalChannels: number = await this.repository.count({
       where: {
         name: Like(keyword),
+        type: Not(CHANNEL_PRIVATE),
         isDeleted: false,
       },
     });
@@ -79,6 +89,7 @@ export class ChannelRepository {
     const channels: Channel[] = await this.repository.find({
       where: {
         name: Like(keyword),
+        type: Not(CHANNEL_PRIVATE),
         isDeleted: false,
       },
       skip: (findDto.page - 1) * findDto.count,
@@ -104,7 +115,7 @@ export class ChannelRepository {
       isDeleted: false,
       type: saveDto.access,
       password: saveDto.access === CHANNEL_PROTECTED ? saveDto.password : null,
-      headCount: 0,
+      headCount: 1,
       maxHeadCount: saveDto.maxCount,
     });
   }

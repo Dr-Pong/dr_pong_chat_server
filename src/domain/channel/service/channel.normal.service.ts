@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { ChannelUserRepository } from '../repository/channel-user.repository';
 import { ChannelRepository } from '../repository/channel.repository';
 import { Channel } from '../entity/channel.entity';
@@ -60,6 +60,12 @@ import { ChannelExitDto } from '../dto/channel.exit.dto';
 import { GetChannelMessageHistoryDto } from '../dto/get/get.channel-message.history.dto';
 import { DeleteChannelInviteDto } from '../dto/delete/delete.channel.invite.dto';
 import { UpdateChannelHeadCountDto } from '../dto/patch/update.channel.headcount.dto';
+import { User } from 'src/domain/user/user.entity';
+import { UserRepository } from 'src/domain/user/user.repository';
+import {
+  CHANNEL_PARTICIPANT_ADMIN,
+  CHANNEL_PARTICIPANT_OWNER,
+} from '../type/type.channel-participant';
 
 @Injectable()
 export class ChannelNormalService {
@@ -71,6 +77,7 @@ export class ChannelNormalService {
     private readonly userFactory: UserFactory,
     private readonly chatGateway: ChatGateWay,
   ) {}
+  logger: Logger = new Logger('ChannelNormalService');
 
   /**
    * 채널의 참여자 목록을 조회하는 함수
@@ -107,11 +114,14 @@ export class ChannelNormalService {
    */
   getChannelMy(getDto: GetChannelMyDto): ChannelMeDto {
     const user: UserModel = this.userFactory.findById(getDto.userId);
-    const channel: ChannelModel = this.channelFactory.findById(
-      user.joinedChannel,
-    );
 
-    return ChannelMeDto.fromModel(channel);
+    if (user.joinedChannel !== undefined) {
+      const channel: ChannelModel = this.channelFactory.findById(
+        user.joinedChannel,
+      );
+      return ChannelMeDto.fromModel(channel);
+    }
+    return null;
   }
 
   /**

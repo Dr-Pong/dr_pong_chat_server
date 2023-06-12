@@ -26,7 +26,7 @@ export class ChannelMessageHistoryDto {
     }
 
     return new ChannelMessageHistoryDto(
-      userId,
+      entity.id,
       entity.content,
       entity.user.nickname,
       entity.time,

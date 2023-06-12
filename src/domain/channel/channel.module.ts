@@ -12,13 +12,16 @@ import { ChannelNormalService } from './service/channel.normal.service';
 import { Channel } from './entity/channel.entity';
 import { ChannelNormalController } from './channel.normal.controller';
 import { UserModule } from '../user/user.module';
+import { UserRepository } from '../user/user.repository';
+import { User } from '../user/user.entity';
+import { ChannelAdminController } from './channel.admin.controller';
 
 @Module({
   imports: [
     FactoryModule,
     GatewayModule,
     UserModule,
-    TypeOrmModule.forFeature([Channel, ChannelUser, ChannelMessage]),
+    TypeOrmModule.forFeature([User, Channel, ChannelUser, ChannelMessage]),
   ],
   providers: [
     ChannelNormalService,
@@ -26,8 +29,9 @@ import { UserModule } from '../user/user.module';
     ChannelRepository,
     ChannelUserRepository,
     ChannelMessageRepository,
+    UserRepository,
   ],
-  controllers: [ChannelNormalController],
+  controllers: [ChannelNormalController, ChannelAdminController],
   exports: [ChannelAdminService, ChannelNormalService],
 })
 export class ChannelModule {}
