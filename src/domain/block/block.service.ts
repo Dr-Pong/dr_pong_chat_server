@@ -13,6 +13,7 @@ import { PostUserBlockDto } from './dto/post.user.block.dto';
 import { UserModel } from '../factory/model/user.model';
 import { UserFactory } from '../factory/user.factory';
 import { DeleteUserBlockDto } from './dto/delete.user.block.dto';
+import { SortUtil } from '../../global/utils/sort.util';
 
 @Injectable()
 export class BlockService {
@@ -41,15 +42,7 @@ export class BlockService {
     );
 
     // 닉네임을 기준으로 차단된 사용자를 정렬합니다.
-    blockedUsers.sort((a, b) => {
-      if (a.nickname > b.nickname) {
-        return 1;
-      }
-      if (a.nickname < b.nickname) {
-        return -1;
-      }
-      return 0;
-    });
+    blockedUsers.sort(SortUtil.byNicknames);
 
     // 응답용 DTO를 생성하여 반환합니다.
     const responseDto: UserBlocksDto = {

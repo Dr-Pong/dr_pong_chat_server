@@ -44,22 +44,38 @@ describe('FriendController - Relation', () => {
   describe('[GET]', () => {
     describe('/users/friends', () => {
       it('친구 목록 조회', async () => {
-        await friendTestService.createUserFriends(50);
         const user = friendTestService.users[0];
+        const users = friendTestService.users;
+        for (let i = 1; i <= 25; i++) {
+          if (i % 2 == 0) {
+            await friendTestService.makeFriend(user, users[i]);
+            await friendTestService.makeFriend(user, users[51 - i]);
+          } else {
+            await friendTestService.makeFriend(users[i], user);
+            await friendTestService.makeFriend(users[51 - i], user);
+          }
+        }
         const token = await friendTestService.giveTokenToUser(user);
         const response = await req(token, 'GET', '/users/friends');
         const result = response.body;
+
         expect(response.status).toBe(200);
         expect(result).toHaveProperty('users');
-        expect(result.users.length).toBe(49);
+        expect(result.users.length).toBe(50);
         for (const user of response.body.users) {
           expect(user).toHaveProperty('nickname');
           expect(user).toHaveProperty('imgUrl');
+        }
+        for (let i = 0; i < result.users.length; i++) {
+          const friend = result.users[i];
+          expect(friend).toHaveProperty('nickname');
+          expect(friend).toHaveProperty('imgUrl');
         }
         expect(result.users).toEqual(
           result.users.sort((a, b) => a.nickname.localeCompare(b.nickname)),
         );
       });
+
       it('친구 목록 조회(나는 친구가 없다)', async () => {
         const user = friendTestService.users[0];
         const token = await friendTestService.giveTokenToUser(user);
@@ -73,10 +89,11 @@ describe('FriendController - Relation', () => {
 
     describe('/users/friends/pendings', () => {
       it('친구 요청 목록 조회', async () => {
-        for (let i = 1; i < 50; i++) {
-          await friendTestService.createUser0ToBeRequested(i);
-        }
         const user = friendTestService.users[0];
+        const users = friendTestService.users;
+        for (let i = 1; i < 50; i++) {
+          await friendTestService.createFriendRequestFromTo(users[i], user);
+        }
         const token = await friendTestService.giveTokenToUser(user);
         const response = await req(token, 'GET', `/users/friends/pendings`);
         const result = response.body;
@@ -87,10 +104,16 @@ describe('FriendController - Relation', () => {
           expect(user).toHaveProperty('nickname');
           expect(user).toHaveProperty('imgUrl');
         }
+        for (let i = 0; i < result.users.length; i++) {
+          const friend = result.users[i];
+          expect(friend).toHaveProperty('nickname');
+          expect(friend).toHaveProperty('imgUrl');
+        }
         expect(result.users).toEqual(
           result.users.sort((a, b) => a.nickname.localeCompare(b.nickname)),
         );
       });
+
       it('친구 요청 목록 조회(나와 친구가 되려는 이가 없다)', async () => {
         const user = friendTestService.users[0];
         const token = await friendTestService.giveTokenToUser(user);
@@ -116,10 +139,11 @@ describe('FriendController - Relation', () => {
         );
         expect(response.status).toBe(201);
       });
+
       it('친구 요청 씹기(이미 친구)', async () => {
         const user = friendTestService.users[0];
         const receiver = friendTestService.users[1];
-        await friendTestService.createUser0ToFriends(receiver.id);
+        await friendTestService.makeFriend(user, receiver);
         const token = await friendTestService.giveTokenToUser(user);
         const response = await req(
           token,
@@ -128,6 +152,7 @@ describe('FriendController - Relation', () => {
         );
         expect(response.status).toBe(201);
       });
+
       it('친구 요청 실패(없는 아이디)', async () => {
         const user = friendTestService.users[0];
         const receiver = 'nobody';
@@ -145,7 +170,7 @@ describe('FriendController - Relation', () => {
       it('친구 요청 수락 성공', async () => {
         const user = friendTestService.users[0];
         const sender = friendTestService.users[1];
-        await friendTestService.createUser0ToBeRequested(sender.id);
+        await friendTestService.createFriendRequestFromTo(sender, user);
         const token = await friendTestService.giveTokenToUser(user);
         const response = await req(
           token,
@@ -154,11 +179,11 @@ describe('FriendController - Relation', () => {
         );
         expect(response.status).toBe(201);
       });
+
       it('친구 요청 수락 씹기(이미 친구)', async () => {
         const user = friendTestService.users[0];
         const alreadyFriend = friendTestService.users[1];
-        await friendTestService.createUser0ToBeRequested(alreadyFriend.id);
-        await friendTestService.createUser0ToFriends(alreadyFriend.id);
+        await friendTestService.makeFriend(alreadyFriend, user);
         const token = await friendTestService.giveTokenToUser(user);
         const response = await req(
           token,
@@ -167,6 +192,7 @@ describe('FriendController - Relation', () => {
         );
         expect(response.status).toBe(201);
       });
+
       it('친구 요청 수락 씹기(아이디는 있는데 요청이 없음)', async () => {
         const user = friendTestService.users[0];
         const notSender = friendTestService.users[15];
@@ -178,6 +204,7 @@ describe('FriendController - Relation', () => {
         );
         expect(response.status).toBe(201);
       });
+
       it('친구 요청 수락 실패(없는 아이디)', async () => {
         const user = friendTestService.users[0];
         const nobody = 'nobody';
@@ -193,7 +220,7 @@ describe('FriendController - Relation', () => {
       it('친구 요청 거절 성공', async () => {
         const user = friendTestService.users[0];
         const sender = friendTestService.users[1];
-        await friendTestService.createUser0ToBeRequested(sender.id);
+        await friendTestService.createFriendRequestFromTo(sender, user);
         const token = await friendTestService.giveTokenToUser(user);
         const response = await req(
           token,
@@ -230,7 +257,7 @@ describe('FriendController - Relation', () => {
       it('친구 삭제 성공', async () => {
         const user = friendTestService.users[0];
         const friend = friendTestService.users[1];
-        await friendTestService.createUser0ToFriends(friend.id);
+        await friendTestService.makeFriend(user, friend);
         const token = await friendTestService.giveTokenToUser(user);
         const response = await req(
           token,
@@ -239,6 +266,7 @@ describe('FriendController - Relation', () => {
         );
         expect(response.status).toBe(200);
       });
+
       it('친구 삭제 씹기(친구 아님)', async () => {
         const user = friendTestService.users[0];
         const friend = friendTestService.users[1];
@@ -250,6 +278,7 @@ describe('FriendController - Relation', () => {
         );
         expect(response.status).toBe(200);
       });
+
       it('친구 삭제 실패(없는 아이디)', async () => {
         const user = friendTestService.users[0];
         const nobody = 'nobody';
