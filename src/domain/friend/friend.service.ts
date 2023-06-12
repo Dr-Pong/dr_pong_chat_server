@@ -57,14 +57,14 @@ export class FriendService {
         friendId,
       );
     const isRequesting =
-      await this.friendRepository.checkIsRequestingByUserIdAndFriendId(
+      await this.friendRepository.checkIsRequestingBySenderIdAndReceiverId(
         userId,
         friendId,
       );
 
     if (isFriend || isRequesting) return;
 
-    await this.friendRepository.saveFriendStatusRequestingByUserIdAndFriendId(
+    await this.friendRepository.saveFriendStatusRequestingBySenderIdAndReceiverId(
       userId,
       friendId,
     );
@@ -102,20 +102,22 @@ export class FriendService {
   async postUserFriendAccept(postDto: PostUserFriendAcceptDto): Promise<void> {
     const { userId, friendId } = postDto;
     const isRequesting: boolean =
-      await this.friendRepository.checkIsRequestingByUserIdAndFriendId(
+      await this.friendRepository.checkIsRequestingBySenderIdAndReceiverId(
         friendId,
         userId,
       );
 
     if (!isRequesting) return;
 
-    await this.friendRepository.updateFriendRequestStatusFriendByUserIdAndFriendId(
-      userId,
+    await this.friendRepository.updateFriendRequestStatusFriendBySenderIdAndReceiverId(
       friendId,
+      userId,
     );
-    await this.friendRepository.updateFriendRequestStatusFriendByUserIdAndFriendId(
-      friendId,
+
+    //내가 상대에게 보낸 요청이 남아있으면 삭제
+    await this.friendRepository.hardDeleteFriendBySenderIdAndReceiverId(
       userId,
+      friendId,
     );
   }
 
@@ -129,14 +131,14 @@ export class FriendService {
   ): Promise<void> {
     const { userId, friendId } = deleteDto;
     const isRequesting: boolean =
-      await this.friendRepository.checkIsRequestingByUserIdAndFriendId(
+      await this.friendRepository.checkIsRequestingBySenderIdAndReceiverId(
         friendId,
         userId,
       );
 
     if (!isRequesting) return;
 
-    await this.friendRepository.updateFriendRequestStatusDeletedByUserIdAndFriendId(
+    await this.friendRepository.updateFriendRequestStatusDeletedBySenderIdAndReceiverId(
       friendId,
       userId,
     );
@@ -149,21 +151,17 @@ export class FriendService {
   @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
   async deleteUserFriend(deleteDto: DeleteUserFriendDto): Promise<void> {
     const { userId, friendId } = deleteDto;
-    const isFriend: boolean =
-      await this.friendRepository.checkIsFriendByUserIdAndFriendId(
+    const friend: Friend =
+      await this.friendRepository.findFriendByUserIdAndFriendId(
         userId,
         friendId,
       );
 
-    if (!isFriend) return;
+    if (!friend) return;
 
-    await this.friendRepository.updateFriendRequestStatusDeletedByUserIdAndFriendId(
-      userId,
-      friendId,
-    );
-    await this.friendRepository.updateFriendRequestStatusDeletedByUserIdAndFriendId(
-      friendId,
-      userId,
+    await this.friendRepository.updateFriendRequestStatusDeletedBySenderIdAndReceiverId(
+      friend.sender.id,
+      friend.receiver.id,
     );
   }
 

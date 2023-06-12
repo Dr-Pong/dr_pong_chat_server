@@ -324,20 +324,19 @@ describe('FriendService', () => {
 
         const friendRequest: Friend = await friendRepository.findOne({
           where: {
-            sender: { id: user.id },
-            receiver: { id: mutual.id },
-          },
-        });
-        const anotherFriendRequest: Friend = await friendRepository.findOne({
-          where: {
             sender: { id: mutual.id },
             receiver: { id: user.id },
           },
         });
+        const anotherFriendRequest: Friend = await friendRepository.findOne({
+          where: {
+            sender: { id: user.id },
+            receiver: { id: mutual.id },
+          },
+        });
 
         expect(friendRequest.status).toBe(FRIENDSTATUS_FRIEND);
-        expect(anotherFriendRequest.status).toBe(FRIENDSTATUS_FRIEND);
-        //TODO: another를 삭제하는 방향으로 코드가 바뀌어야 함니다.
+        expect(anotherFriendRequest).toBe(null);
       });
 
       it('[Valid Case]이미 친구인 유저에게 친구요청 수락(백에서 씹기)', async () => {

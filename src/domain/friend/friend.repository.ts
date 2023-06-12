@@ -48,18 +48,18 @@ export class FriendRepository {
     return friendCount;
   }
 
-  /**친구 requesting 테이블 목록
+  /**친구 requesting 여부
    * 유저가 friendId에게 requesting 상태인지 boolean을 반환합니다.
    */
-  async checkIsRequestingByUserIdAndFriendId(
-    userId: number,
-    friendId: number,
+  async checkIsRequestingBySenderIdAndReceiverId(
+    senderId: number,
+    receiverId: number,
   ): Promise<boolean> {
     const isRequesting: boolean = await this.repository.exist({
       where: [
         {
-          sender: { id: userId },
-          receiver: { id: friendId },
+          sender: { id: senderId },
+          receiver: { id: receiverId },
           status: FRIENDSTATUS_REQUESTING,
         },
       ],
@@ -91,10 +91,31 @@ export class FriendRepository {
     return isFriend;
   }
 
+  async findFriendByUserIdAndFriendId(
+    userId: number,
+    friendId: number,
+  ): Promise<Friend> {
+    const friend: Friend = await this.repository.findOne({
+      where: [
+        {
+          sender: { id: userId },
+          receiver: { id: friendId },
+          status: FRIENDSTATUS_FRIEND,
+        },
+        {
+          sender: { id: friendId },
+          receiver: { id: userId },
+          status: FRIENDSTATUS_FRIEND,
+        },
+      ],
+    });
+    return friend;
+  }
+
   /** 친구요청
    * 친구 요청을 보냅니다. 테이블에 생성하는 부분
    */
-  async saveFriendStatusRequestingByUserIdAndFriendId(
+  async saveFriendStatusRequestingBySenderIdAndReceiverId(
     userId: number,
     friendId: number,
   ): Promise<void> {
@@ -108,32 +129,42 @@ export class FriendRepository {
   /** 친구수락
    * 친구 요청을 수락합니다. 테이블에 업데이트하는 부분
    */
-  async updateFriendRequestStatusFriendByUserIdAndFriendId(
-    userId: number,
-    friendId: number,
+  async updateFriendRequestStatusFriendBySenderIdAndReceiverId(
+    senderId: number,
+    receiverId: number,
   ): Promise<void> {
     await this.repository.update(
       {
-        sender: { id: In([userId, friendId]) },
-        receiver: { id: In([userId, friendId]) },
+        sender: { id: senderId },
+        receiver: { id: receiverId },
       },
       { status: FRIENDSTATUS_FRIEND },
     );
   }
 
-  /** 친구삭제및 거절
+  /** 친구 삭제 및 거절
    * 친구 요청을 거절합니다. 테이블에 업데이트하는 부분
    */
-  async updateFriendRequestStatusDeletedByUserIdAndFriendId(
-    userId: number,
-    friendId: number,
+  async updateFriendRequestStatusDeletedBySenderIdAndReceiverId(
+    senderId: number,
+    receiverId: number,
   ): Promise<void> {
     await this.repository.update(
       {
-        sender: { id: In([userId, friendId]) },
-        receiver: { id: In([userId, friendId]) },
+        sender: { id: senderId },
+        receiver: { id: receiverId },
       },
       { status: FRIENDSTATUS_DELETED },
     );
+  }
+
+  async hardDeleteFriendBySenderIdAndReceiverId(
+    senderId: number,
+    receiverId: number,
+  ): Promise<void> {
+    await this.repository.delete({
+      sender: { id: senderId },
+      receiver: { id: receiverId },
+    });
   }
 }
