@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Param,
+  ParseIntPipe,
   Post,
   Query,
   UseGuards,
@@ -52,8 +53,8 @@ export class ChannelNormalController {
    * */
   @Get('/')
   async channelPageGet(
-    @Query('page') page: number,
-    @Query('count') count: number,
+    @Query('page', ParseIntPipe) page: number,
+    @Query('count', ParseIntPipe) count: number,
     @Query('order') orderBy: OrderChannelType,
     @Query('keyword') keyword: string,
   ): Promise<ChannelPageResponseDto> {
@@ -100,7 +101,7 @@ export class ChannelNormalController {
   ): Promise<ChannelParticipantsResponseDto> {
     const { id: userId }: UserIdCardDto = requestor;
     const { me, participants, headCount, maxCount } =
-      await this.channelService.getChannelParticipants({ userId, channelId });
+      this.channelService.getChannelParticipants({ userId, channelId });
     return { me, participants, headCount, maxCount };
   }
 
@@ -289,11 +290,11 @@ export class ChannelNormalController {
   async channelChatsGet(
     @Requestor() requestor: UserIdCardDto,
     @Param('roomId') channelId: string,
-    @Query('offset') offset: number,
-    @Query('count') count: number,
+    @Query('offset', ParseIntPipe) offset: number,
+    @Query('count', ParseIntPipe) count: number,
   ): Promise<ChannelChatsResponseDto> {
     const { id: userId } = requestor;
-    if (offset) offset = 2147483647;
+    if (!offset) offset = 2147483647;
     const { chats, isLastPage } =
       await this.channelService.getChannelMessageHistory({
         userId,
