@@ -6,6 +6,7 @@ import {
   FRIENDSTATUS_DELETED,
   FRIENDSTATUS_FRIEND,
   FRIENDSTATUS_PENDING,
+  FriendType,
 } from 'src/global/type/type.friend.status';
 
 @Injectable()
@@ -19,43 +20,40 @@ export class FriendRepository {
    * 사용자의 친구 목록을 가져옵니다.
    * */
   async findFriendsByUserId(userId: number): Promise<Friend[]> {
-    const friends: Friend[] = await this.repository.find({
+    return await this.repository.find({
       where: [
         { sender: { id: userId }, status: FRIENDSTATUS_FRIEND },
         { receiver: { id: userId }, status: FRIENDSTATUS_FRIEND },
       ],
     });
-    return friends;
   }
 
   /**친구 요청 목록
    * 사용자의 친구 요청목록을 가져옵니다.
    * */
-  async findFriendRequestingsByUserId(userId: number): Promise<Friend[]> {
-    const friends: Friend[] = await this.repository.find({
-      where: { receiver: { id: userId }, status: FRIENDSTATUS_PENDING },
+  async findPendingsByReceiverId(receiverId: number): Promise<Friend[]> {
+    return await this.repository.find({
+      where: { receiver: { id: receiverId }, status: FRIENDSTATUS_PENDING },
     });
-    return friends;
   }
 
   /**친구 요청 목록
    * 사용자의 친구 요청목록의 개수를 가져옵니다.
    * */
-  async countFriendRequestingsByUserId(userId: number): Promise<number> {
-    const friendCount: number = await this.repository.count({
-      where: { receiver: { id: userId }, status: FRIENDSTATUS_PENDING },
+  async countPendingsByReceiverId(receiverId: number): Promise<number> {
+    return await this.repository.count({
+      where: { receiver: { id: receiverId }, status: FRIENDSTATUS_PENDING },
     });
-    return friendCount;
   }
 
   /**친구 requesting 여부
    * 유저가 friendId에게 requesting 상태인지 boolean을 반환합니다.
    */
-  async checkIsRequestingBySenderIdAndReceiverId(
+  async checkIsPendingBySenderIdAndReceiverId(
     senderId: number,
     receiverId: number,
   ): Promise<boolean> {
-    const isRequesting: boolean = await this.repository.exist({
+    return this.repository.exist({
       where: [
         {
           sender: { id: senderId },
@@ -64,7 +62,6 @@ export class FriendRepository {
         },
       ],
     });
-    return isRequesting;
   }
 
   /**친구 여부 확인
@@ -74,7 +71,7 @@ export class FriendRepository {
     userId: number,
     friendId: number,
   ): Promise<boolean> {
-    const isFriend: boolean = await this.repository.exist({
+    return await this.repository.exist({
       where: [
         {
           sender: { id: userId },
@@ -88,14 +85,13 @@ export class FriendRepository {
         },
       ],
     });
-    return isFriend;
   }
 
   async findFriendByUserIdAndFriendId(
     userId: number,
     friendId: number,
   ): Promise<Friend> {
-    const friend: Friend = await this.repository.findOne({
+    return await this.repository.findOne({
       where: [
         {
           sender: { id: userId },
@@ -109,27 +105,22 @@ export class FriendRepository {
         },
       ],
     });
-    return friend;
   }
 
-  /** 친구요청
-   * 친구 요청을 보냅니다. 테이블에 생성하는 부분
-   */
-  async saveFriendStatusRequestingBySenderIdAndReceiverId(
-    userId: number,
-    friendId: number,
+  async saveFriendStatusBySenderIdAndReceiverId(
+    status: FriendType,
+    senderId: number,
+    receiverId: number,
   ): Promise<void> {
     await this.repository.save({
-      sender: { id: userId },
-      receiver: { id: friendId },
-      status: FRIENDSTATUS_PENDING,
+      sender: { id: senderId },
+      receiver: { id: receiverId },
+      status: status,
     });
   }
 
-  /** 친구수락
-   * 친구 요청을 수락합니다. 테이블에 업데이트하는 부분
-   */
-  async updateFriendRequestStatusFriendBySenderIdAndReceiverId(
+  async updateFriendStatusBySenderIdAndReceiverId(
+    status: FriendType,
     senderId: number,
     receiverId: number,
   ): Promise<void> {
@@ -138,26 +129,9 @@ export class FriendRepository {
         sender: { id: senderId },
         receiver: { id: receiverId },
       },
-      { status: FRIENDSTATUS_FRIEND },
+      { status: status },
     );
   }
-
-  /** 친구 삭제 및 거절
-   * 친구 요청을 거절합니다. 테이블에 업데이트하는 부분
-   */
-  async updateFriendRequestStatusDeletedBySenderIdAndReceiverId(
-    senderId: number,
-    receiverId: number,
-  ): Promise<void> {
-    await this.repository.update(
-      {
-        sender: { id: senderId },
-        receiver: { id: receiverId },
-      },
-      { status: FRIENDSTATUS_DELETED },
-    );
-  }
-
   async hardDeleteFriendBySenderIdAndReceiverId(
     senderId: number,
     receiverId: number,
