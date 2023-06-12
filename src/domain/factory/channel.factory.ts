@@ -103,6 +103,7 @@ export class ChannelFactory {
     if (channel.users.has(userId)) {
       channel.muteList.delete(userId);
       this.channels.set(channel.id, channel);
+      this.userFactory.unMute(userId);
       return true;
     }
     return false;
