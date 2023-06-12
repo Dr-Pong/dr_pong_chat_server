@@ -280,7 +280,7 @@ describe('ChannelUserService', () => {
         };
 
         const participants: ChannelParticipantsDto =
-          service.getChannelParticipants(getChannelParticipantsRequest);
+          await service.getChannelParticipants(getChannelParticipantsRequest);
 
         expect(participants).toHaveProperty('me');
         expect(participants.me).toHaveProperty('nickname');
@@ -306,9 +306,11 @@ describe('ChannelUserService', () => {
           channelId: basicChannel.id,
         };
 
-        expect(() => {
-          service.getChannelParticipants(getChannelParticipantsRequest);
-        }).toThrow(new BadRequestException('You are not in this channel'));
+        await expect(() =>
+          service.getChannelParticipants(getChannelParticipantsRequest),
+        ).rejects.toThrow(
+          new BadRequestException('You are not in this channel'),
+        );
       });
     });
 

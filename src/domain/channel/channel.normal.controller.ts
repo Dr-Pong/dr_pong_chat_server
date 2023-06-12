@@ -101,7 +101,7 @@ export class ChannelNormalController {
   ): Promise<ChannelParticipantsResponseDto> {
     const { id: userId }: UserIdCardDto = requestor;
     const { me, participants, headCount, maxCount } =
-      this.channelService.getChannelParticipants({ userId, channelId });
+      await this.channelService.getChannelParticipants({ userId, channelId });
     return { me, participants, headCount, maxCount };
   }
 
@@ -261,7 +261,7 @@ export class ChannelNormalController {
     @Requestor() requestor: UserIdCardDto,
   ): Promise<ChannelMeResponseDto> {
     const { id: userId }: UserIdCardDto = requestor;
-    const myChannel: ChannelMeDto = this.channelService.getChannelMy({
+    const myChannel: ChannelMeDto = await this.channelService.getChannelMy({
       userId,
     });
     return { myChannel };

@@ -83,11 +83,10 @@ export class ChannelNormalService {
    * 채널의 참여자 목록을 조회하는 함수
    * 채널에 참여한 유저가 아니면 조회할 수 없다
    * ChannelFactory에서 채널을 조회하고 그 채널의 참여자 목록을 조회한다
-   * Factory를 사용하기 때문에 비동기로 처리하지 않는다
    */
-  getChannelParticipants(
+  async getChannelParticipants(
     getDto: GetChannelParticipantsDto,
-  ): ChannelParticipantsDto {
+  ): Promise<ChannelParticipantsDto> {
     const channel: ChannelModel = this.channelFactory.findById(
       getDto.channelId,
     );
@@ -110,9 +109,8 @@ export class ChannelNormalService {
   /**
    * 유저가 참여한 채널을 조회하는 함수
    * 참여한 채널이 없으면 null이 반환된다
-   * Factory를 사용하기 때문에 비동기로 처리하지 않는다
    */
-  getChannelMy(getDto: GetChannelMyDto): ChannelMeDto {
+  async getChannelMy(getDto: GetChannelMyDto): Promise<ChannelMeDto> {
     const user: UserModel = this.userFactory.findById(getDto.userId);
 
     if (user.joinedChannel) {
@@ -128,9 +126,8 @@ export class ChannelNormalService {
    * 유저를 채널에 초대하는 함수
    * 이미 초대된 유저라면 아무 일도 일어나지 않는다
    * UserModel의 inviteList에 추가해준다
-   * Factory를 사용하기 때문에 비동기로 처리하지 않는다
    */
-  postInvite(postDto: PostInviteDto): void {
+  async postInvite(postDto: PostInviteDto): Promise<void> {
     const channel: ChannelModel = this.channelFactory.channels.get(
       postDto.channelId,
     );
