@@ -121,7 +121,7 @@ describe('Direct Message Service', () => {
         const userDirectMessageDto: GetDirectMessageHistoryDto = {
           userId: user.id,
           friendId: friend.id,
-          offset: null,
+          offset: 2147483647,
           count: 20,
         };
 
@@ -145,7 +145,7 @@ describe('Direct Message Service', () => {
         const userDirectMessageDto: GetDirectMessageHistoryDto = {
           userId: user.id,
           friendId: friend.id,
-          offset: null,
+          offset: 2147483647,
           count: 10,
         };
 
@@ -171,7 +171,7 @@ describe('Direct Message Service', () => {
         const userDirectMessageDto: GetDirectMessageHistoryDto = {
           userId: user.id,
           friendId: friend.id,
-          offset: null,
+          offset: 2147483647,
           count: 40,
         };
 
@@ -209,7 +209,7 @@ describe('Direct Message Service', () => {
         const userDirectMessageDto: GetDirectMessageHistoryDto = {
           userId: user.id,
           friendId: friend.id,
-          offset: 0,
+          offset: 2147483647,
           count: 10,
         };
 
@@ -237,7 +237,7 @@ describe('Direct Message Service', () => {
         const userDirectMessageDto: GetDirectMessageHistoryDto = {
           userId: user.id,
           friendId: friend.id,
-          offset: 0,
+          offset: 2147483647,
           count: 10,
         };
 
@@ -265,7 +265,7 @@ describe('Direct Message Service', () => {
         const userDirectMessageDto: GetDirectMessageHistoryDto = {
           userId: user.id,
           friendId: friend.id,
-          offset: 0,
+          offset: 2147483647,
           count: 10,
         };
 

@@ -84,7 +84,7 @@ describe('FriendController - Chat', () => {
         }
         const token = await friendTestService.giveTokenToUser(user);
         const count = 20;
-        const offset = 0;
+        const offset = 2147483647;
         let response = await req(
           token,
           'GET',
@@ -143,7 +143,7 @@ describe('FriendController - Chat', () => {
         const sender = friendTestService.users[1];
         const token = await friendTestService.giveTokenToUser(user);
         const count = 20;
-        const offset = 0;
+        const offset = 2147483647;
         const response = await req(
           token,
           'GET',
@@ -162,7 +162,7 @@ describe('FriendController - Chat', () => {
         const nobody = 'nobody';
         const token = await friendTestService.giveTokenToUser(user);
         const count = 20;
-        const offset = 0;
+        const offset = 2147483647;
         const response = await req(
           token,
           'GET',
