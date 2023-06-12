@@ -64,7 +64,7 @@ export class FriendService {
 
     if (isFriend || isRequesting) return;
 
-    await this.friendRepository.saveFriendStatusRequestingByUserIdAndFriendId(
+    await this.friendRepository.saveFriendStatusRequestingBySenderIdAndReceiverId(
       userId,
       friendId,
     );
@@ -109,14 +109,22 @@ export class FriendService {
 
     if (!isRequesting) return;
 
-    await this.friendRepository.updateFriendRequestStatusFriendByUserIdAndFriendId(
-      userId,
-      friendId,
+    const requests =
+      await this.friendRepository.findRequestingsByUserIdAndFriendId(
+        userId,
+        friendId,
+      );
+
+    await this.friendRepository.updateFriendRequestStatusFriendBySenderIdAndReceiverId(
+      requests[0].sender.id,
+      requests[0].receiver.id,
     );
-    await this.friendRepository.updateFriendRequestStatusFriendByUserIdAndFriendId(
-      friendId,
-      userId,
-    );
+
+    if (requests.length === 2)
+      await this.friendRepository.updateFriendRequestStatusDeletedBySenderIdAndReceiverId(
+        requests[1].sender.id,
+        requests[1].receiver.id,
+      );
   }
 
   /**  친구요청 거절
@@ -136,7 +144,7 @@ export class FriendService {
 
     if (!isRequesting) return;
 
-    await this.friendRepository.updateFriendRequestStatusDeletedByUserIdAndFriendId(
+    await this.friendRepository.updateFriendRequestStatusDeletedBySenderIdAndReceiverId(
       friendId,
       userId,
     );
@@ -157,11 +165,11 @@ export class FriendService {
 
     if (!isFriend) return;
 
-    await this.friendRepository.updateFriendRequestStatusDeletedByUserIdAndFriendId(
+    await this.friendRepository.updateFriendRequestStatusDeletedBySenderIdAndReceiverId(
       userId,
       friendId,
     );
-    await this.friendRepository.updateFriendRequestStatusDeletedByUserIdAndFriendId(
+    await this.friendRepository.updateFriendRequestStatusDeletedBySenderIdAndReceiverId(
       friendId,
       userId,
     );

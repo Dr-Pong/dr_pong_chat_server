@@ -336,7 +336,7 @@ describe('FriendService', () => {
         });
 
         expect(friendRequest.status).toBe(FRIENDSTATUS_FRIEND);
-        expect(anotherFriendRequest.status).toBe(FRIENDSTATUS_FRIEND);
+        expect(anotherFriendRequest.status).toBe(FRIENDSTATUS_DELETED);
         //TODO: another를 삭제하는 방향으로 코드가 바뀌어야 함니다.
       });
 
