@@ -13,6 +13,11 @@ import { IsolationLevel, Transactional } from 'typeorm-transactional';
 import { GetUserFriendNotificationsRequestDto } from './dto/get.user.friend.notifications.request.dto';
 import { UserFriendNotificationsDto } from './dto/user.friend.notifications.dto';
 import { SortUtil } from '../../global/utils/sort.util';
+import {
+  FRIENDSTATUS_DELETED,
+  FRIENDSTATUS_FRIEND,
+  FRIENDSTATUS_PENDING,
+} from '../../global/type/type.friend.status';
 
 @Injectable()
 export class FriendService {
@@ -57,14 +62,15 @@ export class FriendService {
         friendId,
       );
     const isRequesting =
-      await this.friendRepository.checkIsRequestingBySenderIdAndReceiverId(
+      await this.friendRepository.checkIsPendingBySenderIdAndReceiverId(
         userId,
         friendId,
       );
 
     if (isFriend || isRequesting) return;
 
-    await this.friendRepository.saveFriendStatusRequestingBySenderIdAndReceiverId(
+    await this.friendRepository.saveFriendStatusBySenderIdAndReceiverId(
+      FRIENDSTATUS_PENDING,
       userId,
       friendId,
     );
@@ -79,7 +85,7 @@ export class FriendService {
   ): Promise<UserPendingFriendsDto> {
     const { userId: myId } = getDto;
     const userFriends: Friend[] =
-      await this.friendRepository.findFriendRequestingsByUserId(myId);
+      await this.friendRepository.findPendingsByReceiverId(myId);
 
     const friends: FriendDto[] = userFriends.map((friend) => {
       const { sender } = friend;
@@ -102,14 +108,15 @@ export class FriendService {
   async postUserFriendAccept(postDto: PostUserFriendAcceptDto): Promise<void> {
     const { userId, friendId } = postDto;
     const isRequesting: boolean =
-      await this.friendRepository.checkIsRequestingBySenderIdAndReceiverId(
+      await this.friendRepository.checkIsPendingBySenderIdAndReceiverId(
         friendId,
         userId,
       );
 
     if (!isRequesting) return;
 
-    await this.friendRepository.updateFriendRequestStatusFriendBySenderIdAndReceiverId(
+    await this.friendRepository.updateFriendStatusBySenderIdAndReceiverId(
+      FRIENDSTATUS_FRIEND,
       friendId,
       userId,
     );
@@ -131,14 +138,15 @@ export class FriendService {
   ): Promise<void> {
     const { userId, friendId } = deleteDto;
     const isRequesting: boolean =
-      await this.friendRepository.checkIsRequestingBySenderIdAndReceiverId(
+      await this.friendRepository.checkIsPendingBySenderIdAndReceiverId(
         friendId,
         userId,
       );
 
     if (!isRequesting) return;
 
-    await this.friendRepository.updateFriendRequestStatusDeletedBySenderIdAndReceiverId(
+    await this.friendRepository.updateFriendStatusBySenderIdAndReceiverId(
+      FRIENDSTATUS_DELETED,
       friendId,
       userId,
     );
@@ -159,7 +167,8 @@ export class FriendService {
 
     if (!friend) return;
 
-    await this.friendRepository.updateFriendRequestStatusDeletedBySenderIdAndReceiverId(
+    await this.friendRepository.updateFriendStatusBySenderIdAndReceiverId(
+      FRIENDSTATUS_DELETED,
       friend.sender.id,
       friend.receiver.id,
     );
@@ -173,7 +182,7 @@ export class FriendService {
     getDto: GetUserFriendNotificationsRequestDto,
   ): Promise<UserFriendNotificationsDto> {
     const friendsCount: number =
-      await this.friendRepository.countFriendRequestingsByUserId(getDto.userId);
+      await this.friendRepository.countPendingsByReceiverId(getDto.userId);
 
     const responseDto: UserFriendNotificationsDto = {
       requestCount: friendsCount > 50 ? 50 : friendsCount,

@@ -6,7 +6,7 @@ import { Repository } from 'typeorm';
 import { Friend } from '../friend.entity';
 import {
   FRIENDSTATUS_FRIEND,
-  FRIENDSTATUS_REQUESTING,
+  FRIENDSTATUS_PENDING,
 } from 'src/global/type/type.friend.status';
 import { JwtService } from '@nestjs/jwt';
 
@@ -55,7 +55,7 @@ export class FriendTestService {
     await this.friendRepository.save({
       sender: this.users[from.id - 1],
       receiver: this.users[to.id - 1],
-      status: FRIENDSTATUS_REQUESTING,
+      status: FRIENDSTATUS_PENDING,
     });
   }
 
