@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { FriendRepository } from './friend.repository';
 import { GetUserFriendDto } from './dto/get.user.friend.dto';
 import { FriendDto, UserFriendsDto } from './dto/user.friends.dto';
@@ -56,6 +56,8 @@ export class FriendService {
     postDto: PostUserFriendRequestDto,
   ): Promise<void> {
     const { userId, friendId } = postDto;
+    this.checkIfRequestorIsTarget(userId, friendId);
+
     const isFriend: boolean =
       await this.friendRepository.checkIsFriendByUserIdAndFriendId(
         userId,
@@ -107,6 +109,8 @@ export class FriendService {
   @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
   async postUserFriendAccept(postDto: PostUserFriendAcceptDto): Promise<void> {
     const { userId, friendId } = postDto;
+    this.checkIfRequestorIsTarget(userId, friendId);
+
     const isRequesting: boolean =
       await this.friendRepository.checkIsPendingBySenderIdAndReceiverId(
         friendId,
@@ -137,6 +141,8 @@ export class FriendService {
     deleteDto: DeleteUserFriendRejectDto,
   ): Promise<void> {
     const { userId, friendId } = deleteDto;
+    this.checkIfRequestorIsTarget(userId, friendId);
+
     const isRequesting: boolean =
       await this.friendRepository.checkIsPendingBySenderIdAndReceiverId(
         friendId,
@@ -159,6 +165,8 @@ export class FriendService {
   @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
   async deleteUserFriend(deleteDto: DeleteUserFriendDto): Promise<void> {
     const { userId, friendId } = deleteDto;
+    this.checkIfRequestorIsTarget(userId, friendId);
+
     const friend: Friend =
       await this.friendRepository.findFriendByUserIdAndFriendId(
         userId,
@@ -188,5 +196,10 @@ export class FriendService {
       requestCount: friendsCount > 50 ? 50 : friendsCount,
     };
     return responseDto;
+  }
+
+  checkIfRequestorIsTarget(requestorId: number, targetId: number): void {
+    if (requestorId === targetId)
+      throw new BadRequestException('Cannot request yourself');
   }
 }
