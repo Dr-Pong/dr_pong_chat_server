@@ -109,13 +109,13 @@ describe('FriendController - Chat', () => {
           }
           expect(chat).toHaveProperty('time');
         }
+        expect(result.chats).toEqual(result.chats.sort((a, b) => b.id - a.id));
 
+        const secondOffset = result.chats[result.chats.length - 1].id;
         response = await req(
           token,
           'GET',
-          `/users/friends/${sender.nickname}/chats?count=${count}&offset=${
-            result.chats[result.chats.length - 1].id
-          }`,
+          `/users/friends/${sender.nickname}/chats?count=${count}&offset=${secondOffset}`,
         );
         result = response.body;
         expect(response.status).toBe(200);
@@ -136,6 +136,8 @@ describe('FriendController - Chat', () => {
           }
           expect(chat).toHaveProperty('time');
         }
+        expect(result.chats[0].id).toBeLessThan(secondOffset);
+        expect(result.chats).toEqual(result.chats.sort((a, b) => b.id - a.id));
       });
 
       it('DM 대화 내역 빈 경우', async () => {
