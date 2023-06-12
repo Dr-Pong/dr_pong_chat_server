@@ -64,6 +64,11 @@ export class ChannelAdminService {
       return;
     }
 
+    await this.channelUserRepository.updateRoleTypeAdmin(
+      postDto.targetUserId,
+      channel.id,
+    );
+
     await this.messageRepository.save(
       SaveChannelMessageDto.fromCommandDto(postDto),
     );
@@ -94,6 +99,11 @@ export class ChannelAdminService {
     if (!isUserAdmin(channel, deleteDto.targetUserId)) {
       return;
     }
+
+    await this.channelUserRepository.updateRoleTypeNormal(
+      deleteDto.targetUserId,
+      channel.id,
+    );
 
     await this.messageRepository.save(
       SaveChannelMessageDto.fromCommandDto(deleteDto),
@@ -162,6 +172,11 @@ export class ChannelAdminService {
       return;
     }
 
+    await this.channelUserRepository.updateIsBannedTure(
+      postDto.targetUserId,
+      channel.id,
+    );
+
     await this.exitChannel(
       new ChannelExitDto(postDto.targetUserId, channel.id),
     );
@@ -197,6 +212,11 @@ export class ChannelAdminService {
       return;
     }
 
+    await this.channelUserRepository.updateIsMutedTure(
+      postDto.targetUserId,
+      channel.id,
+    );
+
     await this.messageRepository.save(
       SaveChannelMessageDto.fromCommandDto(postDto),
     );
@@ -226,6 +246,11 @@ export class ChannelAdminService {
     if (!channel.muteList.has(deleteDto.targetUserId)) {
       return;
     }
+
+    await this.channelUserRepository.updateIsMutedFalse(
+      deleteDto.targetUserId,
+      channel.id,
+    );
 
     await this.messageRepository.save(
       SaveChannelMessageDto.fromCommandDto(deleteDto),

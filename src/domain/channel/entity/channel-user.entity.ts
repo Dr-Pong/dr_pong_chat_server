@@ -8,6 +8,10 @@ import {
 } from 'typeorm';
 import { User } from '../../user/user.entity';
 import { Channel } from './channel.entity';
+import {
+  CHANNEL_PARTICIPANT_NORMAL,
+  ChannelParticipantType,
+} from '../type/type.channel-participant';
 
 @Entity()
 export class ChannelUser extends BaseTimeEntity {
@@ -24,4 +28,13 @@ export class ChannelUser extends BaseTimeEntity {
 
   @Column({ name: 'is_deleted', default: false })
   isDeleted: boolean;
+
+  @Column({ name: 'role_type', default: CHANNEL_PARTICIPANT_NORMAL })
+  roleType: ChannelParticipantType;
+
+  @Column({ name: 'is_muted', default: false })
+  isMuted: boolean;
+
+  @Column({ name: 'is_banned', default: false })
+  isBanned: boolean;
 }
