@@ -86,7 +86,7 @@ export class ChannelUserRepository {
     );
   }
 
-  async updateIsMutedTure(userId: number, channelId: string): Promise<void> {
+  async updateIsMutedTrue(userId: number, channelId: string): Promise<void> {
     await this.repository.update(
       { user: { id: userId }, channel: { id: channelId }, isDeleted: false },
       { isMuted: true },

@@ -212,7 +212,7 @@ export class ChannelAdminService {
       return;
     }
 
-    await this.channelUserRepository.updateIsMutedTure(
+    await this.channelUserRepository.updateIsMutedTrue(
       postDto.targetUserId,
       channel.id,
     );
