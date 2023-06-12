@@ -32,6 +32,10 @@ import { DeleteChannelDto } from '../dto/delete/delete.channel.dto';
 import { UpdateChannelDto } from '../dto/patch/update.channel.dto';
 import { UpdateChannelHeadCountDto } from '../dto/patch/update.channel.headcount.dto';
 import { DeleteChannelAdminDto } from '../dto/delete/delete.channel.admin.dto';
+import {
+  CHANNEL_PARTICIPANT_ADMIN,
+  CHANNEL_PARTICIPANT_NORMAL,
+} from '../type/type.channel-participant';
 
 @Injectable()
 export class ChannelAdminService {
@@ -64,9 +68,10 @@ export class ChannelAdminService {
       return;
     }
 
-    await this.channelUserRepository.updateRoleTypeAdmin(
+    await this.channelUserRepository.updateRoleType(
       postDto.targetUserId,
       channel.id,
+      CHANNEL_PARTICIPANT_ADMIN,
     );
 
     await this.messageRepository.save(
@@ -100,9 +105,10 @@ export class ChannelAdminService {
       return;
     }
 
-    await this.channelUserRepository.updateRoleTypeNormal(
+    await this.channelUserRepository.updateRoleType(
       deleteDto.targetUserId,
       channel.id,
+      CHANNEL_PARTICIPANT_NORMAL,
     );
 
     await this.messageRepository.save(
@@ -172,9 +178,10 @@ export class ChannelAdminService {
       return;
     }
 
-    await this.channelUserRepository.updateIsBannedTrue(
+    await this.channelUserRepository.updateIsBanned(
       postDto.targetUserId,
       channel.id,
+      true,
     );
 
     await this.exitChannel(
@@ -212,9 +219,10 @@ export class ChannelAdminService {
       return;
     }
 
-    await this.channelUserRepository.updateIsMutedTrue(
+    await this.channelUserRepository.updateIsMuted(
       postDto.targetUserId,
       channel.id,
+      true,
     );
 
     await this.messageRepository.save(
@@ -247,9 +255,10 @@ export class ChannelAdminService {
       return;
     }
 
-    await this.channelUserRepository.updateIsMutedFalse(
+    await this.channelUserRepository.updateIsMuted(
       deleteDto.targetUserId,
       channel.id,
+      false,
     );
 
     await this.messageRepository.save(

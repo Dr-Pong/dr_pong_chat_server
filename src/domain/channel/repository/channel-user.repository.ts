@@ -3,10 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ChannelUser } from '../entity/channel-user.entity';
 import { SaveChannelUserDto } from '../dto/post/save.channel-user.dto';
-import {
-  CHANNEL_PARTICIPANT_ADMIN,
-  CHANNEL_PARTICIPANT_NORMAL,
-} from '../type/type.channel-participant';
+import { ChannelParticipantType } from '../type/type.channel-participant';
 
 @Injectable()
 export class ChannelUserRepository {
@@ -86,38 +83,36 @@ export class ChannelUserRepository {
     );
   }
 
-  async updateIsMutedTrue(userId: number, channelId: string): Promise<void> {
+  async updateIsMuted(
+    userId: number,
+    channelId: string,
+    isMuted: boolean,
+  ): Promise<void> {
     await this.repository.update(
       { user: { id: userId }, channel: { id: channelId }, isDeleted: false },
-      { isMuted: true },
+      { isMuted: isMuted },
     );
   }
 
-  async updateIsMutedFalse(userId: number, channelId: string): Promise<void> {
+  async updateIsBanned(
+    userId: number,
+    channelId: string,
+    isBanned: boolean,
+  ): Promise<void> {
     await this.repository.update(
       { user: { id: userId }, channel: { id: channelId }, isDeleted: false },
-      { isMuted: false },
+      { isBanned: isBanned },
     );
   }
 
-  async updateIsBannedTrue(userId: number, channelId: string): Promise<void> {
+  async updateRoleType(
+    userId: number,
+    channelId: string,
+    roleType: ChannelParticipantType,
+  ): Promise<void> {
     await this.repository.update(
       { user: { id: userId }, channel: { id: channelId }, isDeleted: false },
-      { isBanned: true },
-    );
-  }
-
-  async updateRoleTypeAdmin(userId: number, channelId: string): Promise<void> {
-    await this.repository.update(
-      { user: { id: userId }, channel: { id: channelId }, isDeleted: false },
-      { roleType: CHANNEL_PARTICIPANT_ADMIN },
-    );
-  }
-
-  async updateRoleTypeNormal(userId: number, channelId: string): Promise<void> {
-    await this.repository.update(
-      { user: { id: userId }, channel: { id: channelId }, isDeleted: false },
-      { roleType: CHANNEL_PARTICIPANT_NORMAL },
+      { roleType: roleType },
     );
   }
 }
