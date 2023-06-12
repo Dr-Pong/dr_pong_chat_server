@@ -14,7 +14,7 @@ import { Friend } from './friend.entity';
 import {
   FRIENDSTATUS_DELETED,
   FRIENDSTATUS_FRIEND,
-  FRIENDSTATUS_REQUESTING,
+  FRIENDSTATUS_PENDING,
 } from 'src/global/type/type.friend.status';
 import { GetUserPendingFriendDto } from './dto/get.user.peding.friend.dto';
 import { UserPendingFriendsDto } from './dto/user.pending.friends.dto';
@@ -188,7 +188,7 @@ describe('FriendService', () => {
           },
         });
 
-        expect(friendRequest.status).toBe(FRIENDSTATUS_REQUESTING);
+        expect(friendRequest.status).toBe(FRIENDSTATUS_PENDING);
       });
 
       it('[Valid Case]이미 친구인 유저에게 친구요청(백에서 씹기)', async () => {

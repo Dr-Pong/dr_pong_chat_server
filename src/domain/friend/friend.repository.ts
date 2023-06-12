@@ -5,7 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import {
   FRIENDSTATUS_DELETED,
   FRIENDSTATUS_FRIEND,
-  FRIENDSTATUS_REQUESTING,
+  FRIENDSTATUS_PENDING,
 } from 'src/global/type/type.friend.status';
 
 @Injectable()
@@ -33,7 +33,7 @@ export class FriendRepository {
    * */
   async findFriendRequestingsByUserId(userId: number): Promise<Friend[]> {
     const friends: Friend[] = await this.repository.find({
-      where: { receiver: { id: userId }, status: FRIENDSTATUS_REQUESTING },
+      where: { receiver: { id: userId }, status: FRIENDSTATUS_PENDING },
     });
     return friends;
   }
@@ -43,7 +43,7 @@ export class FriendRepository {
    * */
   async countFriendRequestingsByUserId(userId: number): Promise<number> {
     const friendCount: number = await this.repository.count({
-      where: { receiver: { id: userId }, status: FRIENDSTATUS_REQUESTING },
+      where: { receiver: { id: userId }, status: FRIENDSTATUS_PENDING },
     });
     return friendCount;
   }
@@ -60,7 +60,7 @@ export class FriendRepository {
         {
           sender: { id: senderId },
           receiver: { id: receiverId },
-          status: FRIENDSTATUS_REQUESTING,
+          status: FRIENDSTATUS_PENDING,
         },
       ],
     });
@@ -122,7 +122,7 @@ export class FriendRepository {
     await this.repository.save({
       sender: { id: userId },
       receiver: { id: friendId },
-      status: FRIENDSTATUS_REQUESTING,
+      status: FRIENDSTATUS_PENDING,
     });
   }
 
