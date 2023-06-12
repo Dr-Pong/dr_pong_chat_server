@@ -25,6 +25,7 @@ import { DeleteUserFriendDto } from './dto/delete.user.friend.dto';
 import { FriendModule } from './friend.module';
 import { GetUserFriendNotificationsRequestDto } from './dto/get.user.friend.notifications.request.dto';
 import { UserFriendNotificationsDto } from './dto/user.friend.notifications.dto';
+import { BadRequestException } from '@nestjs/common';
 
 describe('FriendService', () => {
   let service: FriendService;
@@ -212,6 +213,20 @@ describe('FriendService', () => {
 
         expect(friendRequest.status).toBe(FRIENDSTATUS_FRIEND);
       });
+
+      it('[Error Case] 자기 자신을 친구 요청', async () => {
+        const user = friendTestService.users[0];
+        const userFriendsRequestDto: PostUserFriendRequestDto = {
+          userId: user.id,
+          friendId: user.id,
+        };
+
+        await expect(
+          service.postUserFriendRequest(userFriendsRequestDto),
+        ).rejects.toThrowError(
+          new BadRequestException('Cannot request yourself'),
+        );
+      });
     });
 
     describe('친구요청 목록', () => {
@@ -361,6 +376,20 @@ describe('FriendService', () => {
 
         expect(friendRequest.status).toBe(FRIENDSTATUS_FRIEND);
       });
+
+      it('[Error Case] 자기 자신을 친구 요청 수락', async () => {
+        const user = friendTestService.users[0];
+        const userFriendsAcceptDto: PostUserFriendAcceptDto = {
+          userId: user.id,
+          friendId: user.id,
+        };
+
+        await expect(
+          service.postUserFriendAccept(userFriendsAcceptDto),
+        ).rejects.toThrowError(
+          new BadRequestException('Cannot request yourself'),
+        );
+      });
     });
 
     describe('친구요청 거절', () => {
@@ -407,6 +436,20 @@ describe('FriendService', () => {
 
         expect(friendRequest.status).toBe(FRIENDSTATUS_FRIEND);
       });
+
+      it('[Error Case] 자기 자신을 친구 요청 거절', async () => {
+        const user = friendTestService.users[0];
+        const userFriendRejectDto: DeleteUserFriendRejectDto = {
+          userId: user.id,
+          friendId: user.id,
+        };
+
+        await expect(
+          service.deleteUserFriendReject(userFriendRejectDto),
+        ).rejects.toThrowError(
+          new BadRequestException('Cannot request yourself'),
+        );
+      });
     });
 
     describe('친구 삭제', () => {
@@ -451,6 +494,20 @@ describe('FriendService', () => {
         });
 
         expect(friendRequest).toBeNull();
+      });
+
+      it('[Error Case] 자기 자신을 친구 삭제', async () => {
+        const user = friendTestService.users[0];
+        const deleteFriendDto: DeleteUserFriendDto = {
+          userId: user.id,
+          friendId: user.id,
+        };
+
+        await expect(
+          service.deleteUserFriend(deleteFriendDto),
+        ).rejects.toThrowError(
+          new BadRequestException('Cannot request yourself'),
+        );
       });
     });
 
