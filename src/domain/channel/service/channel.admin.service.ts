@@ -172,7 +172,7 @@ export class ChannelAdminService {
       return;
     }
 
-    await this.channelUserRepository.updateIsBannedTure(
+    await this.channelUserRepository.updateIsBannedTrue(
       postDto.targetUserId,
       channel.id,
     );

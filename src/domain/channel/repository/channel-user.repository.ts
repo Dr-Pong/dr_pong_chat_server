@@ -100,7 +100,7 @@ export class ChannelUserRepository {
     );
   }
 
-  async updateIsBannedTure(userId: number, channelId: string): Promise<void> {
+  async updateIsBannedTrue(userId: number, channelId: string): Promise<void> {
     await this.repository.update(
       { user: { id: userId }, channel: { id: channelId }, isDeleted: false },
       { isBanned: true },
