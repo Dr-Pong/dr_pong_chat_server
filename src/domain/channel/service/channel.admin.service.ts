@@ -328,6 +328,5 @@ export class ChannelAdminService {
     await this.channelRepository.updateHeadCount(
       new UpdateChannelHeadCountDto(dto.channelId, -1),
     );
-    await this.messageRepository.save(SaveChannelMessageDto.fromExitDto(dto));
   }
 }

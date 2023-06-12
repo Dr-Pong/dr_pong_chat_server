@@ -222,7 +222,8 @@ export class ChannelNormalService {
     const newChannel: Channel = await this.channelRepository.save(
       SaveChannelDto.from(postDto),
     );
-    await this.channelUserRepository.save(
+
+    await this.channelUserRepository.saveOwner(
       new SaveChannelUserDto(postDto.userId, newChannel.id),
     );
 
