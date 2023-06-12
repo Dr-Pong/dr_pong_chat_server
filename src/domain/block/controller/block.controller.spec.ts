@@ -6,6 +6,7 @@ import { initializeTransactionalContext } from 'typeorm-transactional';
 import { AppModule } from '../../../app.module';
 import { UserModel } from 'src/domain/factory/model/user.model';
 import * as request from 'supertest';
+import { BlockTestModule } from '../test/block.test.module';
 
 describe('BlockController', () => {
   let app: INestApplication;
@@ -15,7 +16,7 @@ describe('BlockController', () => {
   beforeAll(async () => {
     initializeTransactionalContext();
     const module: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
+      imports: [AppModule, BlockTestModule],
     }).compile();
 
     app = module.createNestApplication();
