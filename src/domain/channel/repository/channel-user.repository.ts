@@ -3,7 +3,11 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ChannelUser } from '../entity/channel-user.entity';
 import { SaveChannelUserDto } from '../dto/post/save.channel-user.dto';
-import { ChannelParticipantType } from '../type/type.channel-participant';
+import {
+  CHANNEL_PARTICIPANT_NORMAL,
+  CHANNEL_PARTICIPANT_OWNER,
+  ChannelParticipantType,
+} from '../type/type.channel-participant';
 
 @Injectable()
 export class ChannelUserRepository {
@@ -66,13 +70,21 @@ export class ChannelUserRepository {
     });
   }
 
+  async saveOwner(saveDto: SaveChannelUserDto): Promise<ChannelUser> {
+    return await this.repository.save({
+      user: { id: saveDto.userId },
+      channel: { id: saveDto.channelId },
+      roleType: CHANNEL_PARTICIPANT_OWNER,
+    });
+  }
+
   async deleteByUserIdAndChannelId(
     userId: number,
     channelId: string,
   ): Promise<void> {
     await this.repository.update(
       { user: { id: userId }, channel: { id: channelId }, isDeleted: false },
-      { isDeleted: true },
+      { isDeleted: true, roleType: CHANNEL_PARTICIPANT_NORMAL },
     );
   }
 

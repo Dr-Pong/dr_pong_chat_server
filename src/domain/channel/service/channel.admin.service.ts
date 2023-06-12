@@ -144,7 +144,7 @@ export class ChannelAdminService {
       return;
     }
 
-    await this.exitChannel(new ChannelExitDto(dto.targetUserId, channel.id));
+    await this.removeUser(new ChannelExitDto(dto.targetUserId, channel.id));
 
     await this.messageRepository.save(
       SaveChannelMessageDto.fromCommandDto(deleteDto),
@@ -184,9 +184,7 @@ export class ChannelAdminService {
       true,
     );
 
-    await this.exitChannel(
-      new ChannelExitDto(postDto.targetUserId, channel.id),
-    );
+    await this.removeUser(new ChannelExitDto(postDto.targetUserId, channel.id));
 
     await this.messageRepository.save(
       SaveChannelMessageDto.fromCommandDto(postDto),
@@ -320,7 +318,7 @@ export class ChannelAdminService {
    * channel - 채널의 인원수를 업데이트한다
    * message - 채널 퇴장 메시지를 저장한다
    * */
-  private async exitChannel(dto: ChannelExitDto): Promise<void> {
+  private async removeUser(dto: ChannelExitDto): Promise<void> {
     await this.channelUserRepository.deleteByUserIdAndChannelId(
       dto.userId,
       dto.channelId,
@@ -328,6 +326,5 @@ export class ChannelAdminService {
     await this.channelRepository.updateHeadCount(
       new UpdateChannelHeadCountDto(dto.channelId, -1),
     );
-    await this.messageRepository.save(SaveChannelMessageDto.fromExitDto(dto));
   }
 }
