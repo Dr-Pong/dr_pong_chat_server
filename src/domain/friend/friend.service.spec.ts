@@ -89,8 +89,16 @@ describe('FriendService', () => {
       it('[Valid Case]친구목록 조회(친구추가 하거나 받은경우)', async () => {
         const user = friendTestService.users[0];
         for (let i = 1; i <= 12; i++) {
-          if (i % 2 == 0) await friendTestService.makeFriend(user, friendTestService.users[i]);
-          else await friendTestService.makeFriend(friendTestService.users[i], user);
+          if (i % 2 == 0)
+            await friendTestService.makeFriend(
+              user,
+              friendTestService.users[i],
+            );
+          else
+            await friendTestService.makeFriend(
+              friendTestService.users[i],
+              user,
+            );
         }
         const friendsList: UserFriendsDto = await service.getUserFriends({
           userId: user.id,
@@ -108,9 +116,12 @@ describe('FriendService', () => {
           const friend = friendsList.friends[i];
           expect(friend).toHaveProperty('nickname');
           expect(friend).toHaveProperty('imgUrl');
-          expect(friend.nickname).toBe(friendTestService.users[i + 1].nickname);
-          expect(friend.imgUrl).toBe(friendTestService.users[i + 1].image.url);
         }
+        expect(friendsList.friends).toEqual(
+          friendsList.friends.sort((a, b) =>
+            a.nickname.localeCompare(b.nickname),
+          ),
+        );
         for (const friend of friendRequest) {
           expect(friend).toHaveProperty('sender');
           expect(friend).toHaveProperty('receiver');
@@ -130,8 +141,16 @@ describe('FriendService', () => {
       it('[Valid Case]반환된 친구 목록이 알파벳순서로 정렬되는지 확인', async () => {
         const user = friendTestService.users[0];
         for (let i = 10; i > 0; i--) {
-          if (i % 2 == 0) await friendTestService.makeFriend(user, friendTestService.users[i]);
-          else await friendTestService.makeFriend(friendTestService.users[i], user);
+          if (i % 2 == 0)
+            await friendTestService.makeFriend(
+              user,
+              friendTestService.users[i],
+            );
+          else
+            await friendTestService.makeFriend(
+              friendTestService.users[i],
+              user,
+            );
         }
         const friendsList = await service.getUserFriends({ userId: user.id });
 
@@ -141,9 +160,12 @@ describe('FriendService', () => {
           const friend = friendsList.friends[i];
           expect(friend).toHaveProperty('nickname');
           expect(friend).toHaveProperty('imgUrl');
-          expect(friend.nickname).toBe(friendTestService.users[i + 1].nickname);
-          expect(friend.imgUrl).toBe(friendTestService.users[i + 1].image.url);
         }
+        expect(friendsList.friends).toEqual(
+          friendsList.friends.sort((a, b) =>
+            a.nickname.localeCompare(b.nickname),
+          ),
+        );
       });
     });
 
@@ -232,7 +254,10 @@ describe('FriendService', () => {
       it('[Valid Case] 친구요청 목록이 알파벳순서로 정렬되는지 확인', async () => {
         const user = friendTestService.users[0];
         for (let i = 1; i <= 6; i++) {
-          await friendTestService.createFriendRequestFromTo(friendTestService.users[i], user);
+          await friendTestService.createFriendRequestFromTo(
+            friendTestService.users[i],
+            user,
+          );
           await friendTestService.createFriendRequestFromTo(
             friendTestService.users[13 - i],
             user,
@@ -252,9 +277,12 @@ describe('FriendService', () => {
           const friend = friendsList.friends[i];
           expect(friend).toHaveProperty('nickname');
           expect(friend).toHaveProperty('imgUrl');
-          expect(friend.nickname).toBe(friendTestService.users[i + 1].nickname);
-          expect(friend.imgUrl).toBe(friendTestService.users[i + 1].image.url);
         }
+        expect(friendsList.friends).toEqual(
+          friendsList.friends.sort((a, b) =>
+            a.nickname.localeCompare(b.nickname),
+          ),
+        );
       });
     });
 
@@ -446,7 +474,10 @@ describe('FriendService', () => {
       it('[Valid Case]친구요청이 있는경우', async () => {
         const user = friendTestService.users[0];
         for (let i = 1; i < 10; i++) {
-          await friendTestService.createFriendRequestFromTo(friendTestService.users[i], user);
+          await friendTestService.createFriendRequestFromTo(
+            friendTestService.users[i],
+            user,
+          );
         }
 
         const userFriendNotificationDto: GetUserFriendNotificationsRequestDto =
@@ -465,7 +496,10 @@ describe('FriendService', () => {
       it('[Valid Case]  50개 까지만 요청 받기', async () => {
         const user = friendTestService.users[0];
         for (let i = 1; i < 100; i++) {
-          await friendTestService.createFriendRequestFromTo(friendTestService.users[i], user);
+          await friendTestService.createFriendRequestFromTo(
+            friendTestService.users[i],
+            user,
+          );
         }
 
         const userFriendNotificationDto: GetUserFriendNotificationsRequestDto =

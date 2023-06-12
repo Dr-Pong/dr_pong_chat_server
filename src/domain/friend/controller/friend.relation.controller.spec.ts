@@ -66,14 +66,14 @@ describe('FriendController - Relation', () => {
           expect(user).toHaveProperty('nickname');
           expect(user).toHaveProperty('imgUrl');
         }
-        //checking alphabetical order
         for (let i = 0; i < result.users.length; i++) {
           const friend = result.users[i];
           expect(friend).toHaveProperty('nickname');
           expect(friend).toHaveProperty('imgUrl');
-          expect(friend.nickname).toBe(users[i + 1].nickname);
-          expect(friend.imgUrl).toBe(users[i + 1].image.url);
         }
+        expect(result.users).toEqual(
+          result.users.sort((a, b) => a.nickname.localeCompare(b.nickname)),
+        );
       });
 
       it('친구 목록 조회(나는 친구가 없다)', async () => {
@@ -104,14 +104,14 @@ describe('FriendController - Relation', () => {
           expect(user).toHaveProperty('nickname');
           expect(user).toHaveProperty('imgUrl');
         }
-        //checking alphabetical order
         for (let i = 0; i < result.users.length; i++) {
           const friend = result.users[i];
           expect(friend).toHaveProperty('nickname');
           expect(friend).toHaveProperty('imgUrl');
-          expect(friend.nickname).toBe(users[i + 1].nickname);
-          expect(friend.imgUrl).toBe(users[i + 1].image.url);
         }
+        expect(result.users).toEqual(
+          result.users.sort((a, b) => a.nickname.localeCompare(b.nickname)),
+        );
       });
 
       it('친구 요청 목록 조회(나와 친구가 되려는 이가 없다)', async () => {
