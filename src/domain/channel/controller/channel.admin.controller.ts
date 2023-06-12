@@ -7,18 +7,18 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
-import { ChannelAdminService } from './service/channel.admin.service';
-import { UserService } from '../user/user.service';
+import { ChannelAdminService } from '../service/channel.admin.service';
+import { UserService } from '../../user/user.service';
 import { AuthGuard } from '@nestjs/passport';
-import { UserIdCardDto } from '../auth/jwt/auth.user.id-card.dto';
-import { Requestor } from '../auth/jwt/auth.requestor.decorator';
-import { ChannelPatchRequestDto } from './dto/patch/channel.patch.request.dto';
-import { PostChannelAdminDto } from './dto/post/post.channel.admin.dto';
-import { PostChannelBanDto } from './dto/post/post.channel.ban.dto';
-import { DeleteChannelKickDto } from './dto/delete/delete.channel.kick.dto';
-import { PostChannelMuteDto } from './dto/post/post.channel.mute.dto';
-import { DeleteChannelMuteDto } from './dto/delete/delete.channel.mute.dto';
-import { DeleteChannelAdminDto } from './dto/delete/delete.channel.admin.dto';
+import { UserIdCardDto } from '../../auth/jwt/auth.user.id-card.dto';
+import { Requestor } from '../../auth/jwt/auth.requestor.decorator';
+import { ChannelPatchRequestDto } from '../dto/patch/channel.patch.request.dto';
+import { PostChannelAdminDto } from '../dto/post/post.channel.admin.dto';
+import { PostChannelBanDto } from '../dto/post/post.channel.ban.dto';
+import { DeleteChannelKickDto } from '../dto/delete/delete.channel.kick.dto';
+import { PostChannelMuteDto } from '../dto/post/post.channel.mute.dto';
+import { DeleteChannelMuteDto } from '../dto/delete/delete.channel.mute.dto';
+import { DeleteChannelAdminDto } from '../dto/delete/delete.channel.admin.dto';
 
 @Controller('/channels')
 export class ChannelAdminController {
