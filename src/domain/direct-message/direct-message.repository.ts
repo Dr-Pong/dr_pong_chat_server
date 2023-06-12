@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { DirectMessage } from './direct-message.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { MoreThan, Repository } from 'typeorm';
+import { LessThan, MoreThan, Repository } from 'typeorm';
 import { FriendChatManager } from 'src/global/utils/generate.room.id';
 
 @Injectable()
@@ -27,13 +27,16 @@ export class DirectMessageRepository {
   ): Promise<DirectMessage[]> {
     const directMessages: DirectMessage[] = await this.repository.find({
       where: {
+        id: LessThan(offset),
         roomId: FriendChatManager.generateRoomId(
           userId.toString(),
           friendId.toString(),
         ),
       },
-      skip: offset,
       take: count,
+      order: {
+        id: 'DESC',
+      },
     });
     return directMessages;
   }
