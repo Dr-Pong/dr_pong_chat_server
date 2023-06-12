@@ -115,7 +115,7 @@ export class ChannelNormalService {
   getChannelMy(getDto: GetChannelMyDto): ChannelMeDto {
     const user: UserModel = this.userFactory.findById(getDto.userId);
 
-    if (user.joinedChannel !== undefined) {
+    if (user.joinedChannel) {
       const channel: ChannelModel = this.channelFactory.findById(
         user.joinedChannel,
       );
@@ -245,6 +245,10 @@ export class ChannelNormalService {
    */
   @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
   async postChannelJoin(postDto: PostChannelJoinDto): Promise<void> {
+    if (this.checkUserAlreadyInChannel(postDto.channelId, postDto.userId)) {
+      return;
+    }
+
     this.exitIfUserIsInChannel(postDto.userId);
 
     await this.joinChannel(
@@ -417,6 +421,21 @@ export class ChannelNormalService {
       await this.exitChannel(
         new ChannelExitDto(userId, channelUser.channel.id),
       );
+      if (channelUser.channel.headCount === 1) {
+        await this.channelRepository.deleteById(channelUser.channel.id);
+      }
     }
+  }
+
+  private checkUserAlreadyInChannel(
+    channelId: string,
+    userId: number,
+  ): boolean {
+    const channel: ChannelModel = this.channelFactory.findById(channelId);
+    checkChannelExist(channel);
+    if (channel.users.has(userId)) {
+      return true;
+    }
+    return false;
   }
 }
