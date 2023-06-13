@@ -33,7 +33,7 @@ export class UserService {
     return { id: user.id };
   }
 
-  @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
+  @Transactional({ isolationLevel: IsolationLevel.SERIALIZABLE })
   async postGatewayUser(postDto: PostGatewayUserDto): Promise<void> {
     const user: User = await this.userRepository.save(postDto);
     runOnTransactionComplete(async () => {
