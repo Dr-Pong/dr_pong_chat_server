@@ -194,7 +194,7 @@ describe('ChannelUserService', () => {
       });
 
       it('[Valid Case] 채팅방 목록 조회(keyword에 해당하는거 있음)', async () => {
-        await testData.createBasicChannels();
+        await testData.createBasicChannels(10);
 
         const getKeywordMatchPageDto: GetChannelPageDto = {
           page: 1,
@@ -814,7 +814,7 @@ describe('ChannelUserService', () => {
 
         await expect(
           service.postChannelAcceptInvite(InviteAcceptRequest),
-        ).rejects.toThrow(new BadRequestException('You are not invited'));
+        ).rejects.toThrow(new BadRequestException('Channel is full'));
 
         const savedUserFt: UserModel = userFactory.findById(user.id);
 

@@ -280,6 +280,7 @@ export class ChannelNormalService {
 
     checkChannelExist(channel);
     checkUserIsInvited(user, postDto.channelId);
+    this.userFactory.deleteInvite(postDto.userId, postDto.channelId);
 
     this.exitIfUserIsInChannel(postDto.userId);
 
@@ -299,7 +300,6 @@ export class ChannelNormalService {
         this.channelFactory.leave(userModel.id, userModel.joinedChannel);
       }
       this.channelFactory.join(userModel.id, postDto.channelId);
-      this.userFactory.deleteInvite(userModel.id, postDto.channelId);
     });
   }
 
