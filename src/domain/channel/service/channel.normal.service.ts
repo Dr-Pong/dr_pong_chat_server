@@ -60,12 +60,6 @@ import { ChannelExitDto } from '../dto/channel.exit.dto';
 import { GetChannelMessageHistoryDto } from '../dto/get/get.channel-message.history.dto';
 import { DeleteChannelInviteDto } from '../dto/delete/delete.channel.invite.dto';
 import { UpdateChannelHeadCountDto } from '../dto/patch/update.channel.headcount.dto';
-import { User } from 'src/domain/user/user.entity';
-import { UserRepository } from 'src/domain/user/user.repository';
-import {
-  CHANNEL_PARTICIPANT_ADMIN,
-  CHANNEL_PARTICIPANT_OWNER,
-} from '../type/type.channel-participant';
 
 @Injectable()
 export class ChannelNormalService {
@@ -90,8 +84,11 @@ export class ChannelNormalService {
     const channel: ChannelModel = this.channelFactory.findById(
       getDto.channelId,
     );
-    const users: UserModel[] = this.channelFactory.getUsers(channel.id);
+
+    checkChannelExist(channel);
     checkUserInChannel(channel, getDto.userId);
+
+    const users: UserModel[] = this.channelFactory.getUsers(channel.id);
 
     const responseDto: ChannelParticipantsDto = new ChannelParticipantsDto();
     users.map((user) => {
@@ -277,7 +274,13 @@ export class ChannelNormalService {
     postDto: PostChannelAcceptInviteDto,
   ): Promise<void> {
     const user: UserModel = this.userFactory.findById(postDto.userId);
+    const channel: ChannelModel = this.channelFactory.findById(
+      postDto.channelId,
+    );
+
+    checkChannelExist(channel);
     checkUserIsInvited(user, postDto.channelId);
+    this.userFactory.deleteInvite(postDto.userId, postDto.channelId);
 
     this.exitIfUserIsInChannel(postDto.userId);
 
@@ -297,7 +300,6 @@ export class ChannelNormalService {
         this.channelFactory.leave(userModel.id, userModel.joinedChannel);
       }
       this.channelFactory.join(userModel.id, postDto.channelId);
-      this.userFactory.deleteInvite(userModel.id, postDto.channelId);
     });
   }
 

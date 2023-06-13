@@ -127,7 +127,7 @@ describe('ChannelUserService', () => {
   describe('일반 유저 기능', () => {
     describe('채팅방 목록 조회', () => {
       it('[Valid Case] 채팅방 목록 조회(resent)', async () => {
-        await testData.createBasicChannels();
+        await testData.createBasicChannels(10);
 
         const getResentPageDto: GetChannelPageDto = {
           page: 1,
@@ -149,7 +149,7 @@ describe('ChannelUserService', () => {
       });
 
       it('[Valid Case] 채팅방 목록 조회(popular)', async () => {
-        await testData.createBasicChannels();
+        await testData.createBasicChannels(10);
 
         const getPopularPageDto: GetChannelPageDto = {
           page: 1,
@@ -194,7 +194,7 @@ describe('ChannelUserService', () => {
       });
 
       it('[Valid Case] 채팅방 목록 조회(keyword에 해당하는거 있음)', async () => {
-        await testData.createBasicChannels();
+        await testData.createBasicChannels(10);
 
         const getKeywordMatchPageDto: GetChannelPageDto = {
           page: 1,
@@ -800,7 +800,12 @@ describe('ChannelUserService', () => {
           10,
         );
         const user: UserModel = await testData.createBasicUser('user');
-        basicChannel.banList.set(user.id, user.id);
+        const invite: InviteModel = new InviteModel(
+          basicChannel.id,
+          basicChannel.name,
+          basicChannel.ownerId.toString(),
+        );
+        user.inviteList.set(basicChannel.id, invite);
 
         const InviteAcceptRequest: PostChannelAcceptInviteDto = {
           userId: user.id,
@@ -809,7 +814,7 @@ describe('ChannelUserService', () => {
 
         await expect(
           service.postChannelAcceptInvite(InviteAcceptRequest),
-        ).rejects.toThrow(new BadRequestException('You are not invited'));
+        ).rejects.toThrow(new BadRequestException('Channel is full'));
 
         const savedUserFt: UserModel = userFactory.findById(user.id);
 
