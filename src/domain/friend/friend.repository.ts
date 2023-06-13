@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { In, Repository } from 'typeorm';
+import { Not, Repository } from 'typeorm';
 import { Friend } from './friend.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
@@ -119,9 +119,8 @@ export class FriendRepository {
     });
   }
 
-  async updateFriendStatusFromToBySenderIdAndReceiverId(
-    from: FriendType,
-    to: FriendType,
+  async updateFriendStatusBySenderIdAndReceiverId(
+    status: FriendType,
     senderId: number,
     receiverId: number,
   ): Promise<void> {
@@ -129,12 +128,11 @@ export class FriendRepository {
       {
         sender: { id: senderId },
         receiver: { id: receiverId },
-        status: from,
+        status: Not(FRIENDSTATUS_DELETED),
       },
-      { status: to },
+      { status: status },
     );
   }
-
   async hardDeleteFriendBySenderIdAndReceiverId(
     senderId: number,
     receiverId: number,
