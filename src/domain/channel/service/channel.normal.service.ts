@@ -211,7 +211,7 @@ export class ChannelNormalService {
   async postChannel(postDto: PostChannelDto): Promise<void> {
     await checkChannelNameIsDuplicate(this.channelRepository, postDto.title);
 
-    this.exitIfUserIsInChannel(postDto.userId);
+    await this.exitIfUserIsInChannel(postDto.userId);
 
     const newChannel: Channel = await this.channelRepository.save(
       SaveChannelDto.from(postDto),
@@ -244,7 +244,7 @@ export class ChannelNormalService {
       return;
     }
 
-    this.exitIfUserIsInChannel(postDto.userId);
+    await this.exitIfUserIsInChannel(postDto.userId);
 
     await this.joinChannel(
       new ChannelJoinDto(
@@ -282,7 +282,7 @@ export class ChannelNormalService {
     checkUserIsInvited(user, postDto.channelId);
     this.userFactory.deleteInvite(postDto.userId, postDto.channelId);
 
-    this.exitIfUserIsInChannel(postDto.userId);
+    await this.exitIfUserIsInChannel(postDto.userId);
 
     await this.joinChannel(
       new ChannelJoinDto(
