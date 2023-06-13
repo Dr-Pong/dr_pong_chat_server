@@ -7,7 +7,7 @@ import * as request from 'supertest';
 import { ChannelTestService } from '../test/channel.test.service';
 import { UserModel } from 'src/domain/factory/model/user.model';
 import { ChannlTestModule } from '../test/channel.test.module';
-import { CHANNEL_PUBLIC } from '../type/type.channel';
+import { CHANNEL_PROTECTED, CHANNEL_PUBLIC } from '../type/type.channel';
 import { CHANNEL_PRIVATE } from '../type/type.channel';
 import { ChannelModel } from 'src/domain/factory/model/channel.model';
 import { ChannelFactory } from 'src/domain/factory/channel.factory';
@@ -56,6 +56,82 @@ describe('BlockController', () => {
           owner,
           'channel',
           CHANNEL_PUBLIC,
+        );
+        const token = await testData.giveTokenToUser(owner);
+        const response = await req(token, 'PATCH', `/channels/${channel.id}`, {
+          access: CHANNEL_PRIVATE,
+        });
+
+        expect(response.status).toBe(200);
+      });
+
+      it('채널정보 수정 public -> protected', async () => {
+        const owner: UserModel = await testData.createBasicUser('owner');
+        const channel = await testData.createChannel(
+          owner,
+          'channel',
+          CHANNEL_PUBLIC,
+        );
+        const token = await testData.giveTokenToUser(owner);
+        const response = await req(token, 'PATCH', `/channels/${channel.id}`, {
+          access: CHANNEL_PROTECTED,
+          password: 'password',
+        });
+
+        expect(response.status).toBe(200);
+      });
+
+      it('채널정보 수정 private -> public', async () => {
+        const owner: UserModel = await testData.createBasicUser('owner');
+        const channel = await testData.createChannel(
+          owner,
+          'channel',
+          CHANNEL_PRIVATE,
+        );
+        const token = await testData.giveTokenToUser(owner);
+        const response = await req(token, 'PATCH', `/channels/${channel.id}`, {
+          access: CHANNEL_PUBLIC,
+        });
+
+        expect(response.status).toBe(200);
+      });
+      it('채널정보 수정 private -> protected', async () => {
+        const owner: UserModel = await testData.createBasicUser('owner');
+        const channel = await testData.createChannel(
+          owner,
+          'channel',
+          CHANNEL_PRIVATE,
+        );
+        const token = await testData.giveTokenToUser(owner);
+        const response = await req(token, 'PATCH', `/channels/${channel.id}`, {
+          access: CHANNEL_PROTECTED,
+          password: 'password',
+        });
+
+        expect(response.status).toBe(200);
+      });
+
+      it('채널정보 수정 protected -> public', async () => {
+        const owner: UserModel = await testData.createBasicUser('owner');
+        const channel = await testData.createChannel(
+          owner,
+          'channel',
+          CHANNEL_PROTECTED,
+        );
+        const token = await testData.giveTokenToUser(owner);
+        const response = await req(token, 'PATCH', `/channels/${channel.id}`, {
+          access: CHANNEL_PUBLIC,
+        });
+
+        expect(response.status).toBe(200);
+      });
+
+      it('채널정보 수정 protected -> private', async () => {
+        const owner: UserModel = await testData.createBasicUser('owner');
+        const channel = await testData.createChannel(
+          owner,
+          'channel',
+          CHANNEL_PROTECTED,
         );
         const token = await testData.giveTokenToUser(owner);
         const response = await req(token, 'PATCH', `/channels/${channel.id}`, {
