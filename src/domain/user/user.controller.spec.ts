@@ -91,6 +91,28 @@ describe('UserController', () => {
       expect(res.body).toHaveProperty('status');
       expect(res.body.status).toBe(RELATION_NONE);
     });
+
+    it('[Error Case] target이 없는 유저인 경우', async () => {
+      const user: User = await testData.createBasicUser('user1');
+
+      const res = await req(
+        null,
+        'GET',
+        `/users/${user.nickname}/relations/none`,
+      );
+      expect(res.status).toBe(400);
+    });
+
+    it('[Error Case] user가 없는 유저인 경우', async () => {
+      const user: User = await testData.createBasicUser('user1');
+
+      const res = await req(
+        null,
+        'GET',
+        `/users/none/relations/${user.nickname}`,
+      );
+      expect(res.status).toBe(400);
+    });
   });
 
   const req = async (
