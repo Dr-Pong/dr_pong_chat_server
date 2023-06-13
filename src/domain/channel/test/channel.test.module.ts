@@ -7,6 +7,7 @@ import { ProfileImage } from 'src/domain/profile-image/profile-image.entity';
 import { ChannelMessage } from 'src/domain/channel/entity/channel-message.entity';
 import { FactoryModule } from 'src/domain/factory/factory.module';
 import { Channel } from 'src/domain/channel/entity/channel.entity';
+import { AuthModule } from 'src/domain/auth/auth.module';
 
 @Module({
   imports: [
@@ -18,7 +19,9 @@ import { Channel } from 'src/domain/channel/entity/channel.entity';
       ChannelMessage,
     ]),
     FactoryModule,
+    AuthModule,
   ],
   providers: [ChannelTestService],
+  exports: [ChannelTestService],
 })
 export class ChannlTestModule {}

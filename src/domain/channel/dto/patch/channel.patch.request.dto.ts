@@ -1,6 +1,9 @@
-import { ChannelType } from '../../type/type.channel';
+import {
+  CHANNEL_PRIVATE,
+  CHANNEL_PUBLIC,
+} from 'src/domain/channel/type/type.channel';
 
 export class ChannelPatchRequestDto {
   password: string | null;
-  access: ChannelType;
+  access: typeof CHANNEL_PUBLIC | typeof CHANNEL_PRIVATE;
 }

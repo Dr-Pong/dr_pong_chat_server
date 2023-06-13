@@ -14,7 +14,6 @@ import { DirectMessageModule } from './domain/direct-message/direct-message.modu
 import { FriendModule } from './domain/friend/friend.module';
 import { AuthModule } from './domain/auth/auth.module';
 import { FriendTestModule } from './domain/friend/test/friend.test.module';
-import { BlockTestModule } from './domain/block/test/block.test.module';
 import { FactoryModule } from './domain/factory/factory.module';
 import { ChannelRepository } from './domain/channel/repository/channel.repository';
 import { UserRepository } from './domain/user/user.repository';
@@ -47,7 +46,6 @@ import { ChannelUser } from './domain/channel/entity/channel-user.entity';
     DirectMessageModule,
     DirectMessageRoomModule,
     AuthModule,
-    BlockTestModule,
     FactoryModule,
     TypeOrmModule.forFeature([Channel, User, ChannelUser]),
   ],

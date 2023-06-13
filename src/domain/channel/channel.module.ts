@@ -14,7 +14,7 @@ import { ChannelNormalController } from './channel.normal.controller';
 import { UserModule } from '../user/user.module';
 import { UserRepository } from '../user/user.repository';
 import { User } from '../user/user.entity';
-import { ChannelAdminController } from './channel.admin.controller';
+import { ChannelAdminController } from './controller/channel.admin.controller';
 
 @Module({
   imports: [
