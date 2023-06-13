@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { In, Repository } from 'typeorm';
+import { Not, Repository } from 'typeorm';
 import { Friend } from './friend.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
@@ -128,6 +128,7 @@ export class FriendRepository {
       {
         sender: { id: senderId },
         receiver: { id: receiverId },
+        status: Not(FRIENDSTATUS_DELETED),
       },
       { status: status },
     );
