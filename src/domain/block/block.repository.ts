@@ -10,6 +10,12 @@ export class BlockRepository {
     private readonly repository: Repository<Block>,
   ) {}
 
+  async findAll(): Promise<Block[]> {
+    return await this.repository.find({
+      where: { isDeleted: false },
+    });
+  }
+
   /** 차단목록 조회
    * 특정 사용자의 차단 목록을 조회하는 함수입니다.
    * unblocked가 false == 차단 on이라는뜻
