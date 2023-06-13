@@ -8,9 +8,10 @@ import { FriendRepository } from '../friend/friend.repository';
 import { BlockRepository } from '../block/block.repository';
 import { Friend } from '../friend/friend.entity';
 import { Block } from '../block/block.entity';
+import { FactoryModule } from '../factory/factory.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, Friend, Block])],
+  imports: [TypeOrmModule.forFeature([User, Friend, Block]), FactoryModule],
   providers: [UserService, UserRepository, FriendRepository, BlockRepository],
   exports: [UserService],
   controllers: [UserController],

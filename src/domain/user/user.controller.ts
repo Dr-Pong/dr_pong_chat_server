@@ -1,13 +1,14 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UserRelationResponseDto } from './dto/user.relation.response.dto';
+import { PostGatewayUserDto } from './dto/post.gateway.users.dto';
 
 @Controller('users')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Get('/:nickname/relations/:targetNickname')
-  async getUserRelation(
+  async userRelationGet(
     @Param('nickname') nickname: string,
     @Param('targetNickname') targetNickname: string,
   ): Promise<UserRelationResponseDto> {
@@ -26,5 +27,10 @@ export class UserController {
       userId,
       targetId,
     });
+  }
+
+  @Post('/')
+  async userPost(@Body() postDto: PostGatewayUserDto): Promise<void> {
+    await this.userService.postUser(postDto);
   }
 }

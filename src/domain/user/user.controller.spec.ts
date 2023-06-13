@@ -12,6 +12,7 @@ import {
   RELATION_NONE,
 } from 'src/global/type/type.user.relation';
 import { UserTestModule } from './test/user.test.module';
+import { PostGatewayUserDto } from './dto/post.gateway.users.dto';
 
 describe('UserController', () => {
   let app: INestApplication;
@@ -112,6 +113,24 @@ describe('UserController', () => {
         `/users/none/relations/${user.nickname}`,
       );
       expect(res.status).toBe(400);
+    });
+  });
+
+  describe('POST /users', () => {
+    it('유저 저장 테스트', async () => {
+      await testData.createProfileImages();
+      const postGatewayUserDto: PostGatewayUserDto = {
+        id: 1,
+        nickname: 'Controllertest',
+        imgId: testData.profileImages[0].id,
+        imgUrl: testData.profileImages[0].url,
+      };
+
+      const response = await request(app.getHttpServer())
+        .post('/users')
+        .send(postGatewayUserDto);
+
+      expect(response.status).toBe(201);
     });
   });
 

@@ -12,23 +12,22 @@ import { User } from './user.entity';
 import { UserModule } from './user.module';
 import { UserTestModule } from './test/user.test.module';
 import { BadRequestException } from '@nestjs/common';
-import { Friend } from '../friend/friend.entity';
-import { Block } from '../block/block.entity';
 import { UserRelationDto } from './dto/user.relation.dto';
-import { FRIENDSTATUS_FRIEND } from 'src/global/type/type.friend.status';
 import {
   RELATION_BLOCKED,
   RELATION_FRIEND,
   RELATION_NONE,
 } from 'src/global/type/type.user.relation';
+import { UserFactory } from '../factory/user.factory';
+import { PostGatewayUserDto } from './dto/post.gateway.users.dto';
+import { UserModel } from '../factory/model/user.model';
 
 describe('UserService', () => {
   let service: UserService;
   let testData: UserTestService;
   let dataSources: DataSource;
   let userRepository: Repository<User>;
-  let friendRepository: Repository<Friend>;
-  let blockRepository: Repository<Block>;
+  let userFactory: UserFactory;
 
   beforeAll(async () => {
     initializeTransactionalContext();
@@ -58,6 +57,7 @@ describe('UserService', () => {
       ],
     }).compile();
 
+    userFactory = module.get<UserFactory>(UserFactory);
     service = module.get<UserService>(UserService);
     testData = module.get<UserTestService>(UserTestService);
     dataSources = module.get<DataSource>(DataSource);
@@ -139,6 +139,33 @@ describe('UserService', () => {
 
       expect(relation).toHaveProperty('status');
       expect(relation.status).toBe(RELATION_NONE);
+    });
+    describe('친구 Gateway저장', () => {
+      it('GateWay User 저장 테스트', async () => {
+        await testData.createProfileImages();
+
+        const gateWayUser: PostGatewayUserDto = {
+          id: 1,
+          nickname: 'test',
+          imgId: testData.profileImages[0].id,
+          imgUrl: testData.profileImages[0].url,
+        };
+
+        await service.postUser(gateWayUser);
+
+        const result: User = await userRepository.findOne({
+          where: { id: gateWayUser.id },
+        });
+        const savedUserFt: UserModel = userFactory.findById(gateWayUser.id);
+
+        expect(savedUserFt.id).toBe(gateWayUser.id);
+        expect(savedUserFt.nickname).toBe(gateWayUser.nickname);
+
+        expect(result.id).toBe(gateWayUser.id);
+        expect(result.nickname).toBe(gateWayUser.nickname);
+        expect(result.image.id).toBe(gateWayUser.imgId);
+        expect(result.image.url).toBe(gateWayUser.imgUrl);
+      });
     });
   });
 });

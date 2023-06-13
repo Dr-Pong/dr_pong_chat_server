@@ -1,8 +1,16 @@
-import { IsolationLevel, Transactional } from 'typeorm-transactional';
+import {
+  IsolationLevel,
+  Transactional,
+  runOnTransactionComplete,
+} from 'typeorm-transactional';
 import { GetIdFromNicknameDto } from './dto/get.id.from.nickname.dto';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { UserIdDto } from './dto/user.id.dto';
 import { UserRepository } from './user.repository';
+import { PostGatewayUserDto } from './dto/post.gateway.users.dto';
+import { UserFactory } from '../factory/user.factory';
+import { UserModel } from '../factory/model/user.model';
+import { User } from './user.entity';
 import { FriendRepository } from '../friend/friend.repository';
 import { BlockRepository } from '../block/block.repository';
 import { GetUserRelationDto } from './dto/get.user.relation.dto';
@@ -14,6 +22,7 @@ export class UserService {
     private readonly userRepository: UserRepository,
     private readonly friendRepository: FriendRepository,
     private readonly blockRepository: BlockRepository,
+    private readonly userFactory: UserFactory,
   ) {}
 
   @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
@@ -22,6 +31,14 @@ export class UserService {
     const user = await this.userRepository.findByNickname(nickname);
     if (!user) throw new BadRequestException('No such User');
     return { id: user.id };
+  }
+
+  @Transactional({ isolationLevel: IsolationLevel.SERIALIZABLE })
+  async postUser(postDto: PostGatewayUserDto): Promise<void> {
+    const user: User = await this.userRepository.save(postDto);
+    runOnTransactionComplete(async () => {
+      this.userFactory.create(UserModel.fromEntity(user));
+    });
   }
 
   @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
