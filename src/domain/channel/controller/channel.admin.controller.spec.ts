@@ -74,7 +74,7 @@ describe('BlockController', () => {
         );
         const token = await testData.giveTokenToUser(owner);
         const response = await req(token, 'PATCH', `/channels/${channel.id}`, {
-          access: CHANNEL_PROTECTED,
+          access: CHANNEL_PUBLIC,
           password: 'password',
         });
 
@@ -104,7 +104,7 @@ describe('BlockController', () => {
         );
         const token = await testData.giveTokenToUser(owner);
         const response = await req(token, 'PATCH', `/channels/${channel.id}`, {
-          access: CHANNEL_PROTECTED,
+          access: CHANNEL_PUBLIC,
           password: 'password',
         });
 
