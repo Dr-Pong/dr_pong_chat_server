@@ -21,6 +21,8 @@ import { ChannelUserRepository } from './domain/channel/repository/channel-user.
 import { Channel } from './domain/channel/entity/channel.entity';
 import { User } from './domain/user/user.entity';
 import { ChannelUser } from './domain/channel/entity/channel-user.entity';
+import { BlockRepository } from './domain/block/block.repository';
+import { Block } from './domain/block/block.entity';
 
 @Module({
   imports: [
@@ -47,7 +49,7 @@ import { ChannelUser } from './domain/channel/entity/channel-user.entity';
     DirectMessageRoomModule,
     AuthModule,
     FactoryModule,
-    TypeOrmModule.forFeature([Channel, User, ChannelUser]),
+    TypeOrmModule.forFeature([Channel, User, ChannelUser, Block]),
   ],
   controllers: [AppController],
   providers: [
@@ -55,6 +57,7 @@ import { ChannelUser } from './domain/channel/entity/channel-user.entity';
     ChannelRepository,
     UserRepository,
     ChannelUserRepository,
+    BlockRepository,
   ],
 })
 export class AppModule {}
