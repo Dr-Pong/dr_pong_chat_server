@@ -13,6 +13,8 @@ import {
   CHANNEL_PARTICIPANT_ADMIN,
   CHANNEL_PARTICIPANT_OWNER,
 } from './domain/channel/type/type.channel-participant';
+import { BlockRepository } from './domain/block/block.repository';
+import { Block } from './domain/block/block.entity';
 
 @Injectable()
 export class AppService implements OnApplicationBootstrap {
@@ -20,6 +22,7 @@ export class AppService implements OnApplicationBootstrap {
     private readonly channelRepository: ChannelRepository,
     private readonly userRepository: UserRepository,
     private readonly channelUserRepository: ChannelUserRepository,
+    private readonly blockRepository: BlockRepository,
     private readonly channelFactory: ChannelFactory,
     private readonly userFactory: UserFactory,
   ) {}
@@ -31,9 +34,14 @@ export class AppService implements OnApplicationBootstrap {
       await this.channelUserRepository.findAll();
     const paneltyUsers: ChannelUser[] =
       await this.channelUserRepository.findAllPaneltyUsers();
+    const blocked: Block[] = await this.blockRepository.findAll();
 
     users.forEach((user) => {
       this.userFactory.users.set(user.id, UserModel.fromEntity(user));
+    });
+
+    blocked.forEach((block) => {
+      this.userFactory.block(block.user.id, block.blockedUser.id);
     });
 
     channels.forEach((channel) => {
