@@ -1,6 +1,7 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UserRelationResponseDto } from './dto/user.relation.response.dto';
+import { PostGatewayUserDto } from './dto/post.gateway.users.dto';
 
 @Controller('users')
 export class UserController {
@@ -26,5 +27,10 @@ export class UserController {
       userId,
       targetId,
     });
+  }
+
+  @Post('/')
+  async postGatewayUsers(@Body() postDto: PostGatewayUserDto): Promise<void> {
+    await this.userService.postGatewayUser(postDto);
   }
 }
