@@ -34,7 +34,7 @@ export class UserService {
   }
 
   @Transactional({ isolationLevel: IsolationLevel.SERIALIZABLE })
-  async postGatewayUser(postDto: PostGatewayUserDto): Promise<void> {
+  async postUser(postDto: PostGatewayUserDto): Promise<void> {
     const user: User = await this.userRepository.save(postDto);
     runOnTransactionComplete(async () => {
       this.userFactory.create(UserModel.fromEntity(user));

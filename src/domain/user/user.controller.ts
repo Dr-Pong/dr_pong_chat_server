@@ -8,7 +8,7 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Get('/:nickname/relations/:targetNickname')
-  async getUserRelation(
+  async userRelationGet(
     @Param('nickname') nickname: string,
     @Param('targetNickname') targetNickname: string,
   ): Promise<UserRelationResponseDto> {
@@ -30,7 +30,7 @@ export class UserController {
   }
 
   @Post('/')
-  async postGatewayUsers(@Body() postDto: PostGatewayUserDto): Promise<void> {
-    await this.userService.postGatewayUser(postDto);
+  async userPost(@Body() postDto: PostGatewayUserDto): Promise<void> {
+    await this.userService.postUser(postDto);
   }
 }

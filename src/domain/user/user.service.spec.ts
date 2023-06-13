@@ -151,7 +151,7 @@ describe('UserService', () => {
           imgUrl: testData.profileImages[0].url,
         };
 
-        await service.postGatewayUser(gateWayUser);
+        await service.postUser(gateWayUser);
 
         const result: User = await userRepository.findOne({
           where: { id: gateWayUser.id },
