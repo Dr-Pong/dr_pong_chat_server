@@ -53,16 +53,16 @@ export class FriendTestService {
 
   async createFriendRequestFromTo(from: User, to: User): Promise<void> {
     await this.friendRepository.save({
-      sender: this.users[from.id - 1],
-      receiver: this.users[to.id - 1],
+      sender: from,
+      receiver: to,
       status: FRIENDSTATUS_PENDING,
     });
   }
 
   async makeFriend(a: User, b: User): Promise<void> {
     await this.friendRepository.save({
-      sender: this.users[a.id - 1],
-      receiver: this.users[b.id - 1],
+      sender: a,
+      receiver: b,
       status: FRIENDSTATUS_FRIEND,
     });
   }
