@@ -21,6 +21,6 @@ export class Block extends BaseTimeEntity {
   @JoinColumn({ name: 'blocked_id' })
   blockedUser: User;
 
-  @Column({ name: 'unblocked' })
-  isUnblocked: boolean;
+  @Column({ name: 'is_deleted', default: false })
+  isDeleted: boolean;
 }
