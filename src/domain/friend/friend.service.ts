@@ -119,7 +119,8 @@ export class FriendService {
 
     if (!isRequesting) return;
 
-    await this.friendRepository.updateFriendStatusBySenderIdAndReceiverId(
+    await this.friendRepository.updateFriendStatusFromToBySenderIdAndReceiverId(
+      FRIENDSTATUS_PENDING,
       FRIENDSTATUS_FRIEND,
       friendId,
       userId,
@@ -151,7 +152,8 @@ export class FriendService {
 
     if (!isRequesting) return;
 
-    await this.friendRepository.updateFriendStatusBySenderIdAndReceiverId(
+    await this.friendRepository.updateFriendStatusFromToBySenderIdAndReceiverId(
+      FRIENDSTATUS_PENDING,
       FRIENDSTATUS_DELETED,
       friendId,
       userId,
@@ -175,7 +177,8 @@ export class FriendService {
 
     if (!friend) return;
 
-    await this.friendRepository.updateFriendStatusBySenderIdAndReceiverId(
+    await this.friendRepository.updateFriendStatusFromToBySenderIdAndReceiverId(
+      FRIENDSTATUS_FRIEND,
       FRIENDSTATUS_DELETED,
       friend.sender.id,
       friend.receiver.id,

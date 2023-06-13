@@ -119,8 +119,9 @@ export class FriendRepository {
     });
   }
 
-  async updateFriendStatusBySenderIdAndReceiverId(
-    status: FriendType,
+  async updateFriendStatusFromToBySenderIdAndReceiverId(
+    from: FriendType,
+    to: FriendType,
     senderId: number,
     receiverId: number,
   ): Promise<void> {
@@ -128,10 +129,12 @@ export class FriendRepository {
       {
         sender: { id: senderId },
         receiver: { id: receiverId },
+        status: from,
       },
-      { status: status },
+      { status: to },
     );
   }
+
   async hardDeleteFriendBySenderIdAndReceiverId(
     senderId: number,
     receiverId: number,
