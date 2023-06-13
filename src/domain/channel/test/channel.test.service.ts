@@ -150,8 +150,8 @@ export class ChannelTestService {
     return this.channelFactory.findById(channel.id);
   }
 
-  async createBasicChannels(): Promise<void> {
-    for (let i = 1; i < 10; i++) {
+  async createBasicChannels(userNum: number): Promise<void> {
+    for (let i = 1; i < userNum; i++) {
       await this.createBasicChannel('name' + i.toString(), i);
     }
   }
