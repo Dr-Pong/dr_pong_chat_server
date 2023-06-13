@@ -38,6 +38,22 @@ export class BlockRepository {
     return block;
   }
 
+  /** 차단 조회
+   * 특정 사용자를 차단유무를 확인하는 함수입니다.
+   */
+  async checkIsBlockByUserIdAndTargetId(
+    userId: number,
+    targetId: number,
+  ): Promise<boolean> {
+    return await this.repository.exist({
+      where: {
+        user: { id: userId },
+        blockedUser: { id: targetId },
+        isUnblocked: false,
+      },
+    });
+  }
+
   /** 차단 생성
    * 특정 사용자를 차단하는 함수입니다.
    */
