@@ -37,7 +37,7 @@ export class UserService {
   async postGatewayUser(postDto: PostGatewayUserDto): Promise<void> {
     const user: User = await this.userRepository.save(postDto);
     runOnTransactionComplete(async () => {
-      await this.userFactory.create(UserModel.fromEntity(user));
+      this.userFactory.create(UserModel.fromEntity(user));
     });
   }
 
