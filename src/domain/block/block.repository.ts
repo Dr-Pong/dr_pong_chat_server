@@ -16,7 +16,7 @@ export class BlockRepository {
    */
   async findBlocksByUserId(userId: number): Promise<Block[]> {
     const blocks: Block[] = await this.repository.find({
-      where: { user: { id: userId }, isUnblocked: false },
+      where: { user: { id: userId }, isDeleted: false },
     });
     return blocks;
   }
@@ -32,10 +32,26 @@ export class BlockRepository {
       where: {
         user: { id: userId },
         blockedUser: { id: targetId },
-        isUnblocked: false,
+        isDeleted: false,
       },
     });
     return block;
+  }
+
+  /** 차단 조회
+   * 특정 사용자를 차단유무를 확인하는 함수입니다.
+   */
+  async checkIsBlockByUserIdAndTargetId(
+    userId: number,
+    targetId: number,
+  ): Promise<boolean> {
+    return await this.repository.exist({
+      where: {
+        user: { id: userId },
+        blockedUser: { id: targetId },
+        isDeleted: false,
+      },
+    });
   }
 
   /** 차단 생성
@@ -58,7 +74,7 @@ export class BlockRepository {
         user: { id: userId },
         blockedUser: { id: targetId },
       },
-      { isUnblocked: true },
+      { isDeleted: true },
     );
   }
 }

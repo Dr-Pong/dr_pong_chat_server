@@ -11,11 +11,17 @@ import { PostGatewayUserDto } from './dto/post.gateway.users.dto';
 import { UserFactory } from '../factory/user.factory';
 import { UserModel } from '../factory/model/user.model';
 import { User } from './user.entity';
+import { FriendRepository } from '../friend/friend.repository';
+import { BlockRepository } from '../block/block.repository';
+import { GetUserRelationDto } from './dto/get.user.relation.dto';
+import { UserRelationDto } from './dto/user.relation.dto';
 
 @Injectable()
 export class UserService {
   constructor(
-    private userRepository: UserRepository,
+    private readonly userRepository: UserRepository,
+    private readonly friendRepository: FriendRepository,
+    private readonly blockRepository: BlockRepository,
     private readonly userFactory: UserFactory,
   ) {}
 
@@ -33,5 +39,21 @@ export class UserService {
     runOnTransactionComplete(async () => {
       await this.userFactory.create(UserModel.fromEntity(user));
     });
+  }
+
+  @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
+  async getUserRelation(getDto: GetUserRelationDto): Promise<UserRelationDto> {
+    const { userId, targetId } = getDto;
+    const isFriend: boolean =
+      await this.friendRepository.checkIsFriendByUserIdAndFriendId(
+        userId,
+        targetId,
+      );
+    const isBlock: boolean =
+      await this.blockRepository.checkIsBlockByUserIdAndTargetId(
+        userId,
+        targetId,
+      );
+    return new UserRelationDto(isFriend, isBlock);
   }
 }
