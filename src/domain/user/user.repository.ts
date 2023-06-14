@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './user.entity';
 import { PostGatewayUserDto } from './dto/post.gateway.users.dto';
+import { ProfileImage } from '../profile-image/profile-image.entity';
 
 @Injectable()
 export class UserRepository {
@@ -18,6 +19,15 @@ export class UserRepository {
 
   async findAll(): Promise<User[]> {
     return await this.repository.find();
+  }
+
+  async findById(userId: number): Promise<User> {
+    return await this.repository.findOne({ where: { id: userId } });
+  }
+
+  async updateUserImage(user: User, image: ProfileImage): Promise<void> {
+    user.image = image;
+    await this.repository.save(user);
   }
 
   async save(postDto: PostGatewayUserDto): Promise<User> {

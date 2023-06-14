@@ -4,7 +4,11 @@ import {
   runOnTransactionComplete,
 } from 'typeorm-transactional';
 import { GetIdFromNicknameDto } from './dto/get.id.from.nickname.dto';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { UserIdDto } from './dto/user.id.dto';
 import { UserRepository } from './user.repository';
 import { PostGatewayUserDto } from './dto/post.gateway.users.dto';
@@ -15,6 +19,8 @@ import { FriendRepository } from '../friend/friend.repository';
 import { BlockRepository } from '../block/block.repository';
 import { GetUserRelationDto } from './dto/get.user.relation.dto';
 import { UserRelationDto } from './dto/user.relation.dto';
+import { PatchUserImageDto } from './dto/patch.user.image.dto';
+import { ProfileImageRepository } from '../profile-image/profile-image.repository';
 
 @Injectable()
 export class UserService {
@@ -23,6 +29,7 @@ export class UserService {
     private readonly friendRepository: FriendRepository,
     private readonly blockRepository: BlockRepository,
     private readonly userFactory: UserFactory,
+    private readonly profileImageRepository: ProfileImageRepository,
   ) {}
 
   @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
@@ -55,5 +62,19 @@ export class UserService {
         targetId,
       );
     return new UserRelationDto(isFriend, isBlock);
+  }
+
+  @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
+  async patchUserImage(patchDto: PatchUserImageDto): Promise<void> {
+    const user = await this.userRepository.findById(patchDto.userId);
+    if (!user) throw new NotFoundException('No such User');
+    const image = await this.profileImageRepository.findById(patchDto.imgId);
+    if (!image) throw new NotFoundException('No such Image');
+
+    await this.userRepository.updateUserImage(user, image);
+
+    runOnTransactionComplete(async () => {
+      this.userFactory.updateProfile(user.id, image.url);
+    });
   }
 }
