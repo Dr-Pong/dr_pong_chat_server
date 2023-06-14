@@ -4,15 +4,15 @@ import { DataSource } from 'typeorm';
 import * as request from 'supertest';
 import { initializeTransactionalContext } from 'typeorm-transactional';
 import { AppModule } from 'src/app.module';
-import { ChannelTestService } from './test/channel.test.service';
-import { ChannlTestModule } from './test/channel.test.module';
-import { UserModel } from '../factory/model/user.model';
-import { CHANNEL_PRIVATE, CHANNEL_PUBLIC } from './type/type.channel';
-import { ChannelModel } from '../factory/model/channel.model';
-import { InviteModel } from '../factory/model/invite.model';
-import { UserFactory } from '../factory/user.factory';
-import { FactoryModule } from '../factory/factory.module';
-import { ChannelFactory } from '../factory/channel.factory';
+import { ChannelTestService } from '../test/channel.test.service';
+import { ChannlTestModule } from '../test/channel.test.module';
+import { UserModel } from '../../factory/model/user.model';
+import { CHANNEL_PRIVATE, CHANNEL_PUBLIC } from '../type/type.channel';
+import { ChannelModel } from '../../factory/model/channel.model';
+import { InviteModel } from '../../factory/model/invite.model';
+import { UserFactory } from '../../factory/user.factory';
+import { FactoryModule } from '../../factory/factory.module';
+import { ChannelFactory } from '../../factory/channel.factory';
 
 describe('ChannelController - Normal', () => {
   let app: INestApplication;

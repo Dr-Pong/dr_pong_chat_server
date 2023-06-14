@@ -9,20 +9,20 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { ChannelNormalService } from './service/channel.normal.service';
-import { OrderChannelType } from './type/type.order.channel';
-import { ChannelPageResponseDto } from './dto/channel.page.response.dto';
-import { Requestor } from '../auth/jwt/auth.requestor.decorator';
-import { UserIdCardDto } from '../auth/jwt/auth.user.id-card.dto';
-import { ChannelParticipantsResponseDto } from './dto/channel.participant.request.dto';
-import { PostChannelRequestDto } from './dto/post/post.channel.request.dto';
-import { PostChannelJoinRequestDto } from './dto/post/post.channel.join.request.dto';
-import { UserService } from '../user/user.service';
-import { CHAT_MESSAGE } from './type/type.channel.action';
-import { PostChannelChatRequestDto } from './dto/post/post.channel.chat.request.dto';
-import { ChannelMeResponseDto } from './channel.me.response.dto';
-import { ChannelMeDto } from './dto/channel.me.dto';
-import { ChannelChatsResponseDto } from './channel.chats.response.dto';
+import { ChannelNormalService } from '../service/channel.normal.service';
+import { OrderChannelType } from '../type/type.order.channel';
+import { ChannelPageResponseDto } from '../dto/channel.page.response.dto';
+import { Requestor } from '../../auth/jwt/auth.requestor.decorator';
+import { UserIdCardDto } from '../../auth/jwt/auth.user.id-card.dto';
+import { ChannelParticipantsResponseDto } from '../dto/channel.participant.request.dto';
+import { PostChannelRequestDto } from '../dto/post/post.channel.request.dto';
+import { PostChannelJoinRequestDto } from '../dto/post/post.channel.join.request.dto';
+import { UserService } from '../../user/user.service';
+import { CHAT_MESSAGE } from '../type/type.channel.action';
+import { PostChannelChatRequestDto } from '../dto/post/post.channel.chat.request.dto';
+import { ChannelMeResponseDto } from '../channel.me.response.dto';
+import { ChannelMeDto } from '../dto/channel.me.dto';
+import { ChannelChatsResponseDto } from '../channel.chats.response.dto';
 import { AuthGuard } from '@nestjs/passport';
 
 @Controller('/channels')
