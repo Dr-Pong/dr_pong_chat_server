@@ -15,6 +15,8 @@ import { PostGatewayUserDto } from '../../../domain/user/dto/post.gateway.users.
 import { TestDataModule } from 'src/test/data/test.data.module';
 import { FriendTestData } from 'src/test/data/friend.test.data';
 import { BlockTestData } from 'src/test/data/block.test.data';
+import { PatchUserImageDto } from 'src/domain/user/dto/patch.user.image.dto';
+import { PatchUserImageRequestDto } from 'src/domain/user/dto/patch.user.image.request.dto';
 
 describe('UserController', () => {
   let app: INestApplication;
@@ -133,6 +135,43 @@ describe('UserController', () => {
         .send(postGatewayUserDto);
 
       expect(response.status).toBe(201);
+    });
+  });
+
+  describe('PATCH /users/{nickname}/image', () => {
+    it('유저 이미지 변경 테스트', async () => {
+      const user: User = await userData.createUser('user1');
+      await userData.createProfileImage();
+      const token = await userData.giveTokenToUser(user);
+      const PatchUserImageRequest: PatchUserImageRequestDto = {
+        imgId: userData.profileImages[1].id,
+      };
+
+      const response = await req(
+        token,
+        'PATCH',
+        `/users/${user.nickname}/image`,
+        PatchUserImageRequest,
+      );
+
+      expect(response.status).toBe(200);
+    });
+
+    it('유저 이미지 변경 테스트 (이미지가 없는 경우)', async () => {
+      const user: User = await userData.createUser('user1');
+      const token = await userData.giveTokenToUser(user);
+      const PatchUserImageRequest: PatchUserImageRequestDto = {
+        imgId: 123,
+      };
+
+      const response = await req(
+        token,
+        'PATCH',
+        `/users/${user.nickname}/image`,
+        PatchUserImageRequest,
+      );
+
+      expect(response.status).toBe(404);
     });
   });
 
