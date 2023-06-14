@@ -18,10 +18,14 @@ import {
   FRIENDSTATUS_FRIEND,
   FRIENDSTATUS_PENDING,
 } from '../../global/type/type.friend.status';
+import { BlockRepository } from '../block/block.repository';
 
 @Injectable()
 export class FriendService {
-  constructor(private friendRepository: FriendRepository) {}
+  constructor(
+    private friendRepository: FriendRepository,
+    private blockRepository: BlockRepository,
+  ) {}
 
   /**친구 목록 GET
    * 사용자의 친구 목록을 nickname을 기준으로 오름차순으로 정렬합니다
@@ -68,8 +72,13 @@ export class FriendService {
         userId,
         friendId,
       );
+    const isBlocked =
+      await this.blockRepository.checkIsBlockByUserIdAndTargetId(
+        userId,
+        friendId,
+      );
 
-    if (isFriend || isRequesting) return;
+    if (isFriend || isRequesting || isBlocked) return;
 
     await this.friendRepository.saveFriendStatusBySenderIdAndReceiverId(
       FRIENDSTATUS_PENDING,
