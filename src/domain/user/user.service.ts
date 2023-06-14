@@ -71,7 +71,7 @@ export class UserService {
     const image = await this.profileImageRepository.findById(patchDto.imgId);
     if (!image) throw new NotFoundException('No such Image');
 
-    await this.userRepository.updateUserImage(user, image);
+    await this.userRepository.updateUserImage(user.id, image.id);
 
     runOnTransactionComplete(async () => {
       this.userFactory.updateProfile(user.id, image.url);
