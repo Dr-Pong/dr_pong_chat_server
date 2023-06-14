@@ -352,8 +352,12 @@ export class ChannelNormalService {
 
     const messages: ChannelMessage[] =
       await this.messageRepository.findAllByChannelId(
-        FindChannelMessagePageDto.from(user, getDto),
+        FindChannelMessagePageDto.from(
+          getDto,
+          Array.from(user.blockedList.values()),
+        ),
       );
+
     let isLastPage = true;
     if (messages.length > getDto.count) {
       isLastPage = false;

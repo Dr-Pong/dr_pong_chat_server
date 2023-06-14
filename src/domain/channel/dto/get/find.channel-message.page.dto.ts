@@ -8,14 +8,14 @@ export class FindChannelMessagePageDto {
   count: number;
 
   static from(
-    user: UserModel,
     dto: GetChannelMessageHistoryDto,
+    blockList: number[],
   ): FindChannelMessagePageDto {
     return new FindChannelMessagePageDto(
       dto.channelId,
       dto.offset,
       dto.count + 1,
-      Array.from(user.blockedList.values()),
+      blockList,
     );
   }
 
