@@ -8,15 +8,17 @@ import { FriendChatController } from './controller/friend.chat.controller';
 import { UserModule } from '../user/user.module';
 import { DirectMessageModule } from '../direct-message/direct-message.module';
 import { DirectMessageRoomModule } from '../direct-message-room/direct-message-room.module';
+import { BlockRepository } from '../block/block.repository';
+import { Block } from '../block/block.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Friend]),
+    TypeOrmModule.forFeature([Friend, Block]),
     UserModule,
     DirectMessageModule,
     DirectMessageRoomModule,
   ],
-  providers: [FriendService, FriendRepository],
+  providers: [FriendService, FriendRepository, BlockRepository],
   exports: [FriendService],
   controllers: [FriendRelationController, FriendChatController],
 })
