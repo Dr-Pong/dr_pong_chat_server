@@ -82,7 +82,7 @@ describe('BlockService', () => {
       it('[Valid Case] 차단형식 확인 차단유저가 있는경우', async () => {
         const user1: User = await userData.createBasicUser('user1');
         const user2: User = await userData.createBasicUser('user2');
-        await blockData.blockUser(user1.id, user2.id);
+        await blockData.blockUser(user1, user2);
 
         const blockListDto: GetUserBlocksDto = {
           userId: user1.id,
@@ -140,7 +140,7 @@ describe('BlockService', () => {
       it('[Valid Case] 이전에 차단 목록에 차단할 유저가 있을때', async () => {
         const user1: User = await userData.createBasicUser('user1');
         const user2: User = await userData.createBasicUser('user2');
-        await blockData.blockUser(user1.id, user2.id);
+        await blockData.blockUser(user1, user2);
 
         const userBlockDto: PostUserBlockDto = {
           userId: user1.id,
@@ -179,7 +179,7 @@ describe('BlockService', () => {
       it('[Valid Case] 차단이 해제되는지', async () => {
         const user1: User = await userData.createBasicUser('user1');
         const user2: User = await userData.createBasicUser('user2');
-        await blockData.blockUser(user1.id, user2.id);
+        await blockData.blockUser(user1, user2);
 
         const userBlockDto: DeleteUserBlockDto = {
           userId: user1.id,

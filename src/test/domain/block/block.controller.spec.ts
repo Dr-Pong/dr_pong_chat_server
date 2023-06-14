@@ -47,8 +47,8 @@ describe('BlockController', () => {
         const user: User = await userData.createBasicUser('user');
         const target1: User = await userData.createBasicUser('target1');
         const target2: User = await userData.createBasicUser('target2');
-        await blockData.blockUser(user.id, target1.id);
-        await blockData.blockUser(user.id, target2.id);
+        await blockData.blockUser(user, target1);
+        await blockData.blockUser(user, target2);
         const token = await userData.giveTokenToUser(user);
         const response = await req(token, 'GET', `/users/blocks`);
         const result = response.body;
@@ -93,7 +93,7 @@ describe('BlockController', () => {
       it('[ValidCase] 이미 차단된 사용자', async () => {
         const user: User = await userData.createBasicUser('user');
         const target: User = await userData.createBasicUser('target');
-        await blockData.blockUser(user.id, target.id);
+        await blockData.blockUser(user, target);
         const token = await userData.giveTokenToUser(user);
         const response = await req(
           token,
@@ -119,7 +119,7 @@ describe('BlockController', () => {
       it('[ValidCase] 차단이 해제되는지', async () => {
         const user: User = await userData.createBasicUser('user');
         const target: User = await userData.createBasicUser('target');
-        await blockData.blockUser(user.id, target.id);
+        await blockData.blockUser(user, target);
         const token = await userData.giveTokenToUser(user);
         const response = await req(
           token,

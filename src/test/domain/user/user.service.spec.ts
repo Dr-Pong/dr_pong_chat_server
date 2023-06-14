@@ -123,7 +123,7 @@ describe('UserService', () => {
     it('[Valid Case] blocked 경우', async () => {
       const user: User = await userData.createBasicUser('user');
       const blocked: User = await userData.createBasicUser('block');
-      await blockData.blockUser(user.id, blocked.id);
+      await blockData.blockUser(user, blocked);
 
       const relation: UserRelationDto = await service.getUserRelation({
         userId: user.id,

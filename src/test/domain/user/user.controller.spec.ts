@@ -73,7 +73,7 @@ describe('UserController', () => {
     it('[Valid Case] block인 경우', async () => {
       const user: User = await userData.createBasicUser('user1');
       const targetUser: User = await userData.createBasicUser('user2');
-      await blockData.blockUser(user.id, targetUser.id);
+      await blockData.blockUser(user, targetUser);
 
       const res = await req(
         null,
