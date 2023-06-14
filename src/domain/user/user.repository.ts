@@ -25,17 +25,8 @@ export class UserRepository {
     return await this.repository.findOne({ where: { id: userId } });
   }
 
-  async updateUserImage(userId: number, imageId: number): Promise<void> {
-    await this.repository.update(
-      {
-        id: userId,
-      },
-      {
-        image: {
-          id: imageId,
-        },
-      },
-    );
+  async updateUserImage(userId: number, image: ProfileImage): Promise<void> {
+    await this.repository.update(userId, { image: image });
   }
 
   async save(postDto: PostGatewayUserDto): Promise<User> {
