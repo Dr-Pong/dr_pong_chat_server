@@ -45,8 +45,9 @@ export class UserController {
     @Body()
     patchRequestDto: PatchUserImageRequestDto,
   ): Promise<void> {
-    const patchUserImageDto: PatchUserImageDto =
-      PatchUserImageDto.forPatchUserImageDto(requestor, patchRequestDto);
-    await this.userService.patchUserImage(patchUserImageDto);
+    await this.userService.patchUserImage({
+      userId: requestor.id,
+      imgId: patchRequestDto.imgId,
+    });
   }
 }
