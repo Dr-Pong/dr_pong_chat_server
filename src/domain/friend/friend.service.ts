@@ -71,33 +71,6 @@ export class FriendService {
     );
   }
 
-  async checkRequestable(userId: number, friendId: number): Promise<boolean> {
-    const isFriend: boolean =
-      await this.friendRepository.checkIsFriendByUserIdAndFriendId(
-        userId,
-        friendId,
-      );
-    const isRequesting =
-      await this.friendRepository.checkIsPendingBySenderIdAndReceiverId(
-        userId,
-        friendId,
-      );
-    const isBlocked =
-      await this.blockRepository.checkIsBlockByUserIdAndTargetId(
-        userId,
-        friendId,
-      );
-    const isBlockedByTarget =
-      await this.blockRepository.checkIsBlockByUserIdAndTargetId(
-        friendId,
-        userId,
-      );
-
-    if (isFriend || isRequesting || isBlocked || isBlockedByTarget)
-      return false;
-    return true;
-  }
-
   /**친구 요청 목록
    * 사용자의 친구 요청 목록을 nickname을 기준으로 오름차순으로 정렬합니다.
    */
@@ -218,8 +191,41 @@ export class FriendService {
     return responseDto;
   }
 
-  checkIfRequestorIsTarget(requestorId: number, targetId: number): void {
+  private checkIfRequestorIsTarget(
+    requestorId: number,
+    targetId: number,
+  ): void {
     if (requestorId === targetId)
       throw new BadRequestException('Cannot request yourself');
+  }
+
+  private async checkRequestable(
+    userId: number,
+    friendId: number,
+  ): Promise<boolean> {
+    const isFriend: boolean =
+      await this.friendRepository.checkIsFriendByUserIdAndFriendId(
+        userId,
+        friendId,
+      );
+    const isRequesting =
+      await this.friendRepository.checkIsPendingBySenderIdAndReceiverId(
+        userId,
+        friendId,
+      );
+    const isBlocked =
+      await this.blockRepository.checkIsBlockByUserIdAndTargetId(
+        userId,
+        friendId,
+      );
+    const isBlockedByTarget =
+      await this.blockRepository.checkIsBlockByUserIdAndTargetId(
+        friendId,
+        userId,
+      );
+
+    if (isFriend || isRequesting || isBlocked || isBlockedByTarget)
+      return false;
+    return true;
   }
 }
