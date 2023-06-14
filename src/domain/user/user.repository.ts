@@ -27,7 +27,7 @@ export class UserRepository {
 
   async updateUserImage(user: User, image: ProfileImage): Promise<void> {
     user.image = image;
-    await this.repository.save(user);
+    await this.repository.update(user.id, user);
   }
 
   async save(postDto: PostGatewayUserDto): Promise<User> {
