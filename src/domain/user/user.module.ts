@@ -9,10 +9,21 @@ import { BlockRepository } from '../block/block.repository';
 import { Friend } from '../friend/friend.entity';
 import { Block } from '../block/block.entity';
 import { FactoryModule } from '../factory/factory.module';
+import { ProfileImageRepository } from '../profile-image/profile-image.repository';
+import { ProfileImage } from '../profile-image/profile-image.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, Friend, Block]), FactoryModule],
-  providers: [UserService, UserRepository, FriendRepository, BlockRepository],
+  imports: [
+    TypeOrmModule.forFeature([User, Friend, Block, ProfileImage]),
+    FactoryModule,
+  ],
+  providers: [
+    UserService,
+    UserRepository,
+    FriendRepository,
+    BlockRepository,
+    ProfileImageRepository,
+  ],
   exports: [UserService],
   controllers: [UserController],
 })
