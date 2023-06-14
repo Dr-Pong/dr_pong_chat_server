@@ -60,6 +60,7 @@ import { ChannelExitDto } from '../dto/channel.exit.dto';
 import { GetChannelMessageHistoryDto } from '../dto/get/get.channel-message.history.dto';
 import { DeleteChannelInviteDto } from '../dto/delete/delete.channel.invite.dto';
 import { UpdateChannelHeadCountDto } from '../dto/patch/update.channel.headcount.dto';
+import { ChannelIdDto } from '../controller/channel.id.dto';
 
 @Injectable()
 export class ChannelNormalService {
@@ -208,7 +209,7 @@ export class ChannelNormalService {
    * 생성에 성공할 시 기존에 참여한 채널에서는 자동 퇴장처리된다
    */
   @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
-  async postChannel(postDto: PostChannelDto): Promise<void> {
+  async postChannel(postDto: PostChannelDto): Promise<ChannelIdDto> {
     await checkChannelNameIsDuplicate(this.channelRepository, postDto.title);
 
     await this.exitIfUserIsInChannel(postDto.userId);
@@ -232,6 +233,8 @@ export class ChannelNormalService {
         ChannelModel.fromEntity(newChannel),
       );
     });
+
+    return { id: newChannel.id };
   }
 
   /**
