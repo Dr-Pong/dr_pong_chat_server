@@ -14,11 +14,14 @@ import { UserModel } from '../factory/model/user.model';
 import { UserFactory } from '../factory/user.factory';
 import { DeleteUserBlockDto } from './dto/delete.user.block.dto';
 import { SortUtil } from '../../global/utils/sort.util';
+import { FriendRepository } from '../friend/friend.repository';
+import { FRIENDSTATUS_DELETED } from 'src/global/type/type.friend.status';
 
 @Injectable()
 export class BlockService {
   constructor(
     private readonly blockRepository: BlockRepository,
+    private readonly friendRepository: FriendRepository,
     private readonly userFactory: UserFactory,
   ) {}
 
@@ -72,6 +75,12 @@ export class BlockService {
     }
     // 차단당할 사용자가 차단목록에 없다면 차단합니다.DB
     await this.blockRepository.createUserBlock(userId, targetId);
+
+    await this.friendRepository.updateFriendStatusBySenderIdAndReceiverId(
+      FRIENDSTATUS_DELETED,
+      userId,
+      targetId,
+    );
 
     // 차단당할 사용자가 차단목록에 없다면 차단합니다. Factory
     runOnTransactionComplete(() => {

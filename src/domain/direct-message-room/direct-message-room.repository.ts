@@ -33,7 +33,7 @@ export class DirectMessageRoomRepository {
    */
   async findAllByUserId(userId: number): Promise<DirectMessageRoom[]> {
     const roomList: DirectMessageRoom[] = await this.repository.find({
-      where: [{ user: { id: userId } }, { friend: { id: userId } }],
+      where: { user: { id: userId }, isDisplay: true },
     });
     return roomList.sort((a, b) => {
       return a.lastReadMessageId - b.lastReadMessageId;

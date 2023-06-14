@@ -67,7 +67,7 @@ export class DirectMessageService {
         id: directMessage.id,
         nickname: directMessage.sender.nickname,
         message: directMessage.message,
-        time: directMessage.createdAt,
+        time: directMessage.time,
         type: getType(directMessage.sender.id, userId, friendId),
       };
     };
