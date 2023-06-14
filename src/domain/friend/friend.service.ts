@@ -61,24 +61,8 @@ export class FriendService {
   ): Promise<void> {
     const { userId, friendId } = postDto;
     this.checkIfRequestorIsTarget(userId, friendId);
-
-    const isFriend: boolean =
-      await this.friendRepository.checkIsFriendByUserIdAndFriendId(
-        userId,
-        friendId,
-      );
-    const isRequesting =
-      await this.friendRepository.checkIsPendingBySenderIdAndReceiverId(
-        userId,
-        friendId,
-      );
-    const isBlocked =
-      await this.blockRepository.checkIsBlockByUserIdAndTargetId(
-        userId,
-        friendId,
-      );
-
-    if (isFriend || isRequesting || isBlocked) return;
+    const isRequestable = this.checkRequestable(userId, friendId);
+    if (!isRequestable) return;
 
     await this.friendRepository.saveFriendStatusBySenderIdAndReceiverId(
       FRIENDSTATUS_PENDING,
@@ -207,8 +191,41 @@ export class FriendService {
     return responseDto;
   }
 
-  checkIfRequestorIsTarget(requestorId: number, targetId: number): void {
+  private checkIfRequestorIsTarget(
+    requestorId: number,
+    targetId: number,
+  ): void {
     if (requestorId === targetId)
       throw new BadRequestException('Cannot request yourself');
+  }
+
+  private async checkRequestable(
+    userId: number,
+    friendId: number,
+  ): Promise<boolean> {
+    const isFriend: boolean =
+      await this.friendRepository.checkIsFriendByUserIdAndFriendId(
+        userId,
+        friendId,
+      );
+    const isRequesting =
+      await this.friendRepository.checkIsPendingBySenderIdAndReceiverId(
+        userId,
+        friendId,
+      );
+    const isBlocked =
+      await this.blockRepository.checkIsBlockByUserIdAndTargetId(
+        userId,
+        friendId,
+      );
+    const isBlockedByTarget =
+      await this.blockRepository.checkIsBlockByUserIdAndTargetId(
+        friendId,
+        userId,
+      );
+
+    if (isFriend || isRequesting || isBlocked || isBlockedByTarget)
+      return false;
+    return true;
   }
 }
