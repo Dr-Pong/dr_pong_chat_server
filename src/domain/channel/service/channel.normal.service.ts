@@ -342,6 +342,7 @@ export class ChannelNormalService {
   async getChannelMessageHistory(
     getDto: GetChannelMessageHistoryDto,
   ): Promise<ChannelMessagesHistoryDto> {
+    const user: UserModel = this.userFactory.findById(getDto.userId);
     const channel: ChannelModel = this.channelFactory.findById(
       getDto.channelId,
     );
@@ -351,8 +352,12 @@ export class ChannelNormalService {
 
     const messages: ChannelMessage[] =
       await this.messageRepository.findAllByChannelId(
-        FindChannelMessagePageDto.from(getDto),
+        FindChannelMessagePageDto.from(
+          getDto,
+          Array.from(user.blockedList.values()),
+        ),
       );
+
     let isLastPage = true;
     if (messages.length > getDto.count) {
       isLastPage = false;
