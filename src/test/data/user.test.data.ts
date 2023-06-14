@@ -48,10 +48,6 @@ export class UserTestData {
     return user;
   }
 
-  async createBasicUser(nickname: string): Promise<User> {
-    return await this.createUser(nickname);
-  }
-
   async createBasicUsers(person: number): Promise<void> {
     const index: number = person;
     for (let i = 0; i < index; i++) {

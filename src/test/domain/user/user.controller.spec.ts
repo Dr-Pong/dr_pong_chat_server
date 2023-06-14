@@ -56,8 +56,8 @@ describe('UserController', () => {
 
   describe('GET /users/{nickname}/relations/{targetnickname}', () => {
     it('[Valid Case] friend인 경우', async () => {
-      const user: User = await userData.createBasicUser('user1');
-      const targetUser: User = await userData.createBasicUser('user2');
+      const user: User = await userData.createUser('user1');
+      const targetUser: User = await userData.createUser('user2');
       await friendData.makeFriend(user, targetUser);
 
       const res = await req(
@@ -71,8 +71,8 @@ describe('UserController', () => {
     });
 
     it('[Valid Case] block인 경우', async () => {
-      const user: User = await userData.createBasicUser('user1');
-      const targetUser: User = await userData.createBasicUser('user2');
+      const user: User = await userData.createUser('user1');
+      const targetUser: User = await userData.createUser('user2');
       await blockData.blockUser(user, targetUser);
 
       const res = await req(
@@ -86,8 +86,8 @@ describe('UserController', () => {
     });
 
     it('[Valid Case] none인 경우', async () => {
-      const user: User = await userData.createBasicUser('user1');
-      const targetUser: User = await userData.createBasicUser('user2');
+      const user: User = await userData.createUser('user1');
+      const targetUser: User = await userData.createUser('user2');
 
       const res = await req(
         null,
@@ -100,7 +100,7 @@ describe('UserController', () => {
     });
 
     it('[Error Case] target이 없는 유저인 경우', async () => {
-      const user: User = await userData.createBasicUser('user1');
+      const user: User = await userData.createUser('user1');
 
       const res = await req(
         null,
@@ -111,7 +111,7 @@ describe('UserController', () => {
     });
 
     it('[Error Case] user가 없는 유저인 경우', async () => {
-      const user: User = await userData.createBasicUser('user1');
+      const user: User = await userData.createUser('user1');
 
       const res = await req(
         null,

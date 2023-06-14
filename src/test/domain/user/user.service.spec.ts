@@ -107,8 +107,8 @@ describe('UserService', () => {
 
   describe('getUserRelation(), 유저 관계 조회 서비스', () => {
     it('[Valid Case] friend인 경우', async () => {
-      const user: User = await userData.createBasicUser('user');
-      const friend: User = await userData.createBasicUser('friend');
+      const user: User = await userData.createUser('user');
+      const friend: User = await userData.createUser('friend');
       await friendData.makeFriend(user, friend);
 
       const relation: UserRelationDto = await service.getUserRelation({
@@ -121,8 +121,8 @@ describe('UserService', () => {
     });
 
     it('[Valid Case] blocked 경우', async () => {
-      const user: User = await userData.createBasicUser('user');
-      const blocked: User = await userData.createBasicUser('block');
+      const user: User = await userData.createUser('user');
+      const blocked: User = await userData.createUser('block');
       await blockData.blockUser(user, blocked);
 
       const relation: UserRelationDto = await service.getUserRelation({
@@ -135,8 +135,8 @@ describe('UserService', () => {
     });
 
     it('[Valid Case] none인 경우', async () => {
-      const user: User = await userData.createBasicUser('user');
-      const user2: User = await userData.createBasicUser('user2');
+      const user: User = await userData.createUser('user');
+      const user2: User = await userData.createUser('user2');
 
       const relation: UserRelationDto = await service.getUserRelation({
         userId: user.id,

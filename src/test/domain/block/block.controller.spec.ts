@@ -44,9 +44,9 @@ describe('BlockController', () => {
   describe('[GET]', () => {
     describe('users/blocks', () => {
       it('[ValidCase] 차단목록 조회', async () => {
-        const user: User = await userData.createBasicUser('user');
-        const target1: User = await userData.createBasicUser('target1');
-        const target2: User = await userData.createBasicUser('target2');
+        const user: User = await userData.createUser('user');
+        const target1: User = await userData.createUser('target1');
+        const target2: User = await userData.createUser('target2');
         await blockData.blockUser(user, target1);
         await blockData.blockUser(user, target2);
         const token = await userData.giveTokenToUser(user);
@@ -63,7 +63,7 @@ describe('BlockController', () => {
       });
 
       it('[ValidCase] 차단목록이 빈경우', async () => {
-        const user: User = await userData.createBasicUser('user');
+        const user: User = await userData.createUser('user');
         const token = await userData.giveTokenToUser(user);
         const response = await req(token, 'GET', `/users/blocks`);
         const result = response.body;
@@ -78,8 +78,8 @@ describe('BlockController', () => {
   describe('[POST]', () => {
     describe('/users/blocks/{nickname}', () => {
       it('[ValidCase] 차단 추가할때', async () => {
-        const user: User = await userData.createBasicUser('user');
-        const target: User = await userData.createBasicUser('target');
+        const user: User = await userData.createUser('user');
+        const target: User = await userData.createUser('target');
         const token = await userData.giveTokenToUser(user);
         const response = await req(
           token,
@@ -91,8 +91,8 @@ describe('BlockController', () => {
       });
 
       it('[ValidCase] 이미 차단된 사용자', async () => {
-        const user: User = await userData.createBasicUser('user');
-        const target: User = await userData.createBasicUser('target');
+        const user: User = await userData.createUser('user');
+        const target: User = await userData.createUser('target');
         await blockData.blockUser(user, target);
         const token = await userData.giveTokenToUser(user);
         const response = await req(
@@ -105,7 +105,7 @@ describe('BlockController', () => {
       });
 
       it('[InvalidCase] 차단할 사용자가 없는 경우', async () => {
-        const user: User = await userData.createBasicUser('user');
+        const user: User = await userData.createUser('user');
         const target = 'invalidNicknameLikeLoveMeLikeThisLoveMeLikeThat';
         const token = await userData.giveTokenToUser(user);
         const response = await req(token, 'POST', `/users/blocks/${target}`);
@@ -117,8 +117,8 @@ describe('BlockController', () => {
   describe('[DELETE]', () => {
     describe('/users/blocks/{nickname}', () => {
       it('[ValidCase] 차단이 해제되는지', async () => {
-        const user: User = await userData.createBasicUser('user');
-        const target: User = await userData.createBasicUser('target');
+        const user: User = await userData.createUser('user');
+        const target: User = await userData.createUser('target');
         await blockData.blockUser(user, target);
         const token = await userData.giveTokenToUser(user);
         const response = await req(
@@ -131,8 +131,8 @@ describe('BlockController', () => {
       });
 
       it('[InvalidCase] 차단 목록에 없는 유저를 해제하려할때 에러응답', async () => {
-        const user: User = await userData.createBasicUser('user');
-        const target: User = await userData.createBasicUser('target');
+        const user: User = await userData.createUser('user');
+        const target: User = await userData.createUser('target');
         const token = await userData.giveTokenToUser(user);
         const response = await req(
           token,
@@ -144,7 +144,7 @@ describe('BlockController', () => {
       });
 
       it('[InvalidCase] 차단 해제할 사용자가 없는 경우', async () => {
-        const user: User = await userData.createBasicUser('user');
+        const user: User = await userData.createUser('user');
         const target = 'invalidNicknameLikeLoveMeLikeThisLoveMeLikeThat';
         const token = await userData.giveTokenToUser(user);
         const response = await req(token, 'DELETE', `/users/blocks/${target}`);

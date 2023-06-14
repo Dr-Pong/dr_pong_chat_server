@@ -307,7 +307,7 @@ describe('ChannelUserService', () => {
           'channel',
           10,
         );
-        const user: User = await userData.createBasicUser('user');
+        const user: User = await userData.createUser('user');
         const getChannelParticipantsRequest: GetChannelParticipantsDto = {
           userId: user.id,
           channelId: basicChannel.id,
@@ -323,7 +323,7 @@ describe('ChannelUserService', () => {
 
     describe('채팅방 생성', () => {
       it('[Valid Case] 채팅방 생성(public)', async () => {
-        const user: User = await userData.createBasicUser('user');
+        const user: User = await userData.createUser('user');
         const postChannelRequest: PostChannelDto = {
           userId: user.id,
           title: 'channel',
@@ -358,7 +358,7 @@ describe('ChannelUserService', () => {
       });
 
       it('[Valid Case] 채팅방 생성(protected)', async () => {
-        const user: User = await userData.createBasicUser('user');
+        const user: User = await userData.createUser('user');
         const postChannelRequest: PostChannelDto = {
           userId: user.id,
           title: 'channel',
@@ -393,7 +393,7 @@ describe('ChannelUserService', () => {
       });
 
       it('[Valid Case] 채팅방 생성(private)', async () => {
-        const user: User = await userData.createBasicUser('user');
+        const user: User = await userData.createUser('user');
         const postChannelRequest: PostChannelDto = {
           userId: user.id,
           title: 'channel',
@@ -428,8 +428,8 @@ describe('ChannelUserService', () => {
       });
 
       it('[Error Case] 채팅방 생성 - 이름이 중복된 경우', async () => {
-        const user: User = await userData.createBasicUser('user');
-        const user2: User = await userData.createBasicUser('user2');
+        const user: User = await userData.createUser('user');
+        const user2: User = await userData.createUser('user2');
         const postChannelRequest: PostChannelDto = {
           userId: user.id,
           title: 'channel',
@@ -466,7 +466,7 @@ describe('ChannelUserService', () => {
 
     describe('채팅방 입장', () => {
       it('[Valid Case] public 채팅방 입장', async () => {
-        const user: User = await userData.createBasicUser('user');
+        const user: User = await userData.createUser('user');
         const basicChannel: ChannelModel = await channelData.createBasicChannel(
           'channel',
           5,
@@ -502,7 +502,7 @@ describe('ChannelUserService', () => {
       });
 
       it('[Valid Case] protected 채팅방 입장', async () => {
-        const user: User = await userData.createBasicUser('user');
+        const user: User = await userData.createUser('user');
         const basicChannel: ChannelModel =
           await channelData.createProtectedChannel('protected', 6);
         const joinChannelRequest: PostChannelJoinDto = {
@@ -566,7 +566,7 @@ describe('ChannelUserService', () => {
       });
 
       it('[Error Case] protected 채팅방 입장시 비밀번호가 잘못된 경우', async () => {
-        const user: User = await userData.createBasicUser('user');
+        const user: User = await userData.createUser('user');
         const basicChannel: ChannelModel =
           await channelData.createProtectedChannel('protected', 6);
         const joinChannelRequest: PostChannelJoinDto = {
@@ -581,7 +581,7 @@ describe('ChannelUserService', () => {
       });
 
       it('[Error Case] private 채팅방 입장', async () => {
-        const user: User = await userData.createBasicUser('user');
+        const user: User = await userData.createUser('user');
         const basicChannel: ChannelModel =
           await channelData.createPrivateChannel('private', 6);
         const joinChannelRequest: PostChannelJoinDto = {
@@ -596,7 +596,7 @@ describe('ChannelUserService', () => {
       });
 
       it('[Error Case] Ban되어 있는 경우', async () => {
-        const user: User = await userData.createBasicUser('user');
+        const user: User = await userData.createUser('user');
         const basicChannel: ChannelModel =
           await channelData.createBannedChannel(user.id);
         const joinChannelRequest: PostChannelJoinDto = {
@@ -617,7 +617,7 @@ describe('ChannelUserService', () => {
           'chanel',
           5,
         );
-        const user: User = await userData.createBasicUser('user');
+        const user: User = await userData.createUser('user');
 
         const inviteRequest: PostInviteDto = {
           userId: basicChannel.ownerId,
@@ -636,7 +636,7 @@ describe('ChannelUserService', () => {
           'channel',
           6,
         );
-        const user: User = await userData.createBasicUser('user');
+        const user: User = await userData.createUser('user');
         const invite: InviteModel = new InviteModel(
           basicChannel.id,
           basicChannel.name,
@@ -675,7 +675,7 @@ describe('ChannelUserService', () => {
       it('[Valid Case] private 채팅방 초대 수락', async () => {
         const basicChannel: ChannelModel =
           await channelData.createPrivateChannel('channel', 5);
-        const user: User = await userData.createBasicUser('user');
+        const user: User = await userData.createUser('user');
         const invite: InviteModel = new InviteModel(
           basicChannel.id,
           basicChannel.name,
@@ -712,7 +712,7 @@ describe('ChannelUserService', () => {
       it('[Valid Case] protected 채팅방 초대 수락', async () => {
         const basicChannel: ChannelModel =
           await channelData.createProtectedChannel('channel', 6);
-        const user: User = await userData.createBasicUser('user');
+        const user: User = await userData.createUser('user');
         const invite: InviteModel = new InviteModel(
           basicChannel.id,
           basicChannel.name,
@@ -751,7 +751,7 @@ describe('ChannelUserService', () => {
           'channel',
           6,
         );
-        const user: User = await userData.createBasicUser('user');
+        const user: User = await userData.createUser('user');
         const invite: InviteModel = new InviteModel(
           basicChannel.id,
           basicChannel.name,
@@ -775,7 +775,7 @@ describe('ChannelUserService', () => {
           'channel',
           6,
         );
-        const user: User = await userData.createBasicUser('user');
+        const user: User = await userData.createUser('user');
         basicChannel.banList.set(user.id, user.id);
 
         const InviteAcceptRequest: PostChannelAcceptInviteDto = {
@@ -801,7 +801,7 @@ describe('ChannelUserService', () => {
           'channel',
           10,
         );
-        const user: User = await userData.createBasicUser('user');
+        const user: User = await userData.createUser('user');
         const invite: InviteModel = new InviteModel(
           basicChannel.id,
           basicChannel.name,
@@ -1102,7 +1102,7 @@ describe('ChannelUserService', () => {
     it('[Error Case] 채팅방에 없는 유저가 조회 요청을 보낸 경우', async () => {
       const channel: ChannelModel =
         await channelData.createChannelWithNormalChats(100);
-      const user: User = await userData.createBasicUser('user');
+      const user: User = await userData.createUser('user');
 
       const getChannelMessageHistoryRequest = {
         userId: user.id,

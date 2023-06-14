@@ -59,7 +59,7 @@ describe('BlockController', () => {
   describe('[PATCH]', () => {
     describe('/channels/{roomId}', () => {
       it('채널정보 수정 public -> private', async () => {
-        const owner: User = await userData.createBasicUser('owner');
+        const owner: User = await userData.createUser('owner');
         const channel = await channelData.createChannel(
           owner.id,
           'channel',
@@ -74,7 +74,7 @@ describe('BlockController', () => {
       });
 
       it('채널정보 수정 public -> protected', async () => {
-        const owner: User = await userData.createBasicUser('owner');
+        const owner: User = await userData.createUser('owner');
         const channel = await channelData.createChannel(
           owner.id,
           'channel',
@@ -90,7 +90,7 @@ describe('BlockController', () => {
       });
 
       it('채널정보 수정 private -> public', async () => {
-        const owner: User = await userData.createBasicUser('owner');
+        const owner: User = await userData.createUser('owner');
         const channel = await channelData.createChannel(
           owner.id,
           'channel',
@@ -104,7 +104,7 @@ describe('BlockController', () => {
         expect(response.status).toBe(200);
       });
       it('채널정보 수정 private -> protected', async () => {
-        const owner: User = await userData.createBasicUser('owner');
+        const owner: User = await userData.createUser('owner');
         const channel = await channelData.createChannel(
           owner.id,
           'channel',
@@ -120,7 +120,7 @@ describe('BlockController', () => {
       });
 
       it('채널정보 수정 protected -> public', async () => {
-        const owner: User = await userData.createBasicUser('owner');
+        const owner: User = await userData.createUser('owner');
         const channel = await channelData.createChannel(
           owner.id,
           'channel',
@@ -135,7 +135,7 @@ describe('BlockController', () => {
       });
 
       it('채널정보 수정 protected -> private', async () => {
-        const owner: User = await userData.createBasicUser('owner');
+        const owner: User = await userData.createUser('owner');
         const channel = await channelData.createChannel(
           owner.id,
           'channel',
@@ -221,7 +221,7 @@ describe('BlockController', () => {
     describe('[DELETE]', () => {
       describe('/channels/{roomId}', () => {
         it('채널 삭제', async () => {
-          const owner: User = await userData.createBasicUser('owner');
+          const owner: User = await userData.createUser('owner');
           const channel: ChannelModel = await channelData.createChannel(
             owner.id,
             'channel',

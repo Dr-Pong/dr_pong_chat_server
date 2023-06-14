@@ -143,7 +143,7 @@ describe('ChannelController - Normal', () => {
 
     describe('POST /channels', () => {
       it('[Valid Case] public 채널 생성', async () => {
-        const user: User = await userData.createBasicUser('nheo');
+        const user: User = await userData.createUser('nheo');
         const token: string = await userData.giveTokenToUser(user);
 
         const response = await req(token, 'POST', `/channels`, {
@@ -157,7 +157,7 @@ describe('ChannelController - Normal', () => {
       });
 
       it('[Valid Case] protected 채널 생성', async () => {
-        const user: User = await userData.createBasicUser('nheo');
+        const user: User = await userData.createUser('nheo');
         const token: string = await userData.giveTokenToUser(user);
 
         const response = await req(token, 'POST', `/channels`, {
@@ -171,7 +171,7 @@ describe('ChannelController - Normal', () => {
       });
 
       it('[Valid Case] private 채널 생성', async () => {
-        const user: User = await userData.createBasicUser('nheo');
+        const user: User = await userData.createUser('nheo');
         const token: string = await userData.giveTokenToUser(user);
 
         const response = await req(token, 'POST', `/channels`, {
@@ -191,7 +191,7 @@ describe('ChannelController - Normal', () => {
           'test',
           9,
         );
-        const user: User = await userData.createBasicUser('nheo');
+        const user: User = await userData.createUser('nheo');
         const token: string = await userData.giveTokenToUser(user);
 
         const response = await req(
@@ -209,7 +209,7 @@ describe('ChannelController - Normal', () => {
           'test',
           9,
         );
-        const user: User = await userData.createBasicUser('nheo');
+        const user: User = await userData.createUser('nheo');
         const token: string = await userData.giveTokenToUser(user);
 
         const response = await req(
@@ -227,7 +227,7 @@ describe('ChannelController - Normal', () => {
           'test',
           9,
         );
-        const user: User = await userData.createBasicUser('nheo');
+        const user: User = await userData.createUser('nheo');
         const token: string = await userData.giveTokenToUser(user);
 
         const response = await req(
@@ -245,7 +245,7 @@ describe('ChannelController - Normal', () => {
           'test',
           9,
         );
-        const user: User = await userData.createBasicUser('nheo');
+        const user: User = await userData.createUser('nheo');
         const token: string = await userData.giveTokenToUser(user);
 
         const response = await req(
@@ -278,7 +278,7 @@ describe('ChannelController - Normal', () => {
           'test',
           9,
         );
-        const user: User = await userData.createBasicUser('nheo');
+        const user: User = await userData.createUser('nheo');
         const token: string = await userData.giveTokenToUser(user);
 
         const response = await req(
@@ -294,7 +294,7 @@ describe('ChannelController - Normal', () => {
     describe('POST /channels/{roomId}/invitation/{nickname}', () => {
       it('[Valid Case] 채널 초대', async () => {
         const user: UserModel = await channelData.createUserInChannel(8);
-        const target: User = await userData.createBasicUser('nheo');
+        const target: User = await userData.createUser('nheo');
         const token: string = await userData.giveTokenToUser(user);
 
         const response = await req(
@@ -307,8 +307,8 @@ describe('ChannelController - Normal', () => {
       });
 
       it('[Error Case] 요상한 채널에서 초대', async () => {
-        const user: User = await userData.createBasicUser('user');
-        const target: User = await userData.createBasicUser('target');
+        const user: User = await userData.createUser('user');
+        const target: User = await userData.createUser('target');
         const channel: ChannelModel = await channelData.createBasicChannel(
           'test',
           9,
@@ -343,7 +343,7 @@ describe('ChannelController - Normal', () => {
       it('[Valid Case] private 채널 초대 수락', async () => {
         const basicChannel: ChannelModel =
           await channelData.createPrivateChannel('channel', 5);
-        const user: User = await userData.createBasicUser('user');
+        const user: User = await userData.createUser('user');
         const invite: InviteModel = new InviteModel(
           basicChannel.id,
           basicChannel.name,
@@ -365,7 +365,7 @@ describe('ChannelController - Normal', () => {
       it('[Error Case] 채널이 꽉찬 경우', async () => {
         const basicChannel: ChannelModel =
           await channelData.createPrivateChannel('channel', 10);
-        const user: User = await userData.createBasicUser('user');
+        const user: User = await userData.createUser('user');
         const invite: InviteModel = new InviteModel(
           basicChannel.id,
           basicChannel.name,
@@ -385,8 +385,8 @@ describe('ChannelController - Normal', () => {
       });
 
       it('[Error Case] 채널이 없는 경우', async () => {
-        const invitor: User = await userData.createBasicUser('invitor');
-        const user: User = await userData.createBasicUser('user');
+        const invitor: User = await userData.createUser('invitor');
+        const user: User = await userData.createUser('user');
         const token: string = await userData.giveTokenToUser(user);
         const invite: InviteModel = new InviteModel(
           'channelId',
@@ -407,7 +407,7 @@ describe('ChannelController - Normal', () => {
 
     describe('GET /channels/me', () => {
       it('[Valid Case] 채널 없는 경우', async () => {
-        const user: User = await userData.createBasicUser('user');
+        const user: User = await userData.createUser('user');
         const token: string = await userData.giveTokenToUser(user);
 
         const response = await req(token, 'GET', `/channels/me`);
