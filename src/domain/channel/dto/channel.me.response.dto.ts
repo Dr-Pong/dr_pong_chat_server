@@ -1,4 +1,4 @@
-import { ChannelMeDto } from './dto/channel.me.dto';
+import { ChannelMeDto } from './channel.me.dto';
 
 export class ChannelMeResponseDto {
   myChannel: ChannelMeDto;

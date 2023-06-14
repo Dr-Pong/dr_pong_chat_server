@@ -20,9 +20,9 @@ import { PostChannelJoinRequestDto } from '../dto/post/post.channel.join.request
 import { UserService } from '../../user/user.service';
 import { CHAT_MESSAGE } from '../type/type.channel.action';
 import { PostChannelChatRequestDto } from '../dto/post/post.channel.chat.request.dto';
-import { ChannelMeResponseDto } from '../channel.me.response.dto';
+import { ChannelMeResponseDto } from '../dto/channel.me.response.dto';
 import { ChannelMeDto } from '../dto/channel.me.dto';
-import { ChannelChatsResponseDto } from '../channel.chats.response.dto';
+import { ChannelChatsResponseDto } from '../dto/channel.chats.response.dto';
 import { AuthGuard } from '@nestjs/passport';
 
 @Controller('/channels')

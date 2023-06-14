@@ -1,27 +1,30 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { BlockService } from './block.service';
-import { BlockTestService } from './test/block.test.service';
+import { BlockService } from '../../../domain/block/block.service';
+import { BlockTestData } from '../../data/block.test.data';
 import { DataSource, Repository } from 'typeorm';
-import { Block } from './block.entity';
+import { Block } from '../../../domain/block/block.entity';
 import {
   addTransactionalDataSource,
   initializeTransactionalContext,
 } from 'typeorm-transactional';
 import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
 import { typeORMConfig } from 'src/configs/typeorm.config';
-import { BlockModule } from './block.module';
-import { GetUserBlocksDto } from './dto/get.user.blocks.dto';
-import { UserBlocksDto } from './dto/user.blocks.dto';
-import { UserModel } from '../factory/model/user.model';
-import { UserFactory } from '../factory/user.factory';
-import { PostUserBlockDto } from './dto/post.user.block.dto';
+import { BlockModule } from '../../../domain/block/block.module';
+import { GetUserBlocksDto } from '../../../domain/block/dto/get.user.blocks.dto';
+import { UserBlocksDto } from '../../../domain/block/dto/user.blocks.dto';
+import { UserModel } from '../../../domain/factory/model/user.model';
+import { UserFactory } from '../../../domain/factory/user.factory';
+import { PostUserBlockDto } from '../../../domain/block/dto/post.user.block.dto';
 import { BadRequestException } from '@nestjs/common';
-import { DeleteUserBlockDto } from './dto/delete.user.block.dto';
-import { BlockTestModule } from './test/block.test.module';
+import { DeleteUserBlockDto } from '../../../domain/block/dto/delete.user.block.dto';
+import { TestDataModule } from 'src/test/data/test.data.module';
+import { UserTestData } from 'src/test/data/user.test.data';
+import { User } from 'src/domain/user/user.entity';
 
 describe('BlockService', () => {
   let service: BlockService;
-  let testData: BlockTestService;
+  let blockData: BlockTestData;
+  let userData: UserTestData;
   let dataSources: DataSource;
   let blockRepository: Repository<Block>;
   let userFactory: UserFactory;
@@ -44,7 +47,7 @@ describe('BlockService', () => {
           },
         }),
         BlockModule,
-        BlockTestModule,
+        TestDataModule,
       ],
       providers: [
         {
@@ -55,7 +58,8 @@ describe('BlockService', () => {
     }).compile();
 
     service = module.get<BlockService>(BlockService);
-    testData = module.get<BlockTestService>(BlockTestService);
+    blockData = module.get<BlockTestData>(BlockTestData);
+    userData = module.get<UserTestData>(UserTestData);
     dataSources = module.get<DataSource>(DataSource);
     blockRepository = module.get<Repository<Block>>(getRepositoryToken(Block));
     userFactory = module.get<UserFactory>(UserFactory);
@@ -63,7 +67,8 @@ describe('BlockService', () => {
 
   afterEach(async () => {
     userFactory.users.clear();
-    // jest.resetAllMocks();
+    userData.clear();
+    jest.resetAllMocks();
     await dataSources.synchronize(true);
   });
 
@@ -71,12 +76,13 @@ describe('BlockService', () => {
     await dataSources.dropDatabase();
     await dataSources.destroy();
   });
+
   describe('차단관련 Service Logic', () => {
     describe('GET 차단목록 조회', () => {
       it('[Valid Case] 차단형식 확인 차단유저가 있는경우', async () => {
-        const user1: UserModel = await testData.createBasicUser('user1');
-        const user2: UserModel = await testData.createBasicUser('user2');
-        await testData.createUserBlocks(user1, user2);
+        const user1: User = await userData.createUser('user1');
+        const user2: User = await userData.createUser('user2');
+        await blockData.blockUser(user1, user2);
 
         const blockListDto: GetUserBlocksDto = {
           userId: user1.id,
@@ -94,7 +100,7 @@ describe('BlockService', () => {
       });
 
       it('[Valid Case] 차단유저가 빈경우', async () => {
-        const user: UserModel = await testData.createBasicUser('user1');
+        const user: User = await userData.createUser('user1');
         const blockListDto: GetUserBlocksDto = {
           userId: user.id,
         };
@@ -108,8 +114,8 @@ describe('BlockService', () => {
     });
     describe('POST 유저 차단', () => {
       it('[Valid Case] 유저가 차단되는지', async () => {
-        const user1: UserModel = await testData.createBasicUser('user1');
-        const user2: UserModel = await testData.createBasicUser('user2');
+        const user1: User = await userData.createUser('user1');
+        const user2: User = await userData.createUser('user2');
         const userBlockDto: PostUserBlockDto = {
           userId: user1.id,
           targetId: user2.id,
@@ -132,9 +138,9 @@ describe('BlockService', () => {
       });
 
       it('[Valid Case] 이전에 차단 목록에 차단할 유저가 있을때', async () => {
-        const user1: UserModel = await testData.createBasicUser('user1');
-        const user2: UserModel = await testData.createBasicUser('user2');
-        await testData.createUserBlocks(user1, user2);
+        const user1: User = await userData.createUser('user1');
+        const user2: User = await userData.createUser('user2');
+        await blockData.blockUser(user1, user2);
 
         const userBlockDto: PostUserBlockDto = {
           userId: user1.id,
@@ -158,7 +164,7 @@ describe('BlockService', () => {
       });
 
       it('[Error Case]  존재하지 않는 유저에 대한 차단 요청시 적절한 에러 응답', async () => {
-        const user1: UserModel = await testData.createBasicUser('user1');
+        const user1: User = await userData.createUser('user1');
         const userBlockDto: PostUserBlockDto = {
           userId: user1.id,
           targetId: 123456789,
@@ -171,9 +177,9 @@ describe('BlockService', () => {
     });
     describe('DELETE 차단 해제', () => {
       it('[Valid Case] 차단이 해제되는지', async () => {
-        const user1: UserModel = await testData.createBasicUser('user1');
-        const user2: UserModel = await testData.createBasicUser('user2');
-        await testData.createUserBlocks(user1, user2);
+        const user1: User = await userData.createUser('user1');
+        const user2: User = await userData.createUser('user2');
+        await blockData.blockUser(user1, user2);
 
         const userBlockDto: DeleteUserBlockDto = {
           userId: user1.id,
@@ -196,8 +202,8 @@ describe('BlockService', () => {
       });
 
       it('[Error Case] 차단 목록에 없는 유저를 해제하려할때 에러응답', async () => {
-        const user1: UserModel = await testData.createBasicUser('user1');
-        const user2: UserModel = await testData.createBasicUser('user2');
+        const user1: User = await userData.createUser('user1');
+        const user2: User = await userData.createUser('user2');
 
         const userBlockDto: DeleteUserBlockDto = {
           userId: user1.id,

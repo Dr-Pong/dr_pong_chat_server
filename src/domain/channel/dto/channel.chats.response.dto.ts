@@ -1,4 +1,4 @@
-import { ChannelMessageHistoryDto } from './dto/channel-message.history.dto';
+import { ChannelMessageHistoryDto } from './channel-message.history.dto';
 
 export class ChannelChatsResponseDto {
   chats: ChannelMessageHistoryDto[];

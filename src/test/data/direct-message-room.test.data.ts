@@ -4,18 +4,16 @@ import { User } from 'src/domain/user/user.entity';
 import { Repository } from 'typeorm';
 import { FriendChatManager } from 'src/global/utils/generate.room.id';
 import { DirectMessageRoom } from 'src/domain/direct-message-room/direct-message-room.entity';
-import { DirectMessage } from '../../direct-message/direct-message.entity';
+import { DirectMessage } from '../../domain/direct-message/direct-message.entity';
 
 @Injectable()
-export class DirectMessageRoomTestService {
+export class DirectMessageRoomTestData {
   constructor(
     @InjectRepository(DirectMessage)
     private directMessageRepository: Repository<DirectMessage>,
     @InjectRepository(DirectMessageRoom)
     private directMessageRoomRepository: Repository<DirectMessageRoom>,
   ) {}
-
-  clear() {}
 
   async createEmptyDirectMessageRoom(user1: User, user2: User): Promise<void> {
     await this.directMessageRoomRepository.save({

@@ -1,39 +1,41 @@
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { DataSource } from 'typeorm';
-import { UserTestService } from './test/user.test.service';
+import { UserTestData } from '../../data/user.test.data';
 import { initializeTransactionalContext } from 'typeorm-transactional';
 import { AppModule } from 'src/app.module';
 import * as request from 'supertest';
-import { User } from './user.entity';
+import { User } from '../../../domain/user/user.entity';
 import {
   RELATION_BLOCKED,
   RELATION_FRIEND,
   RELATION_NONE,
 } from 'src/global/type/type.user.relation';
-import { UserTestModule } from './test/user.test.module';
-import { PostGatewayUserDto } from './dto/post.gateway.users.dto';
+import { PostGatewayUserDto } from '../../../domain/user/dto/post.gateway.users.dto';
+import { TestDataModule } from 'src/test/data/test.data.module';
+import { FriendTestData } from 'src/test/data/friend.test.data';
+import { BlockTestData } from 'src/test/data/block.test.data';
 
 describe('UserController', () => {
   let app: INestApplication;
   let dataSources: DataSource;
-  let testData: UserTestService;
+  let userData: UserTestData;
+  let friendData: FriendTestData;
+  let blockData: BlockTestData;
 
   beforeAll(async () => {
     initializeTransactionalContext();
     const module: TestingModule = await Test.createTestingModule({
-      imports: [AppModule, UserTestModule],
+      imports: [AppModule, TestDataModule],
     }).compile();
 
     app = module.createNestApplication();
     await app.init();
-    testData = module.get<UserTestService>(UserTestService);
+    userData = module.get<UserTestData>(UserTestData);
+    friendData = module.get<FriendTestData>(FriendTestData);
+    blockData = module.get<BlockTestData>(BlockTestData);
     dataSources = module.get<DataSource>(DataSource);
     await dataSources.synchronize(true);
-  });
-
-  beforeEach(async () => {
-    await testData.createProfileImages();
   });
 
   afterAll(async () => {
@@ -43,16 +45,16 @@ describe('UserController', () => {
   });
 
   afterEach(async () => {
-    testData.clear();
+    userData.clear();
     jest.resetAllMocks();
     await dataSources.synchronize(true);
   });
 
   describe('GET /users/{nickname}/relations/{targetnickname}', () => {
     it('[Valid Case] friend인 경우', async () => {
-      const user: User = await testData.createBasicUser('user1');
-      const targetUser: User = await testData.createBasicUser('user2');
-      await testData.makeFriend(user, targetUser);
+      const user: User = await userData.createUser('user1');
+      const targetUser: User = await userData.createUser('user2');
+      await friendData.makeFriend(user, targetUser);
 
       const res = await req(
         null,
@@ -65,9 +67,9 @@ describe('UserController', () => {
     });
 
     it('[Valid Case] block인 경우', async () => {
-      const user: User = await testData.createBasicUser('user1');
-      const targetUser: User = await testData.createBasicUser('user2');
-      await testData.makeBlock(user, targetUser);
+      const user: User = await userData.createUser('user1');
+      const targetUser: User = await userData.createUser('user2');
+      await blockData.blockUser(user, targetUser);
 
       const res = await req(
         null,
@@ -80,8 +82,8 @@ describe('UserController', () => {
     });
 
     it('[Valid Case] none인 경우', async () => {
-      const user: User = await testData.createBasicUser('user1');
-      const targetUser: User = await testData.createBasicUser('user2');
+      const user: User = await userData.createUser('user1');
+      const targetUser: User = await userData.createUser('user2');
 
       const res = await req(
         null,
@@ -94,7 +96,7 @@ describe('UserController', () => {
     });
 
     it('[Error Case] target이 없는 유저인 경우', async () => {
-      const user: User = await testData.createBasicUser('user1');
+      const user: User = await userData.createUser('user1');
 
       const res = await req(
         null,
@@ -105,7 +107,7 @@ describe('UserController', () => {
     });
 
     it('[Error Case] user가 없는 유저인 경우', async () => {
-      const user: User = await testData.createBasicUser('user1');
+      const user: User = await userData.createUser('user1');
 
       const res = await req(
         null,
@@ -118,12 +120,12 @@ describe('UserController', () => {
 
   describe('POST /users', () => {
     it('유저 저장 테스트', async () => {
-      await testData.createProfileImages();
+      await userData.createProfileImage();
       const postGatewayUserDto: PostGatewayUserDto = {
         id: 1,
         nickname: 'Controllertest',
-        imgId: testData.profileImages[0].id,
-        imgUrl: testData.profileImages[0].url,
+        imgId: userData.profileImages[0].id,
+        imgUrl: userData.profileImages[0].url,
       };
 
       const response = await request(app.getHttpServer())
