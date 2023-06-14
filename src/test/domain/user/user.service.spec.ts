@@ -23,6 +23,7 @@ import { UserModel } from '../../../domain/factory/model/user.model';
 import { TestDataModule } from 'src/test/data/test.data.module';
 import { FriendTestData } from 'src/test/data/friend.test.data';
 import { BlockTestData } from 'src/test/data/block.test.data';
+import { PatchUserImageDto } from 'src/domain/user/dto/patch.user.image.dto';
 
 describe('UserService', () => {
   let service: UserService;
@@ -74,6 +75,7 @@ describe('UserService', () => {
   afterEach(async () => {
     userData.clear();
     jest.resetAllMocks();
+    userFactory.users.clear();
     await dataSources.synchronize(true);
   });
 
@@ -167,6 +169,50 @@ describe('UserService', () => {
         expect(result.image.id).toBe(gateWayUser.imgId);
         expect(result.image.url).toBe(gateWayUser.imgUrl);
       });
+    });
+  });
+
+  describe('patchUserImage(), 유저 이미지 변경', () => {
+    it('[Valid Case] 이미지 변경', async () => {
+      const user: User = await userData.createUser('user');
+      const imgId: number = userData.profileImages[0].id;
+      const patchDto: PatchUserImageDto = {
+        userId: user.id,
+        imgId,
+      };
+
+      await service.patchUserImage(patchDto);
+
+      const result: User = await userRepository.findOne({
+        where: { id: user.id },
+      });
+
+      expect(result.image.id).toBe(imgId);
+    });
+
+    it('[Invalid Case] 이미지 변경 실패(없는 유저)', async () => {
+      await userData.createProfileImage();
+      const imgId: number = userData.profileImages[0].id;
+      const patchDto: PatchUserImageDto = {
+        userId: 1234,
+        imgId,
+      };
+
+      await expect(service.patchUserImage(patchDto)).rejects.toThrow(
+        new BadRequestException('No such User'),
+      );
+    });
+
+    it('[Invalid Case] 이미지 변경 실패(없는 이미지)', async () => {
+      const user: User = await userData.createUser('user');
+      const patchDto: PatchUserImageDto = {
+        userId: user.id,
+        imgId: 1234,
+      };
+
+      await expect(service.patchUserImage(patchDto)).rejects.toThrow(
+        new BadRequestException('No such Image'),
+      );
     });
   });
 });
