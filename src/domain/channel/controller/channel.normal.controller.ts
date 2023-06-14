@@ -24,6 +24,7 @@ import { ChannelMeResponseDto } from '../dto/channel.me.response.dto';
 import { ChannelMeDto } from '../dto/channel.me.dto';
 import { ChannelChatsResponseDto } from '../dto/channel.chats.response.dto';
 import { AuthGuard } from '@nestjs/passport';
+import { ChannelIdResponseDto } from '../dto/channel.id.response.dto';
 
 @Controller('/channels')
 export class ChannelNormalController {
@@ -123,11 +124,11 @@ export class ChannelNormalController {
   async channelPost(
     @Requestor() requestor: UserIdCardDto,
     @Body() requestDto: PostChannelRequestDto,
-  ): Promise<void> {
+  ): Promise<ChannelIdResponseDto> {
     const { id: userId } = requestor;
     const { title, access, password, maxCount } = requestDto;
 
-    await this.channelService.postChannel({
+    return await this.channelService.postChannel({
       userId,
       title,
       access,
