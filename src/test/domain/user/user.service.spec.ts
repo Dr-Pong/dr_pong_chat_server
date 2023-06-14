@@ -175,7 +175,8 @@ describe('UserService', () => {
   describe('patchUserImage(), 유저 이미지 변경', () => {
     it('[Valid Case] 이미지 변경', async () => {
       const user: User = await userData.createUser('user');
-      const imgId: number = userData.profileImages[0].id;
+      await userData.createProfileImage();
+      const imgId: number = userData.profileImages[1].id;
       const patchDto: PatchUserImageDto = {
         userId: user.id,
         imgId,

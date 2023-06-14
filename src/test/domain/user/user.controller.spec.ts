@@ -141,9 +141,10 @@ describe('UserController', () => {
   describe('PATCH /users/{nickname}/image', () => {
     it('유저 이미지 변경 테스트', async () => {
       const user: User = await userData.createUser('user1');
+      await userData.createProfileImage();
       const token = await userData.giveTokenToUser(user);
       const PatchUserImageRequest: PatchUserImageRequestDto = {
-        imgId: userData.profileImages[0].id,
+        imgId: userData.profileImages[1].id,
       };
 
       const response = await req(
