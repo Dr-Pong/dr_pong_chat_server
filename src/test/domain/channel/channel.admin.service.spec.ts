@@ -1,18 +1,18 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ChannelFactory } from '../../factory/channel.factory';
-import { UserFactory } from '../../factory/user.factory';
+import { ChannelFactory } from '../../../domain/factory/channel.factory';
+import { UserFactory } from '../../../domain/factory/user.factory';
 import { DataSource, Repository } from 'typeorm';
 import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
-import { ChannelModel } from '../../factory/model/channel.model';
-import { UserModel } from '../../factory/model/user.model';
+import { ChannelModel } from '../../../domain/factory/model/channel.model';
+import { UserModel } from '../../../domain/factory/model/user.model';
 import { BadRequestException } from '@nestjs/common';
 import { CHANNEL_PROTECTED } from 'src/domain/channel/type/type.channel';
 import { CHANNEL_PRIVATE } from 'src/domain/channel/type/type.channel';
 import { CHANNEL_PUBLIC } from 'src/domain/channel/type/type.channel';
-import { DeleteChannelAdminDto } from '../dto/delete/delete.channel.admin.dto';
-import { ChannelTestService } from '../test/channel.test.service';
-import { ChannelUser } from '../entity/channel-user.entity';
-import { FactoryModule } from '../../factory/factory.module';
+import { DeleteChannelAdminDto } from '../../../domain/channel/dto/delete/delete.channel.admin.dto';
+import { ChannelTestData } from '../../data/channel.test.data';
+import { ChannelUser } from '../../../domain/channel/entity/channel-user.entity';
+import { FactoryModule } from '../../../domain/factory/factory.module';
 import { GatewayModule } from 'src/gateway/gateway.module';
 import { typeORMConfig } from 'src/configs/typeorm.config';
 import {
@@ -26,24 +26,26 @@ import {
   CHAT_SETADMIN,
   CHAT_UNSETADMIN,
 } from 'src/domain/channel/type/type.channel.action';
-import { ChannlTestModule } from '../test/channel.test.module';
-import { Channel } from '../entity/channel.entity';
-import { ChannelMessage } from '../entity/channel-message.entity';
-import { PostChannelAdminDto } from '../dto/post/post.channel.admin.dto';
-import { ChannelAdminService } from '../service/channel.admin.service';
-import { DeleteChannelKickDto } from '../dto/delete/delete.channel.kick.dto';
-import { PostChannelBanDto } from '../dto/post/post.channel.ban.dto';
-import { PostChannelMuteDto } from '../dto/post/post.channel.mute.dto';
-import { DeleteChannelMuteDto } from '../dto/delete/delete.channel.mute.dto';
-import { PatchChannelDto } from '../dto/patch/patch.channel.dto';
-import { DeleteChannelDto } from '../dto/delete/delete.channel.dto';
-import { ChannelModule } from '../channel.module';
+import { Channel } from '../../../domain/channel/entity/channel.entity';
+import { ChannelMessage } from '../../../domain/channel/entity/channel-message.entity';
+import { PostChannelAdminDto } from '../../../domain/channel/dto/post/post.channel.admin.dto';
+import { ChannelAdminService } from '../../../domain/channel/service/channel.admin.service';
+import { DeleteChannelKickDto } from '../../../domain/channel/dto/delete/delete.channel.kick.dto';
+import { PostChannelBanDto } from '../../../domain/channel/dto/post/post.channel.ban.dto';
+import { PostChannelMuteDto } from '../../../domain/channel/dto/post/post.channel.mute.dto';
+import { DeleteChannelMuteDto } from '../../../domain/channel/dto/delete/delete.channel.mute.dto';
+import { PatchChannelDto } from '../../../domain/channel/dto/patch/patch.channel.dto';
+import { DeleteChannelDto } from '../../../domain/channel/dto/delete/delete.channel.dto';
+import { ChannelModule } from '../../../domain/channel/channel.module';
+import { UserTestData } from 'src/test/data/user.test.data';
+import { TestDataModule } from 'src/test/data/test.data.module';
 
 describe('ChannelUserService', () => {
   let service: ChannelAdminService;
   let channelFactory: ChannelFactory;
   let userFactory: UserFactory;
-  let testData: ChannelTestService;
+  let channelData: ChannelTestData;
+  let userData: UserTestData;
   let dataSource: DataSource;
   let channelRepository: Repository<Channel>;
   let channelMessageRepository: Repository<ChannelMessage>;
@@ -52,7 +54,6 @@ describe('ChannelUserService', () => {
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [
-        ChannlTestModule,
         FactoryModule,
         GatewayModule,
         TypeOrmModule.forRootAsync({
@@ -69,6 +70,7 @@ describe('ChannelUserService', () => {
           },
         }),
         ChannelModule,
+        TestDataModule,
       ],
       providers: [
         {
@@ -87,9 +89,10 @@ describe('ChannelUserService', () => {
     }).compile();
 
     service = module.get<ChannelAdminService>(ChannelAdminService);
-    channelFactory = module.get<ChannelFactory>(ChannelFactory);
+    userData = module.get<UserTestData>(UserTestData);
+    channelData = module.get<ChannelTestData>(ChannelTestData);
     userFactory = module.get<UserFactory>(UserFactory);
-    testData = module.get<ChannelTestService>(ChannelTestService);
+    channelFactory = module.get<ChannelFactory>(ChannelFactory);
     dataSource = module.get<DataSource>(DataSource);
     channelRepository = module.get<Repository<Channel>>(
       getRepositoryToken(Channel),
@@ -101,6 +104,7 @@ describe('ChannelUserService', () => {
   });
 
   afterEach(async () => {
+    userData.clear();
     userFactory.users.clear();
     channelFactory.channels.clear();
     await dataSource.synchronize(true);
@@ -113,7 +117,7 @@ describe('ChannelUserService', () => {
   describe('관리자 기능', () => {
     describe('관리자 임명 / 해제', () => {
       it('[Valid Case] 관리자 임명', async () => {
-        const user: UserModel = await testData.createUserInChannel(9);
+        const user: UserModel = await channelData.createUserInChannel(9);
         const channel: ChannelModel = channelFactory.findById(
           user.joinedChannel,
         );
@@ -143,7 +147,9 @@ describe('ChannelUserService', () => {
       });
 
       it('[Valid Case] 관리자 해제', async () => {
-        const channel: ChannelModel = await testData.createChannelWithAdmins(9);
+        const channel: ChannelModel = await channelData.createChannelWithAdmins(
+          9,
+        );
         const iteratror = channel.users.values();
         iteratror.next();
         const user: UserModel = userFactory.findById(iteratror.next().value);
@@ -171,7 +177,7 @@ describe('ChannelUserService', () => {
 
     describe('KICK TEST', () => {
       it('[Valid Case] 일반 유저 강퇴', async () => {
-        const user: UserModel = await testData.createUserInChannel(9);
+        const user: UserModel = await channelData.createUserInChannel(9);
         const channel: ChannelModel = channelFactory.findById(
           user.joinedChannel,
         );
@@ -199,7 +205,9 @@ describe('ChannelUserService', () => {
         expect(savedUserFt.joinedChannel).toBeNull();
       });
       it('[Valid Case] owner가 관리자를 강퇴', async () => {
-        const channel: ChannelModel = await testData.createChannelWithAdmins(7);
+        const channel: ChannelModel = await channelData.createChannelWithAdmins(
+          7,
+        );
         const iterator = channel.adminList.values();
         iterator.next();
         const user: UserModel = userFactory.findById(iterator.next().value);
@@ -230,7 +238,9 @@ describe('ChannelUserService', () => {
       });
 
       it('[Error Case] 관리자가 관리자를 강퇴', async () => {
-        const channel: ChannelModel = await testData.createChannelWithAdmins(7);
+        const channel: ChannelModel = await channelData.createChannelWithAdmins(
+          7,
+        );
         const iterator = channel.adminList.values();
         iterator.next();
         const user: UserModel = userFactory.findById(iterator.next().value);
@@ -256,7 +266,7 @@ describe('ChannelUserService', () => {
 
     describe('BAN TEST', () => {
       it('[Valid Case] 일반 유저 BAN', async () => {
-        const user: UserModel = await testData.createUserInChannel(9);
+        const user: UserModel = await channelData.createUserInChannel(9);
         const channel: ChannelModel = channelFactory.findById(
           user.joinedChannel,
         );
@@ -289,7 +299,9 @@ describe('ChannelUserService', () => {
         expect(savedUserFt.joinedChannel).toBeNull();
       });
       it('[Valid Case] owner가 admin을 BAN', async () => {
-        const channel: ChannelModel = await testData.createChannelWithAdmins(9);
+        const channel: ChannelModel = await channelData.createChannelWithAdmins(
+          9,
+        );
         const iterator = channel.adminList.values();
         iterator.next();
         const user: UserModel = userFactory.findById(iterator.next().value);
@@ -321,7 +333,9 @@ describe('ChannelUserService', () => {
         expect(savedUserFt.joinedChannel).toBeNull();
       });
       it('[Error Case] 관리자가 관리자를 강퇴', async () => {
-        const channel: ChannelModel = await testData.createChannelWithAdmins(7);
+        const channel: ChannelModel = await channelData.createChannelWithAdmins(
+          7,
+        );
         const iterator = channel.adminList.values();
         iterator.next();
         const admin: UserModel = userFactory.findById(iterator.next().value);
@@ -352,7 +366,7 @@ describe('ChannelUserService', () => {
 
     describe('MUTE TEST', () => {
       it('[Valid Case] 일반 유저 MUTE', async () => {
-        const user: UserModel = await testData.createUserInChannel(9);
+        const user: UserModel = await channelData.createUserInChannel(9);
         const channel: ChannelModel = channelFactory.findById(
           user.joinedChannel,
         );
@@ -378,7 +392,9 @@ describe('ChannelUserService', () => {
         expect(savedChannelFt.muteList.has(user.id)).toBe(true);
       });
       it('[Error Case] 관리자가 관리자를 MUTE', async () => {
-        const channel: ChannelModel = await testData.createChannelWithAdmins(7);
+        const channel: ChannelModel = await channelData.createChannelWithAdmins(
+          7,
+        );
         const iterator = channel.adminList.values();
         iterator.next();
         const admin: UserModel = userFactory.findById(iterator.next().value);
@@ -404,7 +420,7 @@ describe('ChannelUserService', () => {
 
     describe('UNMUTE TEST', () => {
       it('[Valid Case] 일반 유저 UNMUTE', async () => {
-        const user: UserModel = await testData.createMutedUserInChannel(9);
+        const user: UserModel = await channelData.createMutedUserInChannel(9);
         const channel: ChannelModel = channelFactory.findById(
           user.joinedChannel,
         );
@@ -431,7 +447,7 @@ describe('ChannelUserService', () => {
       });
       it('[Error Case] 관리자가 관리자를 UNMUTE', async () => {
         const channel: ChannelModel =
-          await testData.createChannelWithMutedAdmins(7);
+          await channelData.createChannelWithMutedAdmins(7);
         const iterator = channel.adminList.values();
         iterator.next();
         const admin: UserModel = userFactory.findById(iterator.next().value);
@@ -456,7 +472,7 @@ describe('ChannelUserService', () => {
 
     describe('채팅방 수정', () => {
       it('[Valid Case] public -> private', async () => {
-        const channel: ChannelModel = await testData.createBasicChannel(
+        const channel: ChannelModel = await channelData.createBasicChannel(
           'public',
           6,
         );
@@ -482,7 +498,7 @@ describe('ChannelUserService', () => {
         expect(savedChannelFt.type).toBe(CHANNEL_PRIVATE);
       });
       it('[Valid Case] public -> protected', async () => {
-        const channel: ChannelModel = await testData.createBasicChannel(
+        const channel: ChannelModel = await channelData.createBasicChannel(
           'public',
           6,
         );
@@ -509,7 +525,7 @@ describe('ChannelUserService', () => {
         expect(savedChannelFt.password).toBe('1234');
       });
       it('[Valid Case] private -> public', async () => {
-        const channel: ChannelModel = await testData.createPrivateChannel(
+        const channel: ChannelModel = await channelData.createPrivateChannel(
           'private',
           6,
         );
@@ -534,7 +550,7 @@ describe('ChannelUserService', () => {
         expect(savedChannelFt.type).toBe(CHANNEL_PUBLIC);
       });
       it('[Valid Case] private -> protected', async () => {
-        const channel: ChannelModel = await testData.createPrivateChannel(
+        const channel: ChannelModel = await channelData.createPrivateChannel(
           'private',
           6,
         );
@@ -560,7 +576,7 @@ describe('ChannelUserService', () => {
         expect(savedChannelFt.password).toBe('1234');
       });
       it('[Valid Case] protected -> public', async () => {
-        const channel: ChannelModel = await testData.createProtectedChannel(
+        const channel: ChannelModel = await channelData.createProtectedChannel(
           'protected',
           6,
         );
@@ -586,7 +602,7 @@ describe('ChannelUserService', () => {
         expect(savedChannelFt.password).toBe(null);
       });
       it('[Valid Case] protected -> private', async () => {
-        const channel: ChannelModel = await testData.createProtectedChannel(
+        const channel: ChannelModel = await channelData.createProtectedChannel(
           'protected',
           6,
         );
@@ -616,7 +632,7 @@ describe('ChannelUserService', () => {
 
   describe('채팅방 삭제', () => {
     it('[Valid Case] 채팅방 삭제(오너가 삭제하는 경우)', async () => {
-      const channel: ChannelModel = await testData.createBasicChannel(
+      const channel: ChannelModel = await channelData.createBasicChannel(
         'public',
         8,
       );

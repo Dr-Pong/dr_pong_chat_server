@@ -1,35 +1,37 @@
 import { DataSource, Repository } from 'typeorm';
-import { FriendService } from './friend.service';
-import { FriendTestService } from './test/friend.test.service';
+import { FriendService } from '../../../domain/friend/friend.service';
+import { FriendTestData } from '../../data/friend.test.data';
 import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
 import { typeORMConfig } from 'src/configs/typeorm.config';
 import {
   addTransactionalDataSource,
   initializeTransactionalContext,
 } from 'typeorm-transactional';
-import { FriendTestModule } from './test/friend.test.module';
 import { Test, TestingModule } from '@nestjs/testing';
-import { UserFriendsDto } from './dto/user.friends.dto';
-import { Friend } from './friend.entity';
+import { UserFriendsDto } from '../../../domain/friend/dto/user.friends.dto';
+import { Friend } from '../../../domain/friend/friend.entity';
 import {
   FRIENDSTATUS_DELETED,
   FRIENDSTATUS_FRIEND,
   FRIENDSTATUS_PENDING,
 } from 'src/global/type/type.friend.status';
-import { GetUserPendingFriendDto } from './dto/get.user.peding.friend.dto';
-import { UserPendingFriendsDto } from './dto/user.pending.friends.dto';
-import { PostUserFriendAcceptDto } from './dto/post.user.friend.accept.dto';
-import { DeleteUserFriendRejectDto } from './dto/delete.user.friend.reject.dto';
-import { PostUserFriendRequestDto } from './dto/post.user.friend.request.dto';
-import { DeleteUserFriendDto } from './dto/delete.user.friend.dto';
-import { FriendModule } from './friend.module';
-import { GetUserFriendNotificationsRequestDto } from './dto/get.user.friend.notifications.request.dto';
-import { UserFriendNotificationsDto } from './dto/user.friend.notifications.dto';
+import { GetUserPendingFriendDto } from '../../../domain/friend/dto/get.user.peding.friend.dto';
+import { UserPendingFriendsDto } from '../../../domain/friend/dto/user.pending.friends.dto';
+import { PostUserFriendAcceptDto } from '../../../domain/friend/dto/post.user.friend.accept.dto';
+import { DeleteUserFriendRejectDto } from '../../../domain/friend/dto/delete.user.friend.reject.dto';
+import { PostUserFriendRequestDto } from '../../../domain/friend/dto/post.user.friend.request.dto';
+import { DeleteUserFriendDto } from '../../../domain/friend/dto/delete.user.friend.dto';
+import { FriendModule } from '../../../domain/friend/friend.module';
+import { GetUserFriendNotificationsRequestDto } from '../../../domain/friend/dto/get.user.friend.notifications.request.dto';
+import { UserFriendNotificationsDto } from '../../../domain/friend/dto/user.friend.notifications.dto';
 import { BadRequestException } from '@nestjs/common';
+import { UserTestData } from 'src/test/data/user.test.data';
+import { TestDataModule } from 'src/test/data/test.data.module';
 
 describe('FriendService', () => {
   let service: FriendService;
-  let friendTestService: FriendTestService;
+  let userData: UserTestData;
+  let friendData: FriendTestData;
   let dataSources: DataSource;
   let friendRepository: Repository<Friend>;
 
@@ -51,7 +53,7 @@ describe('FriendService', () => {
           },
         }),
         FriendModule,
-        FriendTestModule,
+        TestDataModule,
       ],
       providers: [
         {
@@ -62,7 +64,8 @@ describe('FriendService', () => {
     }).compile();
 
     service = module.get<FriendService>(FriendService);
-    friendTestService = module.get<FriendTestService>(FriendTestService);
+    userData = module.get<UserTestData>(UserTestData);
+    friendData = module.get<FriendTestData>(FriendTestData);
     dataSources = module.get<DataSource>(DataSource);
     friendRepository = module.get<Repository<Friend>>(
       getRepositoryToken(Friend),
@@ -70,12 +73,11 @@ describe('FriendService', () => {
   });
 
   beforeEach(async () => {
-    await friendTestService.createProfileImages();
-    await friendTestService.createBasicUsers(100);
+    await userData.createBasicUsers(100);
   });
 
   afterEach(async () => {
-    friendTestService.clear();
+    userData.clear();
     jest.resetAllMocks();
     await dataSources.synchronize(true);
   });
@@ -88,18 +90,10 @@ describe('FriendService', () => {
   describe('친구관련 Service Logic', () => {
     describe('친구목록 조회', () => {
       it('[Valid Case]친구목록 조회(친구추가 하거나 받은경우)', async () => {
-        const user = friendTestService.users[0];
+        const user = userData.users[0];
         for (let i = 1; i <= 12; i++) {
-          if (i % 2 == 0)
-            await friendTestService.makeFriend(
-              user,
-              friendTestService.users[i],
-            );
-          else
-            await friendTestService.makeFriend(
-              friendTestService.users[i],
-              user,
-            );
+          if (i % 2 == 0) await friendData.makeFriend(user, userData.users[i]);
+          else await friendData.makeFriend(userData.users[i], user);
         }
         const friendsList: UserFriendsDto = await service.getUserFriends({
           userId: user.id,
@@ -132,7 +126,7 @@ describe('FriendService', () => {
       });
 
       it('[Valid Case]친구가 없는경우', async () => {
-        const user = friendTestService.users[0];
+        const user = userData.users[0];
         const FriendsList = await service.getUserFriends({
           userId: user.id,
         });
@@ -140,18 +134,10 @@ describe('FriendService', () => {
       });
 
       it('[Valid Case]반환된 친구 목록이 알파벳순서로 정렬되는지 확인', async () => {
-        const user = friendTestService.users[0];
+        const user = userData.users[0];
         for (let i = 10; i > 0; i--) {
-          if (i % 2 == 0)
-            await friendTestService.makeFriend(
-              user,
-              friendTestService.users[i],
-            );
-          else
-            await friendTestService.makeFriend(
-              friendTestService.users[i],
-              user,
-            );
+          if (i % 2 == 0) await friendData.makeFriend(user, userData.users[i]);
+          else await friendData.makeFriend(userData.users[i], user);
         }
         const friendsList = await service.getUserFriends({ userId: user.id });
 
@@ -172,8 +158,8 @@ describe('FriendService', () => {
 
     describe('친구요청', () => {
       it('[Valid Case]유효한 닉네임 친구요청', async () => {
-        const user = friendTestService.users[0];
-        const wannabeFriend = friendTestService.users[1];
+        const user = userData.users[0];
+        const wannabeFriend = userData.users[1];
 
         const userFriendsRequestDto: PostUserFriendRequestDto = {
           userId: user.id,
@@ -193,9 +179,9 @@ describe('FriendService', () => {
       });
 
       it('[Valid Case]이미 친구인 유저에게 친구요청(백에서 씹기)', async () => {
-        const user = friendTestService.users[0];
-        const alreadyFriend = friendTestService.users[1];
-        await friendTestService.makeFriend(user, alreadyFriend);
+        const user = userData.users[0];
+        const alreadyFriend = userData.users[1];
+        await friendData.makeFriend(user, alreadyFriend);
 
         const userFriendsRequestDto: PostUserFriendRequestDto = {
           userId: user.id,
@@ -215,7 +201,7 @@ describe('FriendService', () => {
       });
 
       it('[Error Case] 자기 자신을 친구 요청', async () => {
-        const user = friendTestService.users[0];
+        const user = userData.users[0];
         const userFriendsRequestDto: PostUserFriendRequestDto = {
           userId: user.id,
           friendId: user.id,
@@ -231,7 +217,7 @@ describe('FriendService', () => {
 
     describe('친구요청 목록', () => {
       it('[Valid Case] 친구요청이 없는경우 빈목록', async () => {
-        const user = friendTestService.users[0];
+        const user = userData.users[0];
         const getUserPendingDto: GetUserPendingFriendDto = {
           userId: user.id,
         };
@@ -244,11 +230,11 @@ describe('FriendService', () => {
       });
 
       it('[Valid Case] 친구요청 목록이 정상적으로 반환 되는지 확인', async () => {
-        const user = friendTestService.users[0];
-        const requestor1 = friendTestService.users[1];
-        const requestor2 = friendTestService.users[2];
-        await friendTestService.createFriendRequestFromTo(requestor1, user);
-        await friendTestService.createFriendRequestFromTo(requestor2, user);
+        const user = userData.users[0];
+        const requestor1 = userData.users[1];
+        const requestor2 = userData.users[2];
+        await friendData.createFriendRequestFromTo(requestor1, user);
+        await friendData.createFriendRequestFromTo(requestor2, user);
 
         const getUserPendingDto: GetUserPendingFriendDto = {
           userId: user.id,
@@ -261,20 +247,17 @@ describe('FriendService', () => {
           const friend = friendsList.friends[i];
           expect(friend).toHaveProperty('nickname');
           expect(friend).toHaveProperty('imgUrl');
-          expect(friend.nickname).toBe(friendTestService.users[i + 1].nickname);
-          expect(friend.imgUrl).toBe(friendTestService.users[i + 1].image.url);
+          expect(friend.nickname).toBe(userData.users[i + 1].nickname);
+          expect(friend.imgUrl).toBe(userData.users[i + 1].image.url);
         }
       });
 
       it('[Valid Case] 친구요청 목록이 알파벳순서로 정렬되는지 확인', async () => {
-        const user = friendTestService.users[0];
+        const user = userData.users[0];
         for (let i = 1; i <= 6; i++) {
-          await friendTestService.createFriendRequestFromTo(
-            friendTestService.users[i],
-            user,
-          );
-          await friendTestService.createFriendRequestFromTo(
-            friendTestService.users[13 - i],
+          await friendData.createFriendRequestFromTo(userData.users[i], user);
+          await friendData.createFriendRequestFromTo(
+            userData.users[13 - i],
             user,
           );
         }
@@ -303,9 +286,9 @@ describe('FriendService', () => {
 
     describe('친구요청 수락', () => {
       it('[Valid Case]유효한 친구요청 수락', async () => {
-        const user = friendTestService.users[0];
-        const requestor = friendTestService.users[1];
-        await friendTestService.createFriendRequestFromTo(requestor, user);
+        const user = userData.users[0];
+        const requestor = userData.users[1];
+        await friendData.createFriendRequestFromTo(requestor, user);
 
         const userFriendsAcceptDto: PostUserFriendAcceptDto = {
           userId: user.id,
@@ -325,10 +308,10 @@ describe('FriendService', () => {
       });
 
       it('[Valid Case] 양쪽에서 친구 요청 보낸경우', async () => {
-        const user = friendTestService.users[0];
-        const mutual = friendTestService.users[1];
-        await friendTestService.createFriendRequestFromTo(user, mutual);
-        await friendTestService.createFriendRequestFromTo(mutual, user);
+        const user = userData.users[0];
+        const mutual = userData.users[1];
+        await friendData.createFriendRequestFromTo(user, mutual);
+        await friendData.createFriendRequestFromTo(mutual, user);
 
         const userFriendsAcceptDto: PostUserFriendAcceptDto = {
           userId: user.id,
@@ -355,10 +338,10 @@ describe('FriendService', () => {
       });
 
       it('[Valid Case]이미 친구인 유저에게 친구요청 수락(백에서 씹기)', async () => {
-        const user = friendTestService.users[0];
-        const alreadyFriend = friendTestService.users[1];
-        await friendTestService.makeFriend(alreadyFriend, user);
-        await friendTestService.createFriendRequestFromTo(alreadyFriend, user);
+        const user = userData.users[0];
+        const alreadyFriend = userData.users[1];
+        await friendData.makeFriend(alreadyFriend, user);
+        await friendData.createFriendRequestFromTo(alreadyFriend, user);
 
         const userFriendsAcceptDto: PostUserFriendAcceptDto = {
           userId: user.id,
@@ -378,7 +361,7 @@ describe('FriendService', () => {
       });
 
       it('[Error Case] 자기 자신을 친구 요청 수락', async () => {
-        const user = friendTestService.users[0];
+        const user = userData.users[0];
         const userFriendsAcceptDto: PostUserFriendAcceptDto = {
           userId: user.id,
           friendId: user.id,
@@ -394,9 +377,9 @@ describe('FriendService', () => {
 
     describe('친구요청 거절', () => {
       it('[Valid Case]친구요청 거절', async () => {
-        const user = friendTestService.users[0];
-        const rejectUser = friendTestService.users[1];
-        await friendTestService.createFriendRequestFromTo(user, rejectUser);
+        const user = userData.users[0];
+        const rejectUser = userData.users[1];
+        await friendData.createFriendRequestFromTo(user, rejectUser);
 
         const userFriendRejectDto: DeleteUserFriendRejectDto = {
           userId: rejectUser.id,
@@ -416,9 +399,9 @@ describe('FriendService', () => {
       });
 
       it('[Valid Case] 이미 친구인 사용자에게 친구요청 거절(백에서 씹기)', async () => {
-        const user = friendTestService.users[0];
-        const alreadyFriend = friendTestService.users[1];
-        await friendTestService.makeFriend(user, alreadyFriend);
+        const user = userData.users[0];
+        const alreadyFriend = userData.users[1];
+        await friendData.makeFriend(user, alreadyFriend);
 
         const userFriendRejectDto: DeleteUserFriendRejectDto = {
           userId: alreadyFriend.id,
@@ -438,7 +421,7 @@ describe('FriendService', () => {
       });
 
       it('[Error Case] 자기 자신을 친구 요청 거절', async () => {
-        const user = friendTestService.users[0];
+        const user = userData.users[0];
         const userFriendRejectDto: DeleteUserFriendRejectDto = {
           userId: user.id,
           friendId: user.id,
@@ -454,9 +437,9 @@ describe('FriendService', () => {
 
     describe('친구 삭제', () => {
       it('[Valid Case]친구삭제', async () => {
-        const user = friendTestService.users[0];
-        const friendToDelete = friendTestService.users[1];
-        await friendTestService.makeFriend(user, friendToDelete);
+        const user = userData.users[0];
+        const friendToDelete = userData.users[1];
+        await friendData.makeFriend(user, friendToDelete);
 
         const deleteFriendDto: DeleteUserFriendDto = {
           userId: user.id,
@@ -476,8 +459,8 @@ describe('FriendService', () => {
       });
 
       it('[Valid Case]친구가 아닌 사용자 삭제(백에서 씹기)', async () => {
-        const user = friendTestService.users[0];
-        const notFriend = friendTestService.users[1];
+        const user = userData.users[0];
+        const notFriend = userData.users[1];
 
         const deleteFriendDto: DeleteUserFriendDto = {
           userId: user.id,
@@ -497,7 +480,7 @@ describe('FriendService', () => {
       });
 
       it('[Error Case] 자기 자신을 친구 삭제', async () => {
-        const user = friendTestService.users[0];
+        const user = userData.users[0];
         const deleteFriendDto: DeleteUserFriendDto = {
           userId: user.id,
           friendId: user.id,
@@ -513,7 +496,7 @@ describe('FriendService', () => {
 
     describe('친구 요청 개수', () => {
       it('[Valid Case]친구요청이 없는경우', async () => {
-        const user = friendTestService.users[0];
+        const user = userData.users[0];
         const userFriendNotificationDto: GetUserFriendNotificationsRequestDto =
           {
             userId: user.id,
@@ -528,12 +511,9 @@ describe('FriendService', () => {
       });
 
       it('[Valid Case]친구요청이 있는경우', async () => {
-        const user = friendTestService.users[0];
+        const user = userData.users[0];
         for (let i = 1; i < 10; i++) {
-          await friendTestService.createFriendRequestFromTo(
-            friendTestService.users[i],
-            user,
-          );
+          await friendData.createFriendRequestFromTo(userData.users[i], user);
         }
 
         const userFriendNotificationDto: GetUserFriendNotificationsRequestDto =
@@ -550,12 +530,9 @@ describe('FriendService', () => {
       });
 
       it('[Valid Case]  50개 까지만 요청 받기', async () => {
-        const user = friendTestService.users[0];
+        const user = userData.users[0];
         for (let i = 1; i < 100; i++) {
-          await friendTestService.createFriendRequestFromTo(
-            friendTestService.users[i],
-            user,
-          );
+          await friendData.createFriendRequestFromTo(userData.users[i], user);
         }
 
         const userFriendNotificationDto: GetUserFriendNotificationsRequestDto =

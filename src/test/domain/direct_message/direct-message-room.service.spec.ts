@@ -1,6 +1,6 @@
 import { DataSource, Repository } from 'typeorm';
-import { DirectMessageRoomService } from './direct-message-room.service';
-import { DirectMessageRoom } from './direct-message-room.entity';
+import { DirectMessageRoomService } from '../../../domain/direct-message-room/direct-message-room.service';
+import { DirectMessageRoom } from '../../../domain/direct-message-room/direct-message-room.entity';
 import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
 import { typeORMConfig } from 'src/configs/typeorm.config';
@@ -8,24 +8,24 @@ import {
   addTransactionalDataSource,
   initializeTransactionalContext,
 } from 'typeorm-transactional';
-import { DirectMessageRoomModule } from './direct-message-room.module';
-import { DirectMessageRoomTestService } from './test/direct-message-room.test.service';
-import { DirectMessageRoomTestModule } from './test/direct-message-room.test.module';
-import { GetDirectMessageRoomsDto } from './dto/get.direct-message-rooms.dto';
-import { DeleteDirectMessageRoomDto } from './dto/delete.direct-message-room.dto';
-import { GetDirectMessageRoomsNotificationDto } from './dto/get.direct-message-rooms.notification.dto';
-import { DirectMessageRoomsDto } from './dto/direct-message-rooms.dto';
-import { DirectMessageRoomsNotificationDto } from './dto/direct-message-rooms.notification.dto';
-import { FriendTestService } from '../friend/test/friend.test.service';
-import { DirectMessageTestService } from '../direct-message/test/direct-message.test.service';
-import { DirectMessageTestModule } from '../direct-message/test/direct-message.test.module';
-import { FriendTestModule } from '../friend/test/friend.test.module';
+import { DirectMessageRoomModule } from '../../../domain/direct-message-room/direct-message-room.module';
+import { DirectMessageRoomTestData } from '../../data/direct-message-room.test.data';
+import { GetDirectMessageRoomsDto } from '../../../domain/direct-message-room/dto/get.direct-message-rooms.dto';
+import { DeleteDirectMessageRoomDto } from '../../../domain/direct-message-room/dto/delete.direct-message-room.dto';
+import { GetDirectMessageRoomsNotificationDto } from '../../../domain/direct-message-room/dto/get.direct-message-rooms.notification.dto';
+import { DirectMessageRoomsDto } from '../../../domain/direct-message-room/dto/direct-message-rooms.dto';
+import { DirectMessageRoomsNotificationDto } from '../../../domain/direct-message-room/dto/direct-message-rooms.notification.dto';
+import { FriendTestData } from '../../data/friend.test.data';
+import { DirectMessageTestData } from '../../data/direct-message.test.data';
+import { UserTestData } from 'src/test/data/user.test.data';
+import { TestDataModule } from 'src/test/data/test.data.module';
 
 describe('Direct Message Room Service', () => {
   let service: DirectMessageRoomService;
-  let friendTestService: FriendTestService;
-  let directMessageTestService: DirectMessageTestService;
-  let directMessageRoomTestService: DirectMessageRoomTestService;
+  let userData: UserTestData;
+  let friendData: FriendTestData;
+  let directMessageData: DirectMessageTestData;
+  let directMessageRoomData: DirectMessageRoomTestData;
   let dataSources: DataSource;
   let directMessageRoomRepository: Repository<DirectMessageRoom>;
 
@@ -47,19 +47,18 @@ describe('Direct Message Room Service', () => {
           },
         }),
         DirectMessageRoomModule,
-        DirectMessageRoomTestModule,
-        DirectMessageTestModule,
-        FriendTestModule,
+        TestDataModule,
       ],
     }).compile();
 
     service = module.get<DirectMessageRoomService>(DirectMessageRoomService);
-    friendTestService = module.get<FriendTestService>(FriendTestService);
-    directMessageTestService = module.get<DirectMessageTestService>(
-      DirectMessageTestService,
+    userData = module.get<UserTestData>(UserTestData);
+    friendData = module.get<FriendTestData>(FriendTestData);
+    directMessageData = module.get<DirectMessageTestData>(
+      DirectMessageTestData,
     );
-    directMessageRoomTestService = module.get<DirectMessageRoomTestService>(
-      DirectMessageRoomTestService,
+    directMessageRoomData = module.get<DirectMessageRoomTestData>(
+      DirectMessageRoomTestData,
     );
     dataSources = module.get<DataSource>(DataSource);
     directMessageRoomRepository = module.get<Repository<DirectMessageRoom>>(
@@ -68,20 +67,14 @@ describe('Direct Message Room Service', () => {
   });
 
   beforeEach(async () => {
-    await friendTestService.createProfileImages();
-    await friendTestService.createBasicUsers(3);
+    await userData.createBasicUsers(3);
     for (let i = 1; i <= 2; i++) {
-      await friendTestService.makeFriend(
-        friendTestService.users[0],
-        friendTestService.users[i],
-      );
+      await friendData.makeFriend(userData.users[0], userData.users[i]);
     }
   });
 
   afterEach(async () => {
-    friendTestService.clear();
-    directMessageTestService.clear();
-    directMessageRoomTestService.clear();
+    userData.clear();
     jest.resetAllMocks();
     await dataSources.synchronize(true);
   });
@@ -93,30 +86,18 @@ describe('Direct Message Room Service', () => {
   describe('Direct Message Room Service Logic', () => {
     describe('진행중인 DirectMessageRoom 목록 조회', () => {
       it('[Valid Case] 진행중인 DM 목록 정상 반환', async () => {
-        const user = friendTestService.users[0];
+        const user = userData.users[0];
 
-        const friend1 = friendTestService.users[1];
-        await directMessageRoomTestService.createEmptyDirectMessageRoom(
-          user,
-          friend1,
-        );
+        const friend1 = userData.users[1];
+        await directMessageRoomData.createEmptyDirectMessageRoom(user, friend1);
         for (let i = 0; i < 10; i++) {
-          await directMessageTestService.createDirectMessageFromTo(
-            user,
-            friend1,
-          );
+          await directMessageData.createDirectMessageFromTo(user, friend1);
         }
 
-        const friend2 = friendTestService.users[2];
-        await directMessageRoomTestService.createEmptyDirectMessageRoom(
-          user,
-          friend2,
-        );
+        const friend2 = userData.users[2];
+        await directMessageRoomData.createEmptyDirectMessageRoom(user, friend2);
         for (let i = 0; i < 10; i++) {
-          await directMessageTestService.createDirectMessageFromTo(
-            user,
-            friend2,
-          );
+          await directMessageData.createDirectMessageFromTo(user, friend2);
         }
 
         const directMessageRoomsDto: GetDirectMessageRoomsDto = {
@@ -131,16 +112,16 @@ describe('Direct Message Room Service', () => {
         for (let i = 0; i < directMessageRooms.chatList.length; i++) {
           const room = directMessageRooms.chatList[i];
           expect(room).toHaveProperty('nickname');
-          expect(room.nickname).toBe(friendTestService.users[i + 1].nickname);
+          expect(room.nickname).toBe(userData.users[i + 1].nickname);
           expect(room).toHaveProperty('imgUrl');
-          expect(room.imgUrl).toBe(friendTestService.users[i + 1].image.url);
+          expect(room.imgUrl).toBe(userData.users[i + 1].image.url);
           expect(room).toHaveProperty('newChats');
           expect(room.newChats).toBe(10);
         }
       });
 
       it('[Valid Case] 진행중인 DM목록이 없을때 확인', async () => {
-        const user = friendTestService.users[0];
+        const user = userData.users[0];
 
         const directMessageRoomsDto: GetDirectMessageRoomsDto = {
           userId: user.id,
@@ -155,21 +136,15 @@ describe('Direct Message Room Service', () => {
 
     describe('진행중인 DirectMessage 목록 삭제', () => {
       it('[Valid Case] DM 목록에서 삭제', async () => {
-        const user = friendTestService.users[0];
+        const user = userData.users[0];
 
-        const friend1 = friendTestService.users[1];
-        await directMessageRoomTestService.createEmptyDirectMessageRoom(
-          user,
-          friend1,
-        );
-        await directMessageTestService.createDirectMessageFromTo(user, friend1);
+        const friend1 = userData.users[1];
+        await directMessageRoomData.createEmptyDirectMessageRoom(user, friend1);
+        await directMessageData.createDirectMessageFromTo(user, friend1);
 
-        const friend2 = friendTestService.users[2];
-        await directMessageRoomTestService.createEmptyDirectMessageRoom(
-          user,
-          friend2,
-        );
-        await directMessageTestService.createDirectMessageFromTo(user, friend2);
+        const friend2 = userData.users[2];
+        await directMessageRoomData.createEmptyDirectMessageRoom(user, friend2);
+        await directMessageData.createDirectMessageFromTo(user, friend2);
 
         const deleteDirectMessageRoomDto: DeleteDirectMessageRoomDto = {
           userId: user.id,
@@ -191,14 +166,11 @@ describe('Direct Message Room Service', () => {
 
     describe('진행중인 DirectMessage 알람 받기', () => {
       it('[Valid Case] 대화방의 새로운 알람 수령', async () => {
-        const user = friendTestService.users[0];
+        const user = userData.users[0];
 
-        const friend1 = friendTestService.users[1];
-        await directMessageRoomTestService.createEmptyDirectMessageRoom(
-          user,
-          friend1,
-        );
-        await directMessageTestService.createDirectMessageFromTo(user, friend1);
+        const friend1 = userData.users[1];
+        await directMessageRoomData.createEmptyDirectMessageRoom(user, friend1);
+        await directMessageData.createDirectMessageFromTo(user, friend1);
 
         const getDirectMessageRoomsNotificationDto: GetDirectMessageRoomsNotificationDto =
           {
@@ -217,7 +189,7 @@ describe('Direct Message Room Service', () => {
       });
 
       it('[Valid Case] 대화방이 없을때', async () => {
-        const user = friendTestService.users[0];
+        const user = userData.users[0];
         const getDirectMessageRoomsNotificationDto: GetDirectMessageRoomsNotificationDto =
           {
             userId: user.id,
@@ -237,28 +209,22 @@ describe('Direct Message Room Service', () => {
       });
 
       it('[Valid Case] 대화방의 모든 DM 알람 읽음 ', async () => {
-        const user = friendTestService.users[0];
+        const user = userData.users[0];
 
-        const friend1 = friendTestService.users[1];
+        const friend1 = userData.users[1];
         for (let i = 0; i < 10; i++) {
-          await directMessageTestService.createDirectMessageFromTo(
-            user,
-            friend1,
-          );
+          await directMessageData.createDirectMessageFromTo(user, friend1);
         }
-        await directMessageRoomTestService.createAllReadDirectMessageRoom(
+        await directMessageRoomData.createAllReadDirectMessageRoom(
           user,
           friend1,
         );
 
-        const friend2 = friendTestService.users[2];
+        const friend2 = userData.users[2];
         for (let i = 0; i < 10; i++) {
-          await directMessageTestService.createDirectMessageFromTo(
-            user,
-            friend2,
-          );
+          await directMessageData.createDirectMessageFromTo(user, friend2);
         }
-        await directMessageRoomTestService.createAllReadDirectMessageRoom(
+        await directMessageRoomData.createAllReadDirectMessageRoom(
           user,
           friend2,
         );
@@ -282,28 +248,22 @@ describe('Direct Message Room Service', () => {
       });
 
       it('[Valid Case] 대화방의 모든 DM 알람 안 읽음 ', async () => {
-        const user = friendTestService.users[0];
+        const user = userData.users[0];
 
-        const friend1 = friendTestService.users[1];
+        const friend1 = userData.users[1];
         for (let i = 0; i < 10; i++) {
-          await directMessageTestService.createDirectMessageFromTo(
-            user,
-            friend1,
-          );
+          await directMessageData.createDirectMessageFromTo(user, friend1);
         }
-        await directMessageRoomTestService.createAllReadDirectMessageRoom(
+        await directMessageRoomData.createAllReadDirectMessageRoom(
           user,
           friend1,
         );
 
-        const friend2 = friendTestService.users[2];
+        const friend2 = userData.users[2];
         for (let i = 0; i < 10; i++) {
-          await directMessageTestService.createDirectMessageFromTo(
-            user,
-            friend2,
-          );
+          await directMessageData.createDirectMessageFromTo(user, friend2);
         }
-        await directMessageRoomTestService.createHalfReadDirectMessageRoom(
+        await directMessageRoomData.createHalfReadDirectMessageRoom(
           user,
           friend2,
         );

@@ -4,31 +4,38 @@ import { DataSource } from 'typeorm';
 import { initializeTransactionalContext } from 'typeorm-transactional';
 import { AppModule } from '../../../app.module';
 import * as request from 'supertest';
-import { ChannelTestService } from '../test/channel.test.service';
+import { ChannelTestData } from '../../data/channel.test.data';
 import { UserModel } from 'src/domain/factory/model/user.model';
-import { ChannlTestModule } from '../test/channel.test.module';
-import { CHANNEL_PROTECTED, CHANNEL_PUBLIC } from '../type/type.channel';
-import { CHANNEL_PRIVATE } from '../type/type.channel';
+import {
+  CHANNEL_PROTECTED,
+  CHANNEL_PUBLIC,
+} from '../../../domain/channel/type/type.channel';
+import { CHANNEL_PRIVATE } from '../../../domain/channel/type/type.channel';
 import { ChannelModel } from 'src/domain/factory/model/channel.model';
 import { ChannelFactory } from 'src/domain/factory/channel.factory';
 import { UserFactory } from 'src/domain/factory/user.factory';
+import { TestDataModule } from 'src/test/data/test.data.module';
+import { UserTestData } from 'src/test/data/user.test.data';
+import { User } from 'src/domain/user/user.entity';
 
 describe('BlockController', () => {
   let app: INestApplication;
   let dataSources: DataSource;
   let channelFactory: ChannelFactory;
   let userFactory: UserFactory;
-  let testData: ChannelTestService;
+  let channelData: ChannelTestData;
+  let userData: UserTestData;
 
   beforeAll(async () => {
     initializeTransactionalContext();
     const module: TestingModule = await Test.createTestingModule({
-      imports: [AppModule, ChannlTestModule],
+      imports: [AppModule, TestDataModule],
     }).compile();
 
     app = module.createNestApplication();
     await app.init();
-    testData = module.get<ChannelTestService>(ChannelTestService);
+    channelData = module.get<ChannelTestData>(ChannelTestData);
+    userData = module.get<UserTestData>(UserTestData);
     dataSources = module.get<DataSource>(DataSource);
     channelFactory = module.get<ChannelFactory>(ChannelFactory);
     userFactory = module.get<UserFactory>(UserFactory);
@@ -43,6 +50,7 @@ describe('BlockController', () => {
 
   afterEach(async () => {
     jest.resetAllMocks();
+    userData.clear();
     userFactory.users.clear();
     channelFactory.channels.clear();
     await dataSources.synchronize(true);
@@ -51,13 +59,13 @@ describe('BlockController', () => {
   describe('[PATCH]', () => {
     describe('/channels/{roomId}', () => {
       it('채널정보 수정 public -> private', async () => {
-        const owner: UserModel = await testData.createBasicUser('owner');
-        const channel = await testData.createChannel(
-          owner,
+        const owner: User = await userData.createBasicUser('owner');
+        const channel = await channelData.createChannel(
+          owner.id,
           'channel',
           CHANNEL_PUBLIC,
         );
-        const token = await testData.giveTokenToUser(owner);
+        const token = await userData.giveTokenToUser(owner);
         const response = await req(token, 'PATCH', `/channels/${channel.id}`, {
           access: CHANNEL_PRIVATE,
         });
@@ -66,13 +74,13 @@ describe('BlockController', () => {
       });
 
       it('채널정보 수정 public -> protected', async () => {
-        const owner: UserModel = await testData.createBasicUser('owner');
-        const channel = await testData.createChannel(
-          owner,
+        const owner: User = await userData.createBasicUser('owner');
+        const channel = await channelData.createChannel(
+          owner.id,
           'channel',
           CHANNEL_PUBLIC,
         );
-        const token = await testData.giveTokenToUser(owner);
+        const token = await userData.giveTokenToUser(owner);
         const response = await req(token, 'PATCH', `/channels/${channel.id}`, {
           access: CHANNEL_PUBLIC,
           password: 'password',
@@ -82,13 +90,13 @@ describe('BlockController', () => {
       });
 
       it('채널정보 수정 private -> public', async () => {
-        const owner: UserModel = await testData.createBasicUser('owner');
-        const channel = await testData.createChannel(
-          owner,
+        const owner: User = await userData.createBasicUser('owner');
+        const channel = await channelData.createChannel(
+          owner.id,
           'channel',
           CHANNEL_PRIVATE,
         );
-        const token = await testData.giveTokenToUser(owner);
+        const token = await userData.giveTokenToUser(owner);
         const response = await req(token, 'PATCH', `/channels/${channel.id}`, {
           access: CHANNEL_PUBLIC,
         });
@@ -96,13 +104,13 @@ describe('BlockController', () => {
         expect(response.status).toBe(200);
       });
       it('채널정보 수정 private -> protected', async () => {
-        const owner: UserModel = await testData.createBasicUser('owner');
-        const channel = await testData.createChannel(
-          owner,
+        const owner: User = await userData.createBasicUser('owner');
+        const channel = await channelData.createChannel(
+          owner.id,
           'channel',
           CHANNEL_PRIVATE,
         );
-        const token = await testData.giveTokenToUser(owner);
+        const token = await userData.giveTokenToUser(owner);
         const response = await req(token, 'PATCH', `/channels/${channel.id}`, {
           access: CHANNEL_PUBLIC,
           password: 'password',
@@ -112,13 +120,13 @@ describe('BlockController', () => {
       });
 
       it('채널정보 수정 protected -> public', async () => {
-        const owner: UserModel = await testData.createBasicUser('owner');
-        const channel = await testData.createChannel(
-          owner,
+        const owner: User = await userData.createBasicUser('owner');
+        const channel = await channelData.createChannel(
+          owner.id,
           'channel',
           CHANNEL_PROTECTED,
         );
-        const token = await testData.giveTokenToUser(owner);
+        const token = await userData.giveTokenToUser(owner);
         const response = await req(token, 'PATCH', `/channels/${channel.id}`, {
           access: CHANNEL_PUBLIC,
         });
@@ -127,13 +135,13 @@ describe('BlockController', () => {
       });
 
       it('채널정보 수정 protected -> private', async () => {
-        const owner: UserModel = await testData.createBasicUser('owner');
-        const channel = await testData.createChannel(
-          owner,
+        const owner: User = await userData.createBasicUser('owner');
+        const channel = await channelData.createChannel(
+          owner.id,
           'channel',
           CHANNEL_PROTECTED,
         );
-        const token = await testData.giveTokenToUser(owner);
+        const token = await userData.giveTokenToUser(owner);
         const response = await req(token, 'PATCH', `/channels/${channel.id}`, {
           access: CHANNEL_PRIVATE,
         });
@@ -144,7 +152,7 @@ describe('BlockController', () => {
     describe('[POST]', () => {
       describe('/channels/{roomId}/admin/{nickname}', () => {
         it('채널 관리자 추가', async () => {
-          const channel: ChannelModel = await testData.createBasicChannel(
+          const channel: ChannelModel = await channelData.createBasicChannel(
             'normal',
             10,
           );
@@ -155,7 +163,7 @@ describe('BlockController', () => {
             iteratror.next().value,
           );
 
-          const token = await testData.giveTokenToUser(owner);
+          const token = await userData.giveTokenToUser(owner);
           const response = await req(
             token,
             'POST',
@@ -167,7 +175,7 @@ describe('BlockController', () => {
       });
       describe('/channels/{roomId}/ban/{nickname}', () => {
         it('채널 유저 차단', async () => {
-          const channel: ChannelModel = await testData.createBasicChannel(
+          const channel: ChannelModel = await channelData.createBasicChannel(
             'normal',
             10,
           );
@@ -177,7 +185,7 @@ describe('BlockController', () => {
           const target: UserModel = userFactory.findById(
             iteratror.next().value,
           );
-          const token = await testData.giveTokenToUser(owner);
+          const token = await userData.giveTokenToUser(owner);
           const response = await req(
             token,
             'POST',
@@ -189,7 +197,7 @@ describe('BlockController', () => {
       });
       describe('/channels/{roomId}/mute/{nickname}', () => {
         it('채널 유저 뮤트', async () => {
-          const channel: ChannelModel = await testData.createBasicChannel(
+          const channel: ChannelModel = await channelData.createBasicChannel(
             'normal',
             10,
           );
@@ -199,7 +207,7 @@ describe('BlockController', () => {
           const target: UserModel = userFactory.findById(
             iteratror.next().value,
           );
-          const token = await testData.giveTokenToUser(owner);
+          const token = await userData.giveTokenToUser(owner);
           const response = await req(
             token,
             'POST',
@@ -213,13 +221,13 @@ describe('BlockController', () => {
     describe('[DELETE]', () => {
       describe('/channels/{roomId}', () => {
         it('채널 삭제', async () => {
-          const owner: UserModel = await testData.createBasicUser('owner');
-          const channel: ChannelModel = await testData.createChannel(
-            owner,
+          const owner: User = await userData.createBasicUser('owner');
+          const channel: ChannelModel = await channelData.createChannel(
+            owner.id,
             'channel',
             CHANNEL_PUBLIC,
           );
-          const token = await testData.giveTokenToUser(owner);
+          const token = await userData.giveTokenToUser(owner);
           const response = await req(
             token,
             'DELETE',
@@ -231,9 +239,8 @@ describe('BlockController', () => {
       });
       describe('/channels/{roomId}/admin/{nickname}', () => {
         it('채널 관리자 삭제', async () => {
-          const channel: ChannelModel = await testData.createChannelWithAdmins(
-            10,
-          );
+          const channel: ChannelModel =
+            await channelData.createChannelWithAdmins(10);
           const iteratror = channel.users.values();
           iteratror.next();
           const owner: UserModel = userFactory.findById(channel.ownerId);
@@ -241,7 +248,7 @@ describe('BlockController', () => {
             iteratror.next().value,
           );
 
-          const token = await testData.giveTokenToUser(owner);
+          const token = await userData.giveTokenToUser(owner);
           const response = await req(
             token,
             'DELETE',
@@ -254,7 +261,7 @@ describe('BlockController', () => {
       describe('/channels/{roomId}/mute/{nickname}', () => {
         it('채널 유저 뮤트 풀기', async () => {
           const channel: ChannelModel =
-            await testData.createChannelWithMutedAdmins(10);
+            await channelData.createChannelWithMutedAdmins(10);
           const iteratror = channel.users.values();
           iteratror.next();
           const owner: UserModel = userFactory.findById(channel.ownerId);
@@ -262,7 +269,7 @@ describe('BlockController', () => {
             iteratror.next().value,
           );
 
-          const token = await testData.giveTokenToUser(owner);
+          const token = await userData.giveTokenToUser(owner);
           const response = await req(
             token,
             'DELETE',
@@ -274,7 +281,7 @@ describe('BlockController', () => {
       });
       describe('/channels/{roomId}/kick/{nickname}', () => {
         it('채널 유저 강퇴', async () => {
-          const channel: ChannelModel = await testData.createBasicChannel(
+          const channel: ChannelModel = await channelData.createBasicChannel(
             'normal',
             10,
           );
@@ -285,7 +292,7 @@ describe('BlockController', () => {
             iteratror.next().value,
           );
 
-          const token = await testData.giveTokenToUser(owner);
+          const token = await userData.giveTokenToUser(owner);
           const response = await req(
             token,
             'DELETE',

@@ -4,7 +4,7 @@ import { Channel } from 'src/domain/channel/entity/channel.entity';
 import { ChannelFactory } from 'src/domain/factory/channel.factory';
 import { UserFactory } from 'src/domain/factory/user.factory';
 import { Repository } from 'typeorm';
-import { ChannelUser } from '../entity/channel-user.entity';
+import { ChannelUser } from '../../domain/channel/entity/channel-user.entity';
 import { User } from 'src/domain/user/user.entity';
 import { ProfileImage } from 'src/domain/profile-image/profile-image.entity';
 import { ChannelMessage } from 'src/domain/channel/entity/channel-message.entity';
@@ -25,11 +25,13 @@ import {
   ChannelActionType,
 } from 'src/domain/channel/type/type.channel.action';
 import { JwtService } from '@nestjs/jwt';
+import { UserTestData } from './user.test.data';
 
 @Injectable()
-export class ChannelTestService {
+export class ChannelTestData {
   constructor(
-    private jwtService: JwtService,
+    private readonly userData: UserTestData,
+    private readonly jwtService: JwtService,
     private readonly channelFactory: ChannelFactory,
     private readonly userFactory: UserFactory,
     @InjectRepository(Channel)
@@ -45,12 +47,12 @@ export class ChannelTestService {
   ) {}
 
   async createChannel(
-    owner: UserModel,
+    ownerId: number,
     name: string,
     type: ChannelType,
   ): Promise<ChannelModel> {
     const channel: Channel = await this.channelRepository.save({
-      operator: { id: owner.id },
+      operator: { id: ownerId },
       name: name,
       maxHeadCount: 10,
       headCount: 1,
@@ -58,23 +60,16 @@ export class ChannelTestService {
       type: type,
     });
     await this.channelUserRepository.save({
-      user: { id: owner.id },
+      user: { id: ownerId },
       channel: channel,
     });
     const channelModel: ChannelModel = ChannelModel.fromEntity(channel);
-    this.channelFactory.create(owner.id, channelModel);
+    this.channelFactory.create(ownerId, channelModel);
     return this.channelFactory.findById(channel.id);
   }
 
-  async createUser(nickname: string): Promise<UserModel> {
-    const user: User = await this.userRepository.save({
-      nickname: nickname,
-      image: await this.imageRepository.save({
-        url: 'https://avatars.githubusercontent.com/u/48426991?v=4',
-      }),
-    });
-    const ownerModel: UserModel = UserModel.fromEntity(user);
-    this.userFactory.create(ownerModel);
+  private async createUser(nickname: string): Promise<UserModel> {
+    const user: User = await this.userData.createUser(nickname);
     return this.userFactory.findById(user.id);
   }
 
@@ -84,7 +79,7 @@ export class ChannelTestService {
   ): Promise<ChannelModel> {
     const owner: UserModel = await this.createUser('owner' + name);
     const channel: ChannelModel = await this.createChannel(
-      owner,
+      owner.id,
       name,
       CHANNEL_PUBLIC,
     );
@@ -109,7 +104,7 @@ export class ChannelTestService {
   ): Promise<ChannelModel> {
     const owner: UserModel = await this.createUser('owner' + name);
     const channel: ChannelModel = await this.createChannel(
-      owner,
+      owner.id,
       name,
       CHANNEL_PROTECTED,
     );
@@ -131,7 +126,7 @@ export class ChannelTestService {
   async createPrivateChannel(name: string, userNum: number) {
     const owner: UserModel = await this.createUser('owner' + name);
     const channel: ChannelModel = await this.createChannel(
-      owner,
+      owner.id,
       name,
       CHANNEL_PRIVATE,
     );
@@ -142,11 +137,11 @@ export class ChannelTestService {
         user: user,
         channel: channel,
       });
-      await this.channelRepository.update(
-        { id: channel.id },
-        { headCount: i + 1 },
-      );
     }
+    await this.channelRepository.update(
+      { id: channel.id },
+      { headCount: userNum },
+    );
     return this.channelFactory.findById(channel.id);
   }
 
@@ -154,10 +149,6 @@ export class ChannelTestService {
     for (let i = 1; i < userNum; i++) {
       await this.createBasicChannel('name' + i.toString(), i);
     }
-  }
-
-  async createBasicUser(nickname: string): Promise<UserModel> {
-    return await this.createUser(nickname);
   }
 
   async createChannelWithAdmins(userNum: number): Promise<ChannelModel> {
@@ -183,11 +174,11 @@ export class ChannelTestService {
     return this.channelFactory.findById(channel.id);
   }
 
-  async createBannedChannel(user: UserModel): Promise<ChannelModel> {
+  async createBannedChannel(userId: number): Promise<ChannelModel> {
     const channel: ChannelModel = await this.createBasicChannel('banned', 9);
-    this.channelFactory.setBan(user.id, channel.id);
+    this.channelFactory.setBan(userId, channel.id);
     await this.channelUserRepository.save({
-      user: { id: user.id },
+      user: { id: userId },
       channel: { id: channel.id },
       isDeleted: true,
     });

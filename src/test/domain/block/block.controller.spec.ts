@@ -1,27 +1,30 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import { DataSource } from 'typeorm';
-import { BlockTestService } from '../test/block.test.service';
+import { BlockTestData } from '../../data/block.test.data';
 import { initializeTransactionalContext } from 'typeorm-transactional';
 import { AppModule } from '../../../app.module';
-import { UserModel } from 'src/domain/factory/model/user.model';
 import * as request from 'supertest';
-import { BlockTestModule } from '../test/block.test.module';
+import { TestDataModule } from 'src/test/data/test.data.module';
+import { UserTestData } from 'src/test/data/user.test.data';
+import { User } from 'src/domain/user/user.entity';
 
 describe('BlockController', () => {
   let app: INestApplication;
   let dataSources: DataSource;
-  let testData: BlockTestService;
+  let blockData: BlockTestData;
+  let userData: UserTestData;
 
   beforeAll(async () => {
     initializeTransactionalContext();
     const module: TestingModule = await Test.createTestingModule({
-      imports: [AppModule, BlockTestModule],
+      imports: [AppModule, TestDataModule],
     }).compile();
 
     app = module.createNestApplication();
     await app.init();
-    testData = module.get<BlockTestService>(BlockTestService);
+    blockData = module.get<BlockTestData>(BlockTestData);
+    userData = module.get<UserTestData>(UserTestData);
     dataSources = module.get<DataSource>(DataSource);
     await dataSources.synchronize(true);
   });
@@ -34,17 +37,19 @@ describe('BlockController', () => {
 
   afterEach(async () => {
     jest.resetAllMocks();
+    userData.clear();
     await dataSources.synchronize(true);
   });
+
   describe('[GET]', () => {
     describe('users/blocks', () => {
       it('[ValidCase] 차단목록 조회', async () => {
-        const user: UserModel = await testData.createBasicUser('user');
-        const target1: UserModel = await testData.createBasicUser('target1');
-        const target2: UserModel = await testData.createBasicUser('target2');
-        await testData.createUserBlocks(user, target1);
-        await testData.createUserBlocks(user, target2);
-        const token = await testData.giveTokenToUser(user);
+        const user: User = await userData.createBasicUser('user');
+        const target1: User = await userData.createBasicUser('target1');
+        const target2: User = await userData.createBasicUser('target2');
+        await blockData.blockUser(user.id, target1.id);
+        await blockData.blockUser(user.id, target2.id);
+        const token = await userData.giveTokenToUser(user);
         const response = await req(token, 'GET', `/users/blocks`);
         const result = response.body;
 
@@ -58,8 +63,8 @@ describe('BlockController', () => {
       });
 
       it('[ValidCase] 차단목록이 빈경우', async () => {
-        const user: UserModel = await testData.createBasicUser('user');
-        const token = await testData.giveTokenToUser(user);
+        const user: User = await userData.createBasicUser('user');
+        const token = await userData.giveTokenToUser(user);
         const response = await req(token, 'GET', `/users/blocks`);
         const result = response.body;
 
@@ -73,9 +78,9 @@ describe('BlockController', () => {
   describe('[POST]', () => {
     describe('/users/blocks/{nickname}', () => {
       it('[ValidCase] 차단 추가할때', async () => {
-        const user: UserModel = await testData.createBasicUser('user');
-        const target: UserModel = await testData.createBasicUser('target');
-        const token = await testData.giveTokenToUser(user);
+        const user: User = await userData.createBasicUser('user');
+        const target: User = await userData.createBasicUser('target');
+        const token = await userData.giveTokenToUser(user);
         const response = await req(
           token,
           'POST',
@@ -86,10 +91,10 @@ describe('BlockController', () => {
       });
 
       it('[ValidCase] 이미 차단된 사용자', async () => {
-        const user: UserModel = await testData.createBasicUser('user');
-        const target: UserModel = await testData.createBasicUser('target');
-        await testData.createUserBlocks(user, target);
-        const token = await testData.giveTokenToUser(user);
+        const user: User = await userData.createBasicUser('user');
+        const target: User = await userData.createBasicUser('target');
+        await blockData.blockUser(user.id, target.id);
+        const token = await userData.giveTokenToUser(user);
         const response = await req(
           token,
           'POST',
@@ -100,9 +105,9 @@ describe('BlockController', () => {
       });
 
       it('[InvalidCase] 차단할 사용자가 없는 경우', async () => {
-        const user: UserModel = await testData.createBasicUser('user');
+        const user: User = await userData.createBasicUser('user');
         const target = 'invalidNicknameLikeLoveMeLikeThisLoveMeLikeThat';
-        const token = await testData.giveTokenToUser(user);
+        const token = await userData.giveTokenToUser(user);
         const response = await req(token, 'POST', `/users/blocks/${target}`);
 
         expect(response.status).toBe(400);
@@ -112,10 +117,10 @@ describe('BlockController', () => {
   describe('[DELETE]', () => {
     describe('/users/blocks/{nickname}', () => {
       it('[ValidCase] 차단이 해제되는지', async () => {
-        const user: UserModel = await testData.createBasicUser('user');
-        const target: UserModel = await testData.createBasicUser('target');
-        await testData.createUserBlocks(user, target);
-        const token = await testData.giveTokenToUser(user);
+        const user: User = await userData.createBasicUser('user');
+        const target: User = await userData.createBasicUser('target');
+        await blockData.blockUser(user.id, target.id);
+        const token = await userData.giveTokenToUser(user);
         const response = await req(
           token,
           'DELETE',
@@ -126,9 +131,9 @@ describe('BlockController', () => {
       });
 
       it('[InvalidCase] 차단 목록에 없는 유저를 해제하려할때 에러응답', async () => {
-        const user: UserModel = await testData.createBasicUser('user');
-        const target: UserModel = await testData.createBasicUser('target');
-        const token = await testData.giveTokenToUser(user);
+        const user: User = await userData.createBasicUser('user');
+        const target: User = await userData.createBasicUser('target');
+        const token = await userData.giveTokenToUser(user);
         const response = await req(
           token,
           'DELETE',
@@ -139,9 +144,9 @@ describe('BlockController', () => {
       });
 
       it('[InvalidCase] 차단 해제할 사용자가 없는 경우', async () => {
-        const user: UserModel = await testData.createBasicUser('user');
+        const user: User = await userData.createBasicUser('user');
         const target = 'invalidNicknameLikeLoveMeLikeThisLoveMeLikeThat';
-        const token = await testData.giveTokenToUser(user);
+        const token = await userData.giveTokenToUser(user);
         const response = await req(token, 'DELETE', `/users/blocks/${target}`);
 
         expect(response.status).toBe(400);

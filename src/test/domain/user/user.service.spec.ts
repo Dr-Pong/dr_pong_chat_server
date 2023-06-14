@@ -6,25 +6,29 @@ import {
   initializeTransactionalContext,
 } from 'typeorm-transactional';
 import { Test, TestingModule } from '@nestjs/testing';
-import { UserService } from './user.service';
-import { UserTestService } from './test/user.test.service';
-import { User } from './user.entity';
-import { UserModule } from './user.module';
-import { UserTestModule } from './test/user.test.module';
+import { UserService } from '../../../domain/user/user.service';
+import { UserTestData } from '../../data/user.test.data';
+import { User } from '../../../domain/user/user.entity';
+import { UserModule } from '../../../domain/user/user.module';
 import { BadRequestException } from '@nestjs/common';
-import { UserRelationDto } from './dto/user.relation.dto';
+import { UserRelationDto } from '../../../domain/user/dto/user.relation.dto';
 import {
   RELATION_BLOCKED,
   RELATION_FRIEND,
   RELATION_NONE,
 } from 'src/global/type/type.user.relation';
-import { UserFactory } from '../factory/user.factory';
-import { PostGatewayUserDto } from './dto/post.gateway.users.dto';
-import { UserModel } from '../factory/model/user.model';
+import { UserFactory } from '../../../domain/factory/user.factory';
+import { PostGatewayUserDto } from '../../../domain/user/dto/post.gateway.users.dto';
+import { UserModel } from '../../../domain/factory/model/user.model';
+import { TestDataModule } from 'src/test/data/test.data.module';
+import { FriendTestData } from 'src/test/data/friend.test.data';
+import { BlockTestData } from 'src/test/data/block.test.data';
 
 describe('UserService', () => {
   let service: UserService;
-  let testData: UserTestService;
+  let userData: UserTestData;
+  let friendData: FriendTestData;
+  let blockData: BlockTestData;
   let dataSources: DataSource;
   let userRepository: Repository<User>;
   let userFactory: UserFactory;
@@ -47,7 +51,7 @@ describe('UserService', () => {
           },
         }),
         UserModule,
-        UserTestModule,
+        TestDataModule,
       ],
       providers: [
         {
@@ -57,20 +61,22 @@ describe('UserService', () => {
       ],
     }).compile();
 
+    userData = module.get<UserTestData>(UserTestData);
+    friendData = module.get<FriendTestData>(FriendTestData);
+    blockData = module.get<BlockTestData>(BlockTestData);
     userFactory = module.get<UserFactory>(UserFactory);
     service = module.get<UserService>(UserService);
-    testData = module.get<UserTestService>(UserTestService);
     dataSources = module.get<DataSource>(DataSource);
     userRepository = module.get<Repository<User>>(getRepositoryToken(User));
     await dataSources.synchronize(true);
   });
 
   beforeEach(async () => {
-    await testData.createProfileImages();
+    await userData.createProfileImage();
   });
 
   afterEach(async () => {
-    testData.clear();
+    userData.clear();
     jest.resetAllMocks();
     await dataSources.synchronize(true);
   });
@@ -82,7 +88,7 @@ describe('UserService', () => {
 
   describe('getIdFromNickname(), 유저 닉네임으로 id 조회', () => {
     it('조회 성공', async () => {
-      await testData.createBasicUsers(10);
+      await userData.createBasicUsers(10);
       const query = 'user0';
       const targetId = await service.getIdFromNickname({ nickname: query });
       const repoUser = await userRepository.findOne({
@@ -101,9 +107,9 @@ describe('UserService', () => {
 
   describe('getUserRelation(), 유저 관계 조회 서비스', () => {
     it('[Valid Case] friend인 경우', async () => {
-      const user: User = await testData.createBasicUser('user');
-      const friend: User = await testData.createBasicUser('friend');
-      await testData.makeFriend(user, friend);
+      const user: User = await userData.createBasicUser('user');
+      const friend: User = await userData.createBasicUser('friend');
+      await friendData.makeFriend(user, friend);
 
       const relation: UserRelationDto = await service.getUserRelation({
         userId: user.id,
@@ -115,9 +121,9 @@ describe('UserService', () => {
     });
 
     it('[Valid Case] blocked 경우', async () => {
-      const user: User = await testData.createBasicUser('user');
-      const blocked: User = await testData.createBasicUser('block');
-      await testData.makeBlock(user, blocked);
+      const user: User = await userData.createBasicUser('user');
+      const blocked: User = await userData.createBasicUser('block');
+      await blockData.blockUser(user.id, blocked.id);
 
       const relation: UserRelationDto = await service.getUserRelation({
         userId: user.id,
@@ -129,8 +135,8 @@ describe('UserService', () => {
     });
 
     it('[Valid Case] none인 경우', async () => {
-      const user: User = await testData.createBasicUser('user');
-      const user2: User = await testData.createBasicUser('user2');
+      const user: User = await userData.createBasicUser('user');
+      const user2: User = await userData.createBasicUser('user2');
 
       const relation: UserRelationDto = await service.getUserRelation({
         userId: user.id,
@@ -142,13 +148,11 @@ describe('UserService', () => {
     });
     describe('친구 Gateway저장', () => {
       it('GateWay User 저장 테스트', async () => {
-        await testData.createProfileImages();
-
         const gateWayUser: PostGatewayUserDto = {
           id: 1,
           nickname: 'test',
-          imgId: testData.profileImages[0].id,
-          imgUrl: testData.profileImages[0].url,
+          imgId: userData.profileImages[0].id,
+          imgUrl: userData.profileImages[0].url,
         };
 
         await service.postUser(gateWayUser);

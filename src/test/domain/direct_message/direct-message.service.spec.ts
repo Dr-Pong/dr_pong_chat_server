@@ -1,33 +1,33 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { DirectMessageService } from './direct-message.service';
-import { DirectMessageTestService } from './test/direct-message.test.service';
+import { DirectMessageService } from '../../../domain/direct-message/direct-message.service';
+import { DirectMessageTestData } from '../../data/direct-message.test.data';
 import { DataSource, Repository } from 'typeorm';
-import { DirectMessage } from './direct-message.entity';
+import { DirectMessage } from '../../../domain/direct-message/direct-message.entity';
 import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
 import { typeORMConfig } from 'src/configs/typeorm.config';
 import {
   addTransactionalDataSource,
   initializeTransactionalContext,
 } from 'typeorm-transactional';
-import { DirectMessageModule } from './direct-message.module';
-import { DirectMessageTestModule } from './test/direct-message.test.module';
-import { PostDirectMessageDto } from './dto/post.direct-message.dto';
-import { GetDirectMessageHistoryDto } from './dto/get.direct-message.history.dto';
-import { GetDirectMessageHistoryResponseDto } from './dto/get.direct-message.history.response.dto';
-import { DirectMessageRoomModule } from '../direct-message-room/direct-message-room.module';
-import { DirectMessageRoom } from '../direct-message-room/direct-message-room.entity';
+import { DirectMessageModule } from '../../../domain/direct-message/direct-message.module';
+import { PostDirectMessageDto } from '../../../domain/direct-message/dto/post.direct-message.dto';
+import { GetDirectMessageHistoryDto } from '../../../domain/direct-message/dto/get.direct-message.history.dto';
+import { GetDirectMessageHistoryResponseDto } from '../../../domain/direct-message/dto/get.direct-message.history.response.dto';
+import { DirectMessageRoomModule } from '../../../domain/direct-message-room/direct-message-room.module';
+import { DirectMessageRoom } from '../../../domain/direct-message-room/direct-message-room.entity';
 import { CHATTYPE_ME, CHATTYPE_OTHERS } from 'src/global/type/type.chat';
 import { BadRequestException } from '@nestjs/common';
-import { FriendTestService } from '../friend/test/friend.test.service';
-import { FriendTestModule } from '../friend/test/friend.test.module';
-import { DirectMessageRoomTestModule } from '../direct-message-room/test/direct-message-room.test.module';
-import { DirectMessageRoomTestService } from '../direct-message-room/test/direct-message-room.test.service';
+import { FriendTestData } from '../../data/friend.test.data';
+import { DirectMessageRoomTestData } from '../../data/direct-message-room.test.data';
+import { TestDataModule } from 'src/test/data/test.data.module';
+import { UserTestData } from 'src/test/data/user.test.data';
 
 describe('Direct Message Service', () => {
   let service: DirectMessageService;
-  let friendTestService: FriendTestService;
-  let directMessageTestService: DirectMessageTestService;
-  let directMessageRoomTestService: DirectMessageRoomTestService;
+  let userData: UserTestData;
+  let friendData: FriendTestData;
+  let directMessageData: DirectMessageTestData;
+  let directMessageRoomData: DirectMessageRoomTestData;
   let dataSources: DataSource;
   let directMessageRepository: Repository<DirectMessage>;
   let directMessageRoomRepository: Repository<DirectMessageRoom>;
@@ -51,9 +51,7 @@ describe('Direct Message Service', () => {
         }),
         DirectMessageModule,
         DirectMessageRoomModule,
-        DirectMessageTestModule,
-        DirectMessageRoomTestModule,
-        FriendTestModule,
+        TestDataModule,
       ],
       providers: [
         {
@@ -64,12 +62,13 @@ describe('Direct Message Service', () => {
     }).compile();
 
     service = module.get<DirectMessageService>(DirectMessageService);
-    directMessageTestService = module.get<DirectMessageTestService>(
-      DirectMessageTestService,
+    userData = module.get<UserTestData>(UserTestData);
+    directMessageData = module.get<DirectMessageTestData>(
+      DirectMessageTestData,
     );
-    friendTestService = module.get<FriendTestService>(FriendTestService);
-    directMessageRoomTestService = module.get<DirectMessageRoomTestService>(
-      DirectMessageRoomTestService,
+    friendData = module.get<FriendTestData>(FriendTestData);
+    directMessageRoomData = module.get<DirectMessageRoomTestData>(
+      DirectMessageRoomTestData,
     );
     dataSources = module.get<DataSource>(DataSource);
     directMessageRepository = module.get<Repository<DirectMessage>>(
@@ -81,18 +80,12 @@ describe('Direct Message Service', () => {
   });
 
   beforeEach(async () => {
-    await friendTestService.createProfileImages();
-    await friendTestService.createBasicUsers(3);
-    await friendTestService.makeFriend(
-      friendTestService.users[0],
-      friendTestService.users[1],
-    );
+    await userData.createBasicUsers(3);
+    await friendData.makeFriend(userData.users[0], userData.users[1]);
   });
 
   afterEach(async () => {
-    friendTestService.clear();
-    directMessageTestService.clear();
-    directMessageRoomTestService.clear();
+    userData.clear();
     jest.resetAllMocks();
     await dataSources.synchronize(true);
   });
@@ -105,17 +98,11 @@ describe('Direct Message Service', () => {
   describe('Direct Message Service Logic', () => {
     describe('Direct Message 대화 내역 조회', () => {
       it('[Valid Case] 대화 내역 정상 조회', async () => {
-        const user = friendTestService.users[0];
-        const friend = friendTestService.users[1];
+        const user = userData.users[0];
+        const friend = userData.users[1];
         for (let i = 0; i < 10; i++) {
-          await directMessageTestService.createDirectMessageFromTo(
-            user,
-            friend,
-          );
-          await directMessageTestService.createDirectMessageFromTo(
-            friend,
-            user,
-          );
+          await directMessageData.createDirectMessageFromTo(user, friend);
+          await directMessageData.createDirectMessageFromTo(friend, user);
         }
 
         const userDirectMessageDto: GetDirectMessageHistoryDto = {
@@ -140,8 +127,8 @@ describe('Direct Message Service', () => {
       });
 
       it('[Valid Case] 비어있는 대화 내역 조회', async () => {
-        const user = friendTestService.users[0];
-        const friend = friendTestService.users[1];
+        const user = userData.users[0];
+        const friend = userData.users[1];
         const userDirectMessageDto: GetDirectMessageHistoryDto = {
           userId: user.id,
           friendId: friend.id,
@@ -156,17 +143,11 @@ describe('Direct Message Service', () => {
       });
 
       it('[Valid Case] 유저 두명이서 보내는 경우', async () => {
-        const user = friendTestService.users[0];
-        const friend = friendTestService.users[1];
+        const user = userData.users[0];
+        const friend = userData.users[1];
         for (let i = 0; i < 20; i++) {
-          await directMessageTestService.createDirectMessageFromTo(
-            user,
-            friend,
-          );
-          await directMessageTestService.createDirectMessageFromTo(
-            friend,
-            user,
-          );
+          await directMessageData.createDirectMessageFromTo(user, friend);
+          await directMessageData.createDirectMessageFromTo(friend, user);
         }
         const userDirectMessageDto: GetDirectMessageHistoryDto = {
           userId: user.id,
@@ -193,17 +174,11 @@ describe('Direct Message Service', () => {
       });
 
       it('[Valid Case] isLastPage 일때', async () => {
-        const user = friendTestService.users[0];
-        const friend = friendTestService.users[1];
+        const user = userData.users[0];
+        const friend = userData.users[1];
         for (let i = 0; i < 2; i++) {
-          await directMessageTestService.createDirectMessageFromTo(
-            user,
-            friend,
-          );
-          await directMessageTestService.createDirectMessageFromTo(
-            friend,
-            user,
-          );
+          await directMessageData.createDirectMessageFromTo(user, friend);
+          await directMessageData.createDirectMessageFromTo(friend, user);
         }
 
         const userDirectMessageDto: GetDirectMessageHistoryDto = {
@@ -221,17 +196,11 @@ describe('Direct Message Service', () => {
       });
 
       it('[Valid Case] isLastPage 일때 특: 카운트랑 딱맞을때', async () => {
-        const user = friendTestService.users[0];
-        const friend = friendTestService.users[1];
+        const user = userData.users[0];
+        const friend = userData.users[1];
         for (let i = 0; i < 5; i++) {
-          await directMessageTestService.createDirectMessageFromTo(
-            user,
-            friend,
-          );
-          await directMessageTestService.createDirectMessageFromTo(
-            friend,
-            user,
-          );
+          await directMessageData.createDirectMessageFromTo(user, friend);
+          await directMessageData.createDirectMessageFromTo(friend, user);
         }
 
         const userDirectMessageDto: GetDirectMessageHistoryDto = {
@@ -249,17 +218,11 @@ describe('Direct Message Service', () => {
       });
 
       it('[Valid Case] isLastPage 아닐때', async () => {
-        const user = friendTestService.users[0];
-        const friend = friendTestService.users[1];
+        const user = userData.users[0];
+        const friend = userData.users[1];
         for (let i = 0; i < 12; i++) {
-          await directMessageTestService.createDirectMessageFromTo(
-            user,
-            friend,
-          );
-          await directMessageTestService.createDirectMessageFromTo(
-            friend,
-            user,
-          );
+          await directMessageData.createDirectMessageFromTo(user, friend);
+          await directMessageData.createDirectMessageFromTo(friend, user);
         }
 
         const userDirectMessageDto: GetDirectMessageHistoryDto = {
@@ -278,8 +241,8 @@ describe('Direct Message Service', () => {
     });
     describe('Direct Message 전송', () => {
       it('[Valid Case] DM 전송(처음전송)', async () => {
-        const user = friendTestService.users[0];
-        const friend = friendTestService.users[1];
+        const user = userData.users[0];
+        const friend = userData.users[1];
         const roomId = `${user.id}+${friend.id}`;
 
         const userDirectMessageDto: PostDirectMessageDto = {
@@ -324,22 +287,13 @@ describe('Direct Message Service', () => {
       });
 
       it('[Valid Case] DM 전송(있던방에 전송)', async () => {
-        const user = friendTestService.users[0];
-        const friend = friendTestService.users[1];
+        const user = userData.users[0];
+        const friend = userData.users[1];
         const roomId = `${user.id}+${friend.id}`;
-        await directMessageRoomTestService.createEmptyDirectMessageRoom(
-          user,
-          friend,
-        );
+        await directMessageRoomData.createEmptyDirectMessageRoom(user, friend);
         for (let i = 0; i < 12; i++) {
-          await directMessageTestService.createDirectMessageFromTo(
-            user,
-            friend,
-          );
-          await directMessageTestService.createDirectMessageFromTo(
-            friend,
-            user,
-          );
+          await directMessageData.createDirectMessageFromTo(user, friend);
+          await directMessageData.createDirectMessageFromTo(friend, user);
         }
 
         const userDirectMessageDto: PostDirectMessageDto = {
@@ -384,8 +338,8 @@ describe('Direct Message Service', () => {
       });
 
       it('[Valid Case] 친구가 아닌 유저에게 전송이 불가능한지', async () => {
-        const user = friendTestService.users[0];
-        const notFriend = friendTestService.users[2];
+        const user = userData.users[0];
+        const notFriend = userData.users[2];
         const userDirectMessageDto: PostDirectMessageDto = {
           userId: user.id,
           friendId: notFriend.id,
