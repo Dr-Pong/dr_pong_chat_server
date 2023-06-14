@@ -82,6 +82,12 @@ export class BlockService {
       targetId,
     );
 
+    await this.friendRepository.updateFriendStatusBySenderIdAndReceiverId(
+      FRIENDSTATUS_DELETED,
+      targetId,
+      userId,
+    );
+
     // 차단당할 사용자가 차단목록에 없다면 차단합니다. Factory
     runOnTransactionComplete(() => {
       const userModel: UserModel = this.userFactory.findById(userId);
