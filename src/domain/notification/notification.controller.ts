@@ -7,7 +7,7 @@ import { UserIdCardDto } from '../auth/jwt/auth.user.id-card.dto';
 import { FriendRequestCountResponseDto } from '../user/dto/friend.request.count.response.dto';
 import ChannelInviteListResponseDto from '../user/dto/channel.invite.list.response.dto';
 
-@Controller('users/notifications')
+@Controller('/users/notifications')
 export class NotificationController {
   constructor(
     private readonly friendService: FriendService,
@@ -20,7 +20,7 @@ export class NotificationController {
    *     requestCount: number; // 친구 요청이 없으면 0 요청 최대50개만 가능
    * }
    * */
-  @Get('/notifications/friends')
+  @Get('/friends')
   @UseGuards(AuthGuard('jwt'))
   async friendRequestCountGet(
     @Requestor() requestor: UserIdCardDto,
@@ -48,7 +48,7 @@ export class NotificationController {
    *     ]
    * }
    * */
-  @Get('/notifications/channels')
+  @Get('/channels')
   @UseGuards(AuthGuard('jwt'))
   async channelInviteListGet(
     @Requestor() requestor: UserIdCardDto,
@@ -68,7 +68,7 @@ export class NotificationController {
    *     400: error;
    * }
    * */
-  @Delete('/notifications/channels/:id')
+  @Delete('/channels/:id')
   @UseGuards(AuthGuard('jwt'))
   async channelInvitationDelete(
     @Requestor() requestor: UserIdCardDto,
