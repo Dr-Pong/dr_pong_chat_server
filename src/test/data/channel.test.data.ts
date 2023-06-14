@@ -90,11 +90,11 @@ export class ChannelTestData {
         user: user,
         channel: channel,
       });
-      await this.channelRepository.update(
-        { id: channel.id },
-        { headCount: i + 1 },
-      );
     }
+    await this.channelRepository.update(
+      { id: channel.id },
+      { headCount: userNum },
+    );
     return this.channelFactory.findById(channel.id);
   }
 
@@ -115,11 +115,11 @@ export class ChannelTestData {
         user: user,
         channel: channel,
       });
-      await this.channelRepository.update(
-        { id: channel.id },
-        { headCount: i + 1 },
-      );
     }
+    await this.channelRepository.update(
+      { id: channel.id },
+      { headCount: userNum },
+    );
     return this.channelFactory.findById(channel.id);
   }
 
