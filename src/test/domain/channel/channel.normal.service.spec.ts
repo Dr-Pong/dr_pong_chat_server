@@ -533,7 +533,7 @@ describe('ChannelUserService', () => {
       });
 
       it('[Valid Case] 초대가 와있는데 초대 수락 안하고 입장해버린 경우', async () => {
-        const user: UserModel = await channelData.createInvitePendingUser();
+        const user: UserModel = await channelData.createInvitePendingUser(10);
         const basicChannel: ChannelModel =
           await channelData.createProtectedChannel('protected', 6);
         const joinChannelRequest: PostChannelJoinDto = {
@@ -827,6 +827,21 @@ describe('ChannelUserService', () => {
         expect(savedUserFt.inviteList.size).toBe(0);
         expect(savedUserFt.joinedChannel).toBe(null);
         expect(savedChannelFt.users.has(user.id)).toBe(false);
+      });
+      it('[Valid Case] 초대 목록(초대가 있는 경우)', async () => {
+        const user: UserModel = await channelData.createInvitePendingUser(10);
+        const { invitations } = await service.getChannelInviteList({
+          userId: user.id,
+        });
+
+        expect(invitations.length).toBe(10);
+      });
+      it('[Valid Case] 초대 목록(초대가 없는 경우)', async () => {
+        const { id } = await userData.createUser('user');
+        const { invitations } = await service.getChannelInviteList({
+          userId: id,
+        });
+        expect(invitations.length).toBe(0);
       });
     });
 

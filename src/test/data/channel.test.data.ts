@@ -185,9 +185,9 @@ export class ChannelTestData {
     return this.channelFactory.findById(channel.id);
   }
 
-  async createInvitePendingUser(): Promise<UserModel> {
+  async createInvitePendingUser(n: number): Promise<UserModel> {
     const user: UserModel = await this.createUser('user');
-    for (let i = 1; i < 10; i++) {
+    for (let i = 1; i <= n; i++) {
       const channel: ChannelModel = await this.createBasicChannel(
         'name' + i.toString(),
         i,

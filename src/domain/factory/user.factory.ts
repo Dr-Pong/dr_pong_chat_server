@@ -118,6 +118,11 @@ export class UserFactory {
     }
   }
 
+  getInvites(userId: number): InviteModel[] {
+    const user: UserModel = this.findById(userId);
+    return Array.from(user.inviteList.values());
+  }
+
   deleteInvite(userId: number, channelId: string): void {
     const user: UserModel = this.findById(userId);
     if (user.inviteList.has(channelId)) {

@@ -60,6 +60,8 @@ import { ChannelExitDto } from '../dto/channel.exit.dto';
 import { GetChannelMessageHistoryDto } from '../dto/get/get.channel-message.history.dto';
 import { DeleteChannelInviteDto } from '../dto/delete/delete.channel.invite.dto';
 import { UpdateChannelHeadCountDto } from '../dto/patch/update.channel.headcount.dto';
+import GetChannelInviteListDto from '../dto/get/get.channel.invitation.list.dto';
+import ChannelInviteListDto from '../dto/channel.invite.list.dto';
 import { ChannelIdDto } from '../controller/channel.id.dto';
 
 @Injectable()
@@ -366,6 +368,16 @@ export class ChannelNormalService {
     return responseDto;
   }
 
+  /**
+   * 유저가 받은 채널 초대 목록을 보여주는 함수
+   * userModel의 invite를 조회해 보내준다
+   * */
+  async getChannelInviteList(
+    getDto: GetChannelInviteListDto,
+  ): Promise<ChannelInviteListDto> {
+    const invites: InviteModel[] = this.userFactory.getInvites(getDto.userId);
+    return { invitations: invites };
+  }
   /**
    * 채널 초대를 거절하는 함수
    * userModel의 invite에서 해당 채널을 삭제한다

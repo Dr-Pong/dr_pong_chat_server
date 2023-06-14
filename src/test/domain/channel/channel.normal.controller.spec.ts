@@ -327,7 +327,7 @@ describe('ChannelController - Normal', () => {
 
     describe('POST /channels/{roomId}/magicpass', () => {
       it('[Valid Case] 채널 초대 수락', async () => {
-        const user: UserModel = await channelData.createInvitePendingUser();
+        const user: UserModel = await channelData.createInvitePendingUser(10);
         const invite: InviteModel = user.inviteList.values().next().value;
         const token: string = await userData.giveTokenToUser(user);
 
