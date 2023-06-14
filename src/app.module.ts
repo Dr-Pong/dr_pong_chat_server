@@ -22,6 +22,7 @@ import { User } from './domain/user/user.entity';
 import { ChannelUser } from './domain/channel/entity/channel-user.entity';
 import { BlockRepository } from './domain/block/block.repository';
 import { Block } from './domain/block/block.entity';
+import { NotificationModule } from './domain/notification/notification.module';
 
 @Module({
   imports: [
@@ -45,6 +46,7 @@ import { Block } from './domain/block/block.entity';
     ChannelModule,
     DirectMessageModule,
     DirectMessageRoomModule,
+    NotificationModule,
     AuthModule,
     FactoryModule,
     TypeOrmModule.forFeature([Channel, User, ChannelUser, Block]),
