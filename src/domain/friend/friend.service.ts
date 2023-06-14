@@ -61,7 +61,17 @@ export class FriendService {
   ): Promise<void> {
     const { userId, friendId } = postDto;
     this.checkIfRequestorIsTarget(userId, friendId);
+    const isRequestable = this.checkRequestable(userId, friendId);
+    if (!isRequestable) return;
 
+    await this.friendRepository.saveFriendStatusBySenderIdAndReceiverId(
+      FRIENDSTATUS_PENDING,
+      userId,
+      friendId,
+    );
+  }
+
+  async checkRequestable(userId: number, friendId: number): Promise<boolean> {
     const isFriend: boolean =
       await this.friendRepository.checkIsFriendByUserIdAndFriendId(
         userId,
@@ -77,14 +87,15 @@ export class FriendService {
         userId,
         friendId,
       );
+    const isBlockedByTarget =
+      await this.blockRepository.checkIsBlockByUserIdAndTargetId(
+        friendId,
+        userId,
+      );
 
-    if (isFriend || isRequesting || isBlocked) return;
-
-    await this.friendRepository.saveFriendStatusBySenderIdAndReceiverId(
-      FRIENDSTATUS_PENDING,
-      userId,
-      friendId,
-    );
+    if (isFriend || isRequesting || isBlocked || isBlockedByTarget)
+      return false;
+    return true;
   }
 
   /**친구 요청 목록
