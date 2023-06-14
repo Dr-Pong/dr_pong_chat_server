@@ -10,7 +10,7 @@ import { ChannelUserRepository } from './repository/channel-user.repository';
 import { ChannelMessageRepository } from './repository/channel-message.repository';
 import { ChannelNormalService } from './service/channel.normal.service';
 import { Channel } from './entity/channel.entity';
-import { ChannelNormalController } from './channel.normal.controller';
+import { ChannelNormalController } from './controller/channel.normal.controller';
 import { UserModule } from '../user/user.module';
 import { UserRepository } from '../user/user.repository';
 import { User } from '../user/user.entity';

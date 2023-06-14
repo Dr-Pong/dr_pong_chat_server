@@ -13,7 +13,6 @@ import { DirectMessageRoomModule } from './domain/direct-message-room/direct-mes
 import { DirectMessageModule } from './domain/direct-message/direct-message.module';
 import { FriendModule } from './domain/friend/friend.module';
 import { AuthModule } from './domain/auth/auth.module';
-import { FriendTestModule } from './domain/friend/test/friend.test.module';
 import { FactoryModule } from './domain/factory/factory.module';
 import { ChannelRepository } from './domain/channel/repository/channel.repository';
 import { UserRepository } from './domain/user/user.repository';
@@ -40,7 +39,6 @@ import { Block } from './domain/block/block.entity';
       },
     }),
     FriendModule,
-    FriendTestModule,
     UserModule,
     ProfileImageModule,
     BlockModule,
