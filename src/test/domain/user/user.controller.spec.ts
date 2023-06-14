@@ -38,10 +38,6 @@ describe('UserController', () => {
     await dataSources.synchronize(true);
   });
 
-  beforeEach(async () => {
-    await userData.createProfileImage();
-  });
-
   afterAll(async () => {
     await dataSources.dropDatabase();
     await dataSources.destroy();
@@ -124,6 +120,7 @@ describe('UserController', () => {
 
   describe('POST /users', () => {
     it('유저 저장 테스트', async () => {
+      await userData.createProfileImage();
       const postGatewayUserDto: PostGatewayUserDto = {
         id: 1,
         nickname: 'Controllertest',

@@ -71,10 +71,6 @@ describe('UserService', () => {
     await dataSources.synchronize(true);
   });
 
-  beforeEach(async () => {
-    await userData.createProfileImage();
-  });
-
   afterEach(async () => {
     userData.clear();
     jest.resetAllMocks();
@@ -148,6 +144,7 @@ describe('UserService', () => {
     });
     describe('친구 Gateway저장', () => {
       it('GateWay User 저장 테스트', async () => {
+        await userData.createProfileImage();
         const gateWayUser: PostGatewayUserDto = {
           id: 1,
           nickname: 'test',
