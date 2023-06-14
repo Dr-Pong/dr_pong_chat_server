@@ -1,11 +1,11 @@
 import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
-import { UserService } from './user.service';
-import { UserRelationResponseDto } from './dto/user.relation.response.dto';
-import { PostGatewayUserDto } from './dto/post.gateway.users.dto';
-import { Requestor } from '../auth/jwt/auth.requestor.decorator';
-import { UserIdCardDto } from '../auth/jwt/auth.user.id-card.dto';
-import { PatchUserImageRequestDto } from './dto/patch.user.image.request.dto';
-import { PatchUserImageDto } from './dto/patch.user.image.dto';
+import { UserService } from '../user.service';
+import { UserRelationResponseDto } from '../dto/user.relation.response.dto';
+import { PostGatewayUserDto } from '../dto/post.gateway.users.dto';
+import { Requestor } from '../../auth/jwt/auth.requestor.decorator';
+import { UserIdCardDto } from '../../auth/jwt/auth.user.id-card.dto';
+import { PatchUserImageRequestDto } from '../dto/patch.user.image.request.dto';
+import { PatchUserImageDto } from '../dto/patch.user.image.dto';
 
 @Controller('users')
 export class UserController {
