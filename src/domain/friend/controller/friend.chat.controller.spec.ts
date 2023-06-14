@@ -7,6 +7,7 @@ import { DirectMessageRoomTestService } from 'src/domain/direct-message-room/tes
 import { AppModule } from '../../../app.module';
 import { FriendTestService } from '../test/friend.test.service';
 import { DirectMessageTestService } from '../../direct-message/test/direct-message.test.service';
+import { FriendTestModule } from '../test/friend.test.module';
 
 describe('FriendController - Chat', () => {
   let app: INestApplication;
@@ -18,7 +19,7 @@ describe('FriendController - Chat', () => {
   beforeAll(async () => {
     initializeTransactionalContext();
     const module: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
+      imports: [AppModule, FriendTestModule],
     }).compile();
 
     app = module.createNestApplication();

@@ -5,6 +5,7 @@ import * as request from 'supertest';
 import { FriendTestService } from 'src/domain/friend/test/friend.test.service';
 import { initializeTransactionalContext } from 'typeorm-transactional';
 import { AppModule } from 'src/app.module';
+import { FriendTestModule } from '../test/friend.test.module';
 
 describe('FriendController - Relation', () => {
   let app: INestApplication;
@@ -14,7 +15,7 @@ describe('FriendController - Relation', () => {
   beforeAll(async () => {
     initializeTransactionalContext();
     const module: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
+      imports: [AppModule, FriendTestModule],
     }).compile();
 
     app = module.createNestApplication();
