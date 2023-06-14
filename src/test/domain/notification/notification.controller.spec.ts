@@ -8,8 +8,8 @@ import { FriendTestData } from '../../data/friend.test.data';
 import { TestDataModule } from 'src/test/data/test.data.module';
 import { UserTestData } from 'src/test/data/user.test.data';
 import { ChannelTestData } from '../../data/channel.test.data';
-import {UserFactory} from "../../../domain/factory/user.factory";
-import {ChannelFactory} from "../../../domain/factory/channel.factory";
+import { UserFactory } from '../../../domain/factory/user.factory';
+import { ChannelFactory } from '../../../domain/factory/channel.factory';
 
 describe('Notification Controller', () => {
   let app: INestApplication;
@@ -57,7 +57,7 @@ describe('Notification Controller', () => {
 
   describe('[GET]', () => {
     describe('/users/notifications/friends', () => {
-      it('친구 요청 개수 조회 성공(나와친구가되려는이50이상)', async () => {
+      it('[Valid Case] 친구 요청 개수 조회 성공(나와친구가되려는이50이상)', async () => {
         const user = userData.users[0];
         const token = await userData.giveTokenToUser(user);
         for (let i = 1; i <= 99; i++) {
@@ -72,7 +72,7 @@ describe('Notification Controller', () => {
         expect(response.body).toHaveProperty('requestCount');
         expect(response.body.requestCount).toBe(50);
       });
-      it('친구 요청 개수 조회 성공(나와친구가되려는이50이하)', async () => {
+      it('[Valid Case] 친구 요청 개수 조회 성공(나와친구가되려는이50이하)', async () => {
         const user = userData.users[0];
         const token = await userData.giveTokenToUser(user);
         for (let i = 1; i <= 25; i++) {
@@ -87,7 +87,7 @@ describe('Notification Controller', () => {
         expect(response.body).toHaveProperty('requestCount');
         expect(response.body.requestCount).toBe(25);
       });
-      it('친구 요청 개수 조회 성공(나와친구가되려는이없다)', async () => {
+      it('[Valid Case] 친구 요청 개수 조회 성공(나와친구가되려는이없다)', async () => {
         const user = userData.users[0];
         const token = await userData.giveTokenToUser(user);
         const response = await req(
@@ -102,7 +102,7 @@ describe('Notification Controller', () => {
     });
 
     describe('/users/notifications/channels', () => {
-      it('채널 초대 목록 조회 성공(있음)', async () => {
+      it('[Valid Case] 채널 초대 목록 조회 성공(있음)', async () => {
         const user = await channelData.createInvitePendingUser(33);
         const token = await userData.giveTokenToUser(user);
         const response = await req(
@@ -121,7 +121,7 @@ describe('Notification Controller', () => {
           expect(invitation).toHaveProperty('createdAt');
         }
       });
-      it('채널 초대 목록 조회 성공(없음)', async () => {
+      it('[Valid Case] 채널 초대 목록 조회 성공(없음)', async () => {
         const user = userData.users[0];
         const token = await userData.giveTokenToUser(user);
         const response = await req(
@@ -138,7 +138,7 @@ describe('Notification Controller', () => {
 
   describe('[DELETE]', () => {
     describe('/users/notifications/channels/{id}', () => {
-      it('채널 초대 목록에서 삭제 성공', async () => {
+      it('[Valid Case] 채널 초대 목록에서 삭제 성공', async () => {
         const user = await channelData.createInvitePendingUser(10);
         const token = await userData.giveTokenToUser(user);
         const inviteIterator = user.inviteList.values();
@@ -151,7 +151,7 @@ describe('Notification Controller', () => {
         );
         expect(response.status).toBe(200);
       });
-      it('채널 초대 목록에서 삭제 씹기(없는초대)', async () => {
+      it('[Valid Case] 채널 초대 목록에서 삭제 씹기(없는초대)', async () => {
         const user = await channelData.createInvitePendingUser(10);
         const token = await userData.giveTokenToUser(user);
         const response = await req(
