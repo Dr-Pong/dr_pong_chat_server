@@ -61,7 +61,7 @@ export class FriendService {
   ): Promise<void> {
     const { userId, friendId } = postDto;
     this.checkIfRequestorIsTarget(userId, friendId);
-    const isRequestable = this.checkRequestable(userId, friendId);
+    const isRequestable = await this.checkRequestable(userId, friendId);
     if (!isRequestable) return;
 
     await this.friendRepository.saveFriendStatusBySenderIdAndReceiverId(
