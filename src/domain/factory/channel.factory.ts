@@ -152,8 +152,9 @@ export class ChannelFactory {
   unsetAdmin(userId: number, channelId: string): boolean {
     const channel: ChannelModel = this.findById(channelId);
     if (channel.users.has(userId)) {
-      channel.adminList.set(userId, userId);
+      channel.adminList.delete(userId);
       this.channels.set(channel.id, channel);
+      this.userFactory.unsetAdmin(userId);
       return true;
     }
     return false;

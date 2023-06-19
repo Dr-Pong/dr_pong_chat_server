@@ -64,7 +64,7 @@ export class UserFactory {
     this.users.set(user.id, user);
   }
 
-  unSetAdmin(userId: number): void {
+  unsetAdmin(userId: number): void {
     const user: UserModel = this.findById(userId);
     user.roleType = CHANNEL_PARTICIPANT_NORMAL;
     this.users.set(user.id, user);
