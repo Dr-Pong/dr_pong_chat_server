@@ -59,6 +59,7 @@
     "@nestjs/passport": "^10.0.0",
     "@nestjs/platform-express": "^10.0.0",
     "@nestjs/platform-socket.io": "^10.0.0",
+    "@nestjs/testing": "^10.0.1",
     "@nestjs/typeorm": "^10.0.0",
     "@nestjs/websockets": "^10.0.0",
     "@types/supertest": "^2.0.12",
@@ -85,5 +86,8 @@
     "typeorm": "^0.3.16",
     "typeorm-transactional": "^0.4.1",
     "typescript": "^4.7.4"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.2"
   }
 }

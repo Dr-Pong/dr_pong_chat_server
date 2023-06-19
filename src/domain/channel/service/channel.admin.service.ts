@@ -36,6 +36,15 @@ import {
   CHANNEL_PARTICIPANT_ADMIN,
   CHANNEL_PARTICIPANT_NORMAL,
 } from '../type/type.channel-participant';
+import { ChannelChatGateWay } from 'src/gateway/channel.chat.gateway';
+import {
+  CHAT_BAN,
+  CHAT_KICK,
+  CHAT_MUTE,
+  CHAT_SETADMIN,
+  CHAT_UNMUTE,
+  CHAT_UNSETADMIN,
+} from '../type/type.channel.action';
 
 @Injectable()
 export class ChannelAdminService {
@@ -45,6 +54,7 @@ export class ChannelAdminService {
     private readonly channelRepository: ChannelRepository,
     private readonly channelUserRepository: ChannelUserRepository,
     private readonly messageRepository: ChannelMessageRepository,
+    private readonly chatGateway: ChannelChatGateWay,
   ) {}
 
   /**
@@ -81,6 +91,11 @@ export class ChannelAdminService {
     /** 트랜잭션이 성공하면 Factory에도 결과를 반영한다 */
     runOnTransactionComplete(() => {
       this.channelFactory.setAdmin(postDto.targetUserId, postDto.channelId);
+      this.chatGateway.sendNoticeToChannel(
+        postDto.targetUserId,
+        postDto.channelId,
+        CHAT_SETADMIN,
+      );
     });
   }
 
@@ -121,6 +136,11 @@ export class ChannelAdminService {
         deleteDto.targetUserId,
         deleteDto.channelId,
       );
+      this.chatGateway.sendNoticeToChannel(
+        deleteDto.targetUserId,
+        deleteDto.channelId,
+        CHAT_UNSETADMIN,
+      );
     });
   }
 
@@ -153,6 +173,11 @@ export class ChannelAdminService {
     /** 트랜잭션이 성공하면 Factory에도 결과를 반영한다 */
     runOnTransactionComplete(() => {
       this.channelFactory.leave(deleteDto.targetUserId, deleteDto.channelId);
+      this.chatGateway.sendNoticeToChannel(
+        deleteDto.targetUserId,
+        deleteDto.channelId,
+        CHAT_KICK,
+      );
     });
   }
 
@@ -194,6 +219,11 @@ export class ChannelAdminService {
     runOnTransactionComplete(() => {
       this.channelFactory.setBan(postDto.targetUserId, postDto.channelId);
       this.channelFactory.leave(postDto.targetUserId, postDto.channelId);
+      this.chatGateway.sendNoticeToChannel(
+        postDto.targetUserId,
+        postDto.channelId,
+        CHAT_BAN,
+      );
     });
   }
 
@@ -230,6 +260,11 @@ export class ChannelAdminService {
     /** 트랜잭션이 성공하면 Factory에도 결과를 반영한다 */
     runOnTransactionComplete(() => {
       this.channelFactory.setMute(postDto.targetUserId, postDto.channelId);
+      this.chatGateway.sendNoticeToChannel(
+        postDto.targetUserId,
+        postDto.channelId,
+        CHAT_MUTE,
+      );
     });
   }
 
@@ -268,6 +303,11 @@ export class ChannelAdminService {
       this.channelFactory.unsetMute(
         deleteDto.targetUserId,
         deleteDto.channelId,
+      );
+      this.chatGateway.sendNoticeToChannel(
+        deleteDto.targetUserId,
+        deleteDto.channelId,
+        CHAT_UNMUTE,
       );
     });
   }

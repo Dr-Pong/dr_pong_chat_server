@@ -32,13 +32,12 @@ import {
 } from 'src/domain/channel/type/type.join.channel';
 import { ChannelMessageRepository } from '../repository/channel-message.repository';
 import { PostChannelMessageDto } from '../dto/post/post.channel-message.dto';
-import { ChatGateWay } from 'src/gateway/chat.gateway';
 import { MessageDto } from 'src/gateway/dto/message.dto';
 import { SaveChannelMessageDto } from '../dto/post/save.channel-message.dto';
 import {
-  ChannelMessageHistoryDto,
+  ChannelMessageDto,
   ChannelMessagesHistoryDto,
-} from '../dto/channel-message.history.dto';
+} from '../dto/channel-message.dto';
 import { ChannelMessage } from '../entity/channel-message.entity';
 import { FindChannelMessagePageDto } from '../dto/get/find.channel-message.page.dto';
 import { GetChannelParticipantsDto } from '../dto/get/get.channel-participants.dto';
@@ -63,6 +62,8 @@ import { UpdateChannelHeadCountDto } from '../dto/patch/update.channel.headcount
 import GetChannelInviteListDto from '../dto/get/get.channel.invitation.list.dto';
 import ChannelInviteListDto from '../dto/channel.invite.list.dto';
 import { ChannelIdDto } from '../controller/channel.id.dto';
+import { ChannelChatGateWay } from 'src/gateway/channel.chat.gateway';
+import { CHAT_JOIN, CHAT_LEAVE } from '../type/type.channel.action';
 
 @Injectable()
 export class ChannelNormalService {
@@ -72,7 +73,7 @@ export class ChannelNormalService {
     private readonly messageRepository: ChannelMessageRepository,
     private readonly channelFactory: ChannelFactory,
     private readonly userFactory: UserFactory,
-    private readonly chatGateway: ChatGateWay,
+    private readonly chatGateway: ChannelChatGateWay,
   ) {}
   logger: Logger = new Logger('ChannelNormalService');
 
@@ -166,11 +167,7 @@ export class ChannelNormalService {
     if (user.isMuted) return;
 
     const message: MessageDto = MessageDto.fromPostDto(postDto);
-    this.chatGateway.sendMessageToChannel(
-      postDto.userId,
-      postDto.channelId,
-      message,
-    );
+    await this.chatGateway.sendMessageToChannel(message);
 
     await this.messageRepository.save(
       SaveChannelMessageDto.fromMessageDto(message),
@@ -267,6 +264,11 @@ export class ChannelNormalService {
         this.channelFactory.leave(userModel.id, userModel.joinedChannel);
       }
       this.channelFactory.join(userModel.id, postDto.channelId);
+      this.chatGateway.sendNoticeToChannel(
+        userModel.id,
+        userModel.joinedChannel,
+        CHAT_JOIN,
+      );
     });
   }
 
@@ -305,6 +307,11 @@ export class ChannelNormalService {
         this.channelFactory.leave(userModel.id, userModel.joinedChannel);
       }
       this.channelFactory.join(userModel.id, postDto.channelId);
+      this.chatGateway.sendNoticeToChannel(
+        userModel.id,
+        userModel.joinedChannel,
+        CHAT_JOIN,
+      );
     });
   }
 
@@ -334,6 +341,11 @@ export class ChannelNormalService {
     /** 트랜잭션이 성공하면 Factory에도 결과를 반영한다 */
     runOnTransactionComplete(() => {
       const userModel: UserModel = this.userFactory.findById(deleteDto.userId);
+      this.chatGateway.sendNoticeToChannel(
+        userModel.id,
+        userModel.joinedChannel,
+        CHAT_LEAVE,
+      );
       this.channelFactory.leave(userModel.id, deleteDto.channelId);
     });
   }
@@ -366,7 +378,7 @@ export class ChannelNormalService {
 
     const responseDto: ChannelMessagesHistoryDto = {
       chats: messages.map((message) => {
-        return ChannelMessageHistoryDto.fromEntity(getDto.userId, message);
+        return ChannelMessageDto.fromEntity(getDto.userId, message);
       }),
       isLastPage,
     };
@@ -383,6 +395,7 @@ export class ChannelNormalService {
     const invites: InviteModel[] = this.userFactory.getInvites(getDto.userId);
     return { invitations: invites };
   }
+
   /**
    * 채널 초대를 거절하는 함수
    * userModel의 invite에서 해당 채널을 삭제한다
