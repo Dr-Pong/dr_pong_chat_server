@@ -1,4 +1,3 @@
-import { ExtractJwt } from 'passport-jwt';
 import {
   ConnectedSocket,
   OnGatewayConnection,
@@ -12,14 +11,14 @@ import { UserFactory } from 'src/domain/factory/user.factory';
 import { MessageDto } from './dto/message.dto';
 import { UserModel } from 'src/domain/factory/model/user.model';
 import {
+  CHAT_JOIN,
+  CHAT_LEAVE,
   CHAT_MESSAGE,
   ChannelActionType,
 } from 'src/domain/channel/type/type.channel.action';
 import { MessageModel } from 'src/gateway/dto/message.model';
 import { CHATTYPE_OTHERS, CHATTYPE_SYSTEM } from 'src/global/type/type.chat';
 import { JwtService } from '@nestjs/jwt';
-import { USERSTATUS_OFFLINE } from 'src/global/type/type.user.status';
-import { BadRequestException } from '@nestjs/common';
 
 @WebSocketGateway({ namespace: 'channel' })
 export class ChannelChatGateWay
@@ -61,6 +60,28 @@ export class ChannelChatGateWay
     console.log('disconnect: ', socket.id);
   }
 
+  async joinChannel(user: UserModel, channelId: string): Promise<void> {
+    user.socket?.join(channelId);
+    user.joinedChannel = channelId;
+    this.channelFactory.join(user.id, channelId);
+    this.sendNoticeToChannel(user.id, channelId, CHAT_JOIN);
+    this.server.to(channelId).emit('participants', {
+      nickname: user.nickname,
+      imgUrl: user.profileImage,
+    });
+  }
+
+  async leaveChannel(user: UserModel, channelId: string): Promise<void> {
+    user.socket?.leave(channelId);
+    user.joinedChannel = null;
+    this.channelFactory.leave(user.id, channelId);
+    this.sendNoticeToChannel(user.id, channelId, CHAT_LEAVE);
+    this.server.to(channelId).emit('participants', {
+      nickname: user.nickname,
+      imgUrl: user.profileImage,
+    });
+  }
+
   async sendMessageToChannel(messageDto: MessageDto) {
     const { userId, channelId } = messageDto;
     const user: UserModel = this.userFactory.findById(userId);
@@ -70,7 +91,6 @@ export class ChannelChatGateWay
       CHATTYPE_OTHERS,
     );
 
-    if (user.status === USERSTATUS_OFFLINE) throw new BadRequestException();
     const sockets = await this.server.in(channelId).fetchSockets();
 
     sockets.forEach((socket) => {

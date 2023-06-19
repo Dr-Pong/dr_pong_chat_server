@@ -63,7 +63,7 @@ import GetChannelInviteListDto from '../dto/get/get.channel.invitation.list.dto'
 import ChannelInviteListDto from '../dto/channel.invite.list.dto';
 import { ChannelIdDto } from '../controller/channel.id.dto';
 import { ChannelChatGateWay } from 'src/gateway/channel.chat.gateway';
-import { CHAT_JOIN, CHAT_LEAVE } from '../type/type.channel.action';
+import { CHAT_JOIN } from '../type/type.channel.action';
 
 @Injectable()
 export class ChannelNormalService {
@@ -225,12 +225,13 @@ export class ChannelNormalService {
     runOnTransactionComplete(() => {
       const userModel: UserModel = this.userFactory.findById(postDto.userId);
       if (userModel.joinedChannel) {
-        this.channelFactory.leave(userModel.id, userModel.joinedChannel);
+        this.chatGateway.leaveChannel(userModel, userModel.joinedChannel);
       }
       this.channelFactory.create(
         userModel.id,
         ChannelModel.fromEntity(newChannel),
       );
+      this.chatGateway.joinChannel(userModel, newChannel.id);
     });
 
     return { id: newChannel.id };
@@ -261,14 +262,9 @@ export class ChannelNormalService {
     runOnTransactionComplete(() => {
       const userModel: UserModel = this.userFactory.findById(postDto.userId);
       if (userModel.joinedChannel) {
-        this.channelFactory.leave(userModel.id, userModel.joinedChannel);
+        this.chatGateway.leaveChannel(userModel, userModel.joinedChannel);
       }
-      this.channelFactory.join(userModel.id, postDto.channelId);
-      this.chatGateway.sendNoticeToChannel(
-        userModel.id,
-        userModel.joinedChannel,
-        CHAT_JOIN,
-      );
+      this.chatGateway.joinChannel(userModel, postDto.channelId);
     });
   }
 
@@ -304,14 +300,9 @@ export class ChannelNormalService {
     runOnTransactionComplete(() => {
       const userModel: UserModel = this.userFactory.findById(postDto.userId);
       if (userModel.joinedChannel) {
-        this.channelFactory.leave(userModel.id, userModel.joinedChannel);
+        this.chatGateway.leaveChannel(userModel, userModel.joinedChannel);
       }
-      this.channelFactory.join(userModel.id, postDto.channelId);
-      this.chatGateway.sendNoticeToChannel(
-        userModel.id,
-        userModel.joinedChannel,
-        CHAT_JOIN,
-      );
+      this.chatGateway.joinChannel(userModel, postDto.channelId);
     });
   }
 
@@ -341,12 +332,7 @@ export class ChannelNormalService {
     /** 트랜잭션이 성공하면 Factory에도 결과를 반영한다 */
     runOnTransactionComplete(() => {
       const userModel: UserModel = this.userFactory.findById(deleteDto.userId);
-      this.chatGateway.sendNoticeToChannel(
-        userModel.id,
-        userModel.joinedChannel,
-        CHAT_LEAVE,
-      );
-      this.channelFactory.leave(userModel.id, deleteDto.channelId);
+      this.chatGateway.leaveChannel(userModel, deleteDto.channelId);
     });
   }
 
