@@ -1,3 +1,4 @@
+import { ExtractJwt } from 'passport-jwt';
 import {
   ConnectedSocket,
   OnGatewayConnection,
@@ -36,6 +37,7 @@ export class ChannelChatGateWay
 
   async handleConnection(@ConnectedSocket() socket: Socket) {
     console.log('connect: ', socket.id);
+    // const token = ExtractJwt.fromAuthHeaderAsBearerToken()(socket.handshake);
     const accessToken = this.tokenService.verify(
       socket.handshake.auth?.Authorization?.split(' ')[1] ?? null,
     );
