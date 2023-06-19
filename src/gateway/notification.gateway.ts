@@ -3,19 +3,12 @@ import {
   OnGatewayConnection,
   OnGatewayDisconnect,
   WebSocketGateway,
-  WebSocketServer,
 } from '@nestjs/websockets';
-import { Server, Socket } from 'socket.io';
+import { Socket } from 'socket.io';
 import { UserFactory } from 'src/domain/factory/user.factory';
 import { UserModel } from 'src/domain/factory/model/user.model';
-import {
-  CHAT_MESSAGE,
-  ChannelActionType,
-} from 'src/domain/channel/type/type.channel.action';
-import { MessageDto } from './dto/message.dto';
-import { MessageModel } from 'src/gateway/dto/message.model';
-import { CHATTYPE_SYSTEM } from 'src/global/type/type.chat';
 import { JwtService } from '@nestjs/jwt';
+import { FriendGateWay } from './friend.gateway';
 
 @WebSocketGateway()
 export class NotificationGateWay
@@ -24,9 +17,8 @@ export class NotificationGateWay
   constructor(
     private readonly userFactory: UserFactory,
     private readonly tokenService: JwtService,
+    private readonly friendGateway: FriendGateWay,
   ) {}
-  @WebSocketServer()
-  private readonly server: Server;
   private sockets: Map<string, UserModel> = new Map();
 
   async handleConnection(@ConnectedSocket() socket: Socket): Promise<void> {
@@ -43,11 +35,12 @@ export class NotificationGateWay
     if (user.joinedChannel) {
       socket.join(user.joinedChannel);
     }
+
+    this.friendGateway.sendOnlineStatusToFriends(user);
   }
 
   async handleDisconnect(@ConnectedSocket() socket: Socket): Promise<void> {
     this.sockets.delete(socket.id);
-    console.log('disconnect: ', socket.id);
   }
 
   async friendNotice(targetId: number): Promise<void> {
