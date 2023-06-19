@@ -1,6 +1,6 @@
-import { ChannelMessageHistoryDto } from './channel-message.history.dto';
+import { ChannelMessageDto } from './channel-message.dto';
 
 export class ChannelChatsResponseDto {
-  chats: ChannelMessageHistoryDto[];
+  chats: ChannelMessageDto[];
   isLastPage: boolean;
 }

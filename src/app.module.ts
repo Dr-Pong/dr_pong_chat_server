@@ -23,6 +23,7 @@ import { ChannelUser } from './domain/channel/entity/channel-user.entity';
 import { BlockRepository } from './domain/block/block.repository';
 import { Block } from './domain/block/block.entity';
 import { NotificationModule } from './domain/notification/notification.module';
+import { GatewayModule } from './gateway/gateway.module';
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import { NotificationModule } from './domain/notification/notification.module';
     NotificationModule,
     AuthModule,
     FactoryModule,
+    GatewayModule,
     TypeOrmModule.forFeature([Channel, User, ChannelUser, Block]),
   ],
   controllers: [AppController],

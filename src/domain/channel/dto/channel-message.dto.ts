@@ -7,17 +7,14 @@ import {
   ChatType,
 } from 'src/global/type/type.chat';
 
-export class ChannelMessageHistoryDto {
+export class ChannelMessageDto {
   id: number;
   message: string;
   nickname: string;
   time: Date;
   type: ChatType;
 
-  static fromEntity(
-    userId: number,
-    entity: ChannelMessage,
-  ): ChannelMessageHistoryDto {
+  static fromEntity(userId: number, entity: ChannelMessage): ChannelMessageDto {
     let type: ChatType;
     if (entity.type === CHAT_MESSAGE) {
       type = userId === entity.user.id ? CHATTYPE_ME : CHATTYPE_OTHERS;
@@ -25,7 +22,7 @@ export class ChannelMessageHistoryDto {
       type = CHATTYPE_SYSTEM;
     }
 
-    return new ChannelMessageHistoryDto(
+    return new ChannelMessageDto(
       entity.id,
       entity.content,
       entity.user.nickname,
@@ -35,13 +32,13 @@ export class ChannelMessageHistoryDto {
   }
 
   constructor(
-    userId: number,
+    id: number,
     message: string,
     nickname: string,
     time: Date,
     type: ChatType,
   ) {
-    this.id = userId;
+    this.id = id;
     this.message = message;
     this.nickname = nickname;
     this.time = time;
@@ -50,6 +47,6 @@ export class ChannelMessageHistoryDto {
 }
 
 export class ChannelMessagesHistoryDto {
-  chats: ChannelMessageHistoryDto[];
+  chats: ChannelMessageDto[];
   isLastPage: boolean;
 }
