@@ -62,8 +62,7 @@ import { UpdateChannelHeadCountDto } from '../dto/patch/update.channel.headcount
 import GetChannelInviteListDto from '../dto/get/get.channel.invitation.list.dto';
 import ChannelInviteListDto from '../dto/channel.invite.list.dto';
 import { ChannelIdDto } from '../controller/channel.id.dto';
-import { ChannelChatGateWay } from 'src/gateway/channel.chat.gateway';
-import { CHAT_JOIN } from '../type/type.channel.action';
+import { ChannelGateWay } from 'src/gateway/channel.gateway';
 
 @Injectable()
 export class ChannelNormalService {
@@ -73,7 +72,7 @@ export class ChannelNormalService {
     private readonly messageRepository: ChannelMessageRepository,
     private readonly channelFactory: ChannelFactory,
     private readonly userFactory: UserFactory,
-    private readonly chatGateway: ChannelChatGateWay,
+    private readonly channelGateway: ChannelGateWay,
   ) {}
   logger: Logger = new Logger('ChannelNormalService');
 
@@ -145,7 +144,7 @@ export class ChannelNormalService {
       host.nickname,
     );
 
-    this.userFactory.invite(target.id, invite);
+    this.channelGateway.invite(target, invite);
   }
 
   /**
@@ -167,7 +166,7 @@ export class ChannelNormalService {
     if (user.isMuted) return;
 
     const message: MessageDto = MessageDto.fromPostDto(postDto);
-    await this.chatGateway.sendMessageToChannel(message);
+    await this.channelGateway.sendMessageToChannel(message);
 
     await this.messageRepository.save(
       SaveChannelMessageDto.fromMessageDto(message),
@@ -225,13 +224,13 @@ export class ChannelNormalService {
     runOnTransactionComplete(() => {
       const userModel: UserModel = this.userFactory.findById(postDto.userId);
       if (userModel.joinedChannel) {
-        this.chatGateway.leaveChannel(userModel, userModel.joinedChannel);
+        this.channelGateway.leaveChannel(userModel, userModel.joinedChannel);
       }
       this.channelFactory.create(
         userModel.id,
         ChannelModel.fromEntity(newChannel),
       );
-      this.chatGateway.joinChannel(userModel, newChannel.id);
+      this.channelGateway.joinChannel(userModel, newChannel.id);
     });
 
     return { id: newChannel.id };
@@ -262,9 +261,9 @@ export class ChannelNormalService {
     runOnTransactionComplete(() => {
       const userModel: UserModel = this.userFactory.findById(postDto.userId);
       if (userModel.joinedChannel) {
-        this.chatGateway.leaveChannel(userModel, userModel.joinedChannel);
+        this.channelGateway.leaveChannel(userModel, userModel.joinedChannel);
       }
-      this.chatGateway.joinChannel(userModel, postDto.channelId);
+      this.channelGateway.joinChannel(userModel, postDto.channelId);
     });
   }
 
@@ -300,9 +299,9 @@ export class ChannelNormalService {
     runOnTransactionComplete(() => {
       const userModel: UserModel = this.userFactory.findById(postDto.userId);
       if (userModel.joinedChannel) {
-        this.chatGateway.leaveChannel(userModel, userModel.joinedChannel);
+        this.channelGateway.leaveChannel(userModel, userModel.joinedChannel);
       }
-      this.chatGateway.joinChannel(userModel, postDto.channelId);
+      this.channelGateway.joinChannel(userModel, postDto.channelId);
     });
   }
 
@@ -332,7 +331,7 @@ export class ChannelNormalService {
     /** 트랜잭션이 성공하면 Factory에도 결과를 반영한다 */
     runOnTransactionComplete(() => {
       const userModel: UserModel = this.userFactory.findById(deleteDto.userId);
-      this.chatGateway.leaveChannel(userModel, deleteDto.channelId);
+      this.channelGateway.leaveChannel(userModel, deleteDto.channelId);
     });
   }
 

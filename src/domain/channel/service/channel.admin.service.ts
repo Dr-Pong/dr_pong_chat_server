@@ -36,7 +36,7 @@ import {
   CHANNEL_PARTICIPANT_ADMIN,
   CHANNEL_PARTICIPANT_NORMAL,
 } from '../type/type.channel-participant';
-import { ChannelChatGateWay } from 'src/gateway/channel.chat.gateway';
+import { ChannelGateWay } from 'src/gateway/channel.gateway';
 import {
   CHAT_BAN,
   CHAT_KICK,
@@ -54,7 +54,7 @@ export class ChannelAdminService {
     private readonly channelRepository: ChannelRepository,
     private readonly channelUserRepository: ChannelUserRepository,
     private readonly messageRepository: ChannelMessageRepository,
-    private readonly chatGateway: ChannelChatGateWay,
+    private readonly chatGateway: ChannelGateWay,
   ) {}
 
   /**
