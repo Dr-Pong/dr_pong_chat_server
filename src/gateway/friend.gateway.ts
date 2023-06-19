@@ -1,10 +1,6 @@
 import { JwtService } from '@nestjs/jwt';
-import {
-  ConnectedSocket,
-  OnGatewayConnection,
-  WebSocketServer,
-} from '@nestjs/websockets';
-import { Server, Socket } from 'socket.io';
+import { ConnectedSocket, OnGatewayConnection } from '@nestjs/websockets';
+import { Socket } from 'socket.io';
 import { UserFactory } from 'src/domain/factory/user.factory';
 import { FriendRepository } from 'src/domain/friend/friend.repository';
 import { getTokenFromSocket } from './notification.gateway';
