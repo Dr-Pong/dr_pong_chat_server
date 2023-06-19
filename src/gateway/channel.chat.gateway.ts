@@ -18,6 +18,7 @@ import { MessageModel } from 'src/gateway/dto/message.model';
 import { CHATTYPE_OTHERS, CHATTYPE_SYSTEM } from 'src/global/type/type.chat';
 import { JwtService } from '@nestjs/jwt';
 import { USERSTATUS_OFFLINE } from 'src/global/type/type.user.status';
+import { BadRequestException } from '@nestjs/common';
 
 @WebSocketGateway({ namespace: 'channel' })
 export class ChannelChatGateWay
@@ -35,21 +36,20 @@ export class ChannelChatGateWay
 
   async handleConnection(@ConnectedSocket() socket: Socket) {
     console.log('connect: ', socket.id);
-    const token: string = socket.handshake.auth.Authorization;
-    console.log(token);
+    const accessToken = this.tokenService.verify(
+      socket.handshake.auth?.Authorization?.split(' ')[1] ?? null,
+    );
 
-    if (!token) return;
-    const token2 = this.tokenService.verify(token.split(' ')[1]);
-    const { id } = token2;
+    if (!accessToken) return;
+    const { id } = accessToken;
     const user: UserModel = this.userFactory.findById(id);
 
     this.users.set(user.id, user);
     this.sockets.set(socket.id, user);
     if (user.joinedChannel) {
       socket.join(user.joinedChannel);
-      user.socket = socket;
     }
-    user.status = 'online';
+    user.socket = socket;
   }
 
   async handleDisconnect(@ConnectedSocket() socket: Socket) {
@@ -68,7 +68,7 @@ export class ChannelChatGateWay
       CHATTYPE_OTHERS,
     );
 
-    if (user.status === USERSTATUS_OFFLINE) return;
+    if (user.status === USERSTATUS_OFFLINE) throw new BadRequestException();
     const sockets = await this.server.in(channelId).fetchSockets();
 
     sockets.forEach((socket) => {
@@ -88,12 +88,5 @@ export class ChannelChatGateWay
     const nickname = this.userFactory.findById(userId).nickname;
     const message = new MessageModel(nickname, type, CHATTYPE_SYSTEM);
     this.server?.to(channelId).emit(CHATTYPE_SYSTEM, message);
-  }
-
-  async sendMessageToUser(message: MessageDto) {
-    const { userId } = message;
-    const user: UserModel = this.userFactory.findById(userId);
-    if (user.status === USERSTATUS_OFFLINE) return;
-    user.socket?.emit(CHAT_MESSAGE, message);
   }
 }
