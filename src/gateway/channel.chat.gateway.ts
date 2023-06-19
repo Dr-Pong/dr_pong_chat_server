@@ -87,13 +87,13 @@ export class ChannelChatGateWay
   ) {
     const nickname = this.userFactory.findById(userId).nickname;
     const message = new MessageModel(nickname, type, CHATTYPE_SYSTEM);
-    this.server.to(channelId).emit(CHATTYPE_SYSTEM, message);
+    this.server?.to(channelId).emit(CHATTYPE_SYSTEM, message);
   }
 
   async sendMessageToUser(message: MessageDto) {
     const { userId } = message;
     const user: UserModel = this.userFactory.findById(userId);
-    if (!user.socket) return;
-    user.socket.emit(CHAT_MESSAGE, message);
+    if (user.status === USERSTATUS_OFFLINE) return;
+    user.socket?.emit(CHAT_MESSAGE, message);
   }
 }

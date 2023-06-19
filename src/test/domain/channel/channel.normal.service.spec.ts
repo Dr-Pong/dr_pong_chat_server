@@ -36,7 +36,7 @@ import {
 } from 'src/global/type/type.chat';
 import { ChannelUser } from '../../../domain/channel/entity/channel-user.entity';
 import { PostChannelAcceptInviteDto } from '../../../domain/channel/dto/post/post.channel.accept.invite.dto';
-import { ChannelMessagesHistoryDto } from '../../../domain/channel/dto/channel-message.history.dto';
+import { ChannelMessagesHistoryDto } from '../../../domain/channel/dto/channel-message.dto';
 import { GetChannelPageDto } from '../../../domain/channel/dto/get/get.channel.page.dto';
 import { ChannelPageDtos } from '../../../domain/channel/dto/channel.page.dto';
 import { GetChannelParticipantsDto } from '../../../domain/channel/dto/get/get.channel-participants.dto';
