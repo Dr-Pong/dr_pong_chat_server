@@ -61,7 +61,7 @@ import { DeleteChannelInviteDto } from '../dto/delete/delete.channel.invite.dto'
 import { UpdateChannelHeadCountDto } from '../dto/patch/update.channel.headcount.dto';
 import GetChannelInviteListDto from '../dto/get/get.channel.invitation.list.dto';
 import ChannelInviteListDto from '../dto/channel.invite.list.dto';
-import { ChannelIdDto } from '../controller/channel.id.dto';
+import { ChannelIdDto } from '../dto/channel.id.dto';
 import { ChannelGateWay } from 'src/gateway/channel.gateway';
 
 @Injectable()

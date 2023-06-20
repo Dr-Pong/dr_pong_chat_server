@@ -21,6 +21,7 @@ import { CHATTYPE_OTHERS, CHATTYPE_SYSTEM } from 'src/global/type/type.chat';
 import { JwtService } from '@nestjs/jwt';
 import { InviteModel } from 'src/domain/factory/model/invite.model';
 import { getTokenFromSocket } from './notification.gateway';
+import { checkUserExist } from 'src/domain/channel/validation/errors.channel';
 
 @WebSocketGateway({ namespace: 'channel' })
 export class ChannelGateWay
@@ -40,6 +41,8 @@ export class ChannelGateWay
 
     const { id } = accessToken;
     const user: UserModel = this.userFactory.findById(id);
+    checkUserExist(user);
+
     if (user.socket && user.socket?.id !== socket?.id) {
       user.socket.disconnect();
     }
@@ -53,7 +56,6 @@ export class ChannelGateWay
 
   async handleDisconnect(@ConnectedSocket() socket: Socket) {
     this.sockets.delete(socket.id);
-    console.log('disconnect: ', socket.id);
   }
 
   async joinChannel(userId: number, channelId: string): Promise<void> {
