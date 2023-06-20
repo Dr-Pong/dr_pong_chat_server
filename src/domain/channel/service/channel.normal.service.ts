@@ -144,7 +144,7 @@ export class ChannelNormalService {
       host.nickname,
     );
 
-    this.channelGateway.invite(target, invite);
+    this.channelGateway.invite(postDto.userId, invite);
   }
 
   /**
@@ -222,15 +222,11 @@ export class ChannelNormalService {
 
     /** 트랜잭션이 성공하면 Factory에도 결과를 반영한다 */
     runOnTransactionComplete(() => {
-      const userModel: UserModel = this.userFactory.findById(postDto.userId);
-      if (userModel.joinedChannel) {
-        this.channelGateway.leaveChannel(userModel, userModel.joinedChannel);
-      }
       this.channelFactory.create(
-        userModel.id,
+        postDto.userId,
         ChannelModel.fromEntity(newChannel),
       );
-      this.channelGateway.joinChannel(userModel, newChannel.id);
+      this.channelGateway.joinChannel(postDto.userId, newChannel.id);
     });
 
     return { id: newChannel.id };
@@ -259,11 +255,7 @@ export class ChannelNormalService {
 
     /** 트랜잭션이 성공하면 Factory에도 결과를 반영한다 */
     runOnTransactionComplete(() => {
-      const userModel: UserModel = this.userFactory.findById(postDto.userId);
-      if (userModel.joinedChannel) {
-        this.channelGateway.leaveChannel(userModel, userModel.joinedChannel);
-      }
-      this.channelGateway.joinChannel(userModel, postDto.channelId);
+      this.channelGateway.joinChannel(postDto.userId, postDto.channelId);
     });
   }
 
@@ -297,11 +289,7 @@ export class ChannelNormalService {
 
     /** 트랜잭션이 성공하면 Factory에도 결과를 반영한다 */
     runOnTransactionComplete(() => {
-      const userModel: UserModel = this.userFactory.findById(postDto.userId);
-      if (userModel.joinedChannel) {
-        this.channelGateway.leaveChannel(userModel, userModel.joinedChannel);
-      }
-      this.channelGateway.joinChannel(userModel, postDto.channelId);
+      this.channelGateway.joinChannel(postDto.userId, postDto.channelId);
     });
   }
 
@@ -330,8 +318,7 @@ export class ChannelNormalService {
 
     /** 트랜잭션이 성공하면 Factory에도 결과를 반영한다 */
     runOnTransactionComplete(() => {
-      const userModel: UserModel = this.userFactory.findById(deleteDto.userId);
-      this.channelGateway.leaveChannel(userModel, deleteDto.channelId);
+      this.channelGateway.leaveChannel(deleteDto.userId, deleteDto.channelId);
     });
   }
 

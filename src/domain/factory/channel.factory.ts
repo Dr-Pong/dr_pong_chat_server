@@ -60,8 +60,9 @@ export class ChannelFactory {
       channel.maxHeadCount !== channel.users.size &&
       !channel.users.has(userId)
     ) {
-      channel.users.set(userId, userId);
+      this.userFactory.leaveChannel(userId);
       this.userFactory.joinChannel(userId, channel);
+      channel.users.set(userId, userId);
       this.channels.set(channel.id, channel);
       return true;
     }

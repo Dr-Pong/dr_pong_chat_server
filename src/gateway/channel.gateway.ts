@@ -56,21 +56,24 @@ export class ChannelGateWay
     console.log('disconnect: ', socket.id);
   }
 
-  async joinChannel(user: UserModel, channelId: string): Promise<void> {
+  async joinChannel(userId: number, channelId: string): Promise<void> {
+    const user: UserModel = this.userFactory.findById(userId);
     user.socket?.join(channelId);
     user.joinedChannel = channelId;
     this.channelFactory.join(user.id, channelId);
     this.sendNoticeToChannel(user.id, channelId, CHAT_JOIN);
   }
 
-  async leaveChannel(user: UserModel, channelId: string): Promise<void> {
+  async leaveChannel(userId: number, channelId: string): Promise<void> {
+    const user: UserModel = this.userFactory.findById(userId);
     user.socket?.leave(channelId);
     user.joinedChannel = null;
     this.channelFactory.leave(user.id, channelId);
     this.sendNoticeToChannel(user.id, channelId, CHAT_LEAVE);
   }
 
-  async invite(target: UserModel, invite: InviteModel) {
+  async invite(targetId: number, invite: InviteModel) {
+    const target = this.userFactory.findById(targetId);
     if (target.socket) {
       target.socket.emit('invite', invite);
     }
