@@ -9,7 +9,10 @@ import { UserFactory } from 'src/domain/factory/user.factory';
 import { UserModel } from 'src/domain/factory/model/user.model';
 import { JwtService } from '@nestjs/jwt';
 import { FriendRepository } from 'src/domain/friend/friend.repository';
-import { USERSTATUS_ONLINE } from 'src/global/type/type.user.status';
+import {
+  USERSTATUS_OFFLINE,
+  USERSTATUS_ONLINE,
+} from 'src/global/type/type.user.status';
 import { Friend } from 'src/domain/friend/friend.entity';
 import { checkUserExist } from 'src/domain/channel/validation/errors.channel';
 
@@ -41,6 +44,9 @@ export class NotificationGateWay
   }
 
   async handleDisconnect(@ConnectedSocket() socket: Socket): Promise<void> {
+    const user: UserModel = this.sockets.get(socket.id);
+    this.userFactory.setSocket(user.id, null);
+    this.userFactory.setStatus(user.id, USERSTATUS_OFFLINE);
     this.sockets.delete(socket.id);
   }
 
