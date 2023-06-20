@@ -8,7 +8,10 @@ import { Socket } from 'socket.io';
 import { UserFactory } from 'src/domain/factory/user.factory';
 import { UserModel } from 'src/domain/factory/model/user.model';
 import { JwtService } from '@nestjs/jwt';
-import { FriendGateWay } from './friend.gateway';
+import { FriendRepository } from 'src/domain/friend/friend.repository';
+import { USERSTATUS_ONLINE } from 'src/global/type/type.user.status';
+import { Friend } from 'src/domain/friend/friend.entity';
+import { checkUserExist } from 'src/domain/channel/validation/errors.channel';
 
 @WebSocketGateway()
 export class NotificationGateWay
@@ -17,26 +20,24 @@ export class NotificationGateWay
   constructor(
     private readonly userFactory: UserFactory,
     private readonly tokenService: JwtService,
-    private readonly friendGateway: FriendGateWay,
+    private readonly friendRepository: FriendRepository,
   ) {}
   private sockets: Map<string, UserModel> = new Map();
 
   async handleConnection(@ConnectedSocket() socket: Socket): Promise<void> {
-    const accessToken = this.tokenService.verify(getTokenFromSocket(socket));
+    const userId = this.tokenService.verify(getTokenFromSocket(socket))?.id;
 
-    const { id } = accessToken;
-    const user: UserModel = this.userFactory.findById(id);
+    const user: UserModel = this.userFactory.findById(userId);
+    checkUserExist(user);
+
     if (user.socket && user.socket?.id !== socket?.id) {
       user.socket.disconnect();
     }
 
     this.sockets.set(socket.id, user);
     user.socket = socket;
-    if (user.joinedChannel) {
-      socket.join(user.joinedChannel);
-    }
 
-    this.friendGateway.sendOnlineStatusToFriends(user);
+    await this.sendOnlineStatusToFriends(user);
   }
 
   async handleDisconnect(@ConnectedSocket() socket: Socket): Promise<void> {
@@ -54,6 +55,22 @@ export class NotificationGateWay
     const target: UserModel = this.userFactory.findById(targetId);
     if (target.socket) {
       target.socket.emit('newChat', {});
+    }
+  }
+
+  async sendOnlineStatusToFriends(user: UserModel): Promise<void> {
+    const friends: Friend[] = await this.friendRepository.findFriendsByUserId(
+      user.id,
+    );
+
+    for (const c of friends) {
+      const friend: UserModel = this.userFactory.findById(c.id);
+      if (friend.socket) {
+        friend.socket.emit('friends', {
+          nickname: user.nickname,
+          status: USERSTATUS_ONLINE,
+        });
+      }
     }
   }
 }

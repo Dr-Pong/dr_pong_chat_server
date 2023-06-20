@@ -6,7 +6,7 @@ import { FriendRepository } from 'src/domain/friend/friend.repository';
 import { getTokenFromSocket } from './notification.gateway';
 import { UserModel } from 'src/domain/factory/model/user.model';
 import { Friend } from 'src/domain/friend/friend.entity';
-import { USERSTATUS_ONLINE } from 'src/global/type/type.user.status';
+import { checkUserExist } from 'src/domain/channel/validation/errors.channel';
 
 export class FriendGateWay implements OnGatewayConnection {
   constructor(
@@ -16,42 +16,25 @@ export class FriendGateWay implements OnGatewayConnection {
   ) {}
 
   async handleConnection(@ConnectedSocket() socket: Socket): Promise<void> {
-    const accessToken = this.tokenService.verify(getTokenFromSocket(socket));
+    const userId = this.tokenService.verify(getTokenFromSocket(socket))?.id;
 
-    const { id } = accessToken;
-    const user = this.userFactory.findById(id);
-    const friends: Friend[] = await this.friendRepository.findFriendsByUserId(
-      id,
-    );
+    const user: UserModel = this.userFactory.findById(userId);
+    checkUserExist(user);
 
-    const friendStatus = [];
-
-    for (const c of friends) {
-      const friend: UserModel = this.userFactory.findById(c.id);
-      if (user.socket && friend.socket) {
-        friend.socket.emit('friends', {
-          nickname: user.nickname,
-          status: USERSTATUS_ONLINE,
-        });
-        friendStatus.push({ nickname: friend.nickname, status: friend.status });
-      }
-    }
-    socket.emit('friends', friendStatus);
+    await this.getFriendsStatus(user);
   }
 
-  async sendOnlineStatusToFriends(user: UserModel): Promise<void> {
+  async getFriendsStatus(user: UserModel): Promise<void> {
     const friends: Friend[] = await this.friendRepository.findFriendsByUserId(
       user.id,
     );
 
-    for (const c of friends) {
+    const friendStatus = [];
+
+    friends.forEach((c) => {
       const friend: UserModel = this.userFactory.findById(c.id);
-      if (friend.socket) {
-        friend.socket.emit('friends', {
-          nickname: user.nickname,
-          status: USERSTATUS_ONLINE,
-        });
-      }
-    }
+      friendStatus.push({ nickname: friend.nickname, status: friend.status });
+    });
+    user.socket.emit('friends', friendStatus);
   }
 }
