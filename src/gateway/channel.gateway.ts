@@ -19,9 +19,12 @@ import {
 import { MessageModel } from 'src/gateway/dto/message.model';
 import { CHATTYPE_OTHERS, CHATTYPE_SYSTEM } from 'src/global/type/type.chat';
 import { JwtService } from '@nestjs/jwt';
+import { InviteModel } from 'src/domain/factory/model/invite.model';
+import { getTokenFromSocket } from './notification.gateway';
+import { checkUserExist } from 'src/domain/channel/validation/errors.channel';
 
 @WebSocketGateway({ namespace: 'channel' })
-export class ChannelChatGateWay
+export class ChannelGateWay
   implements OnGatewayConnection, OnGatewayDisconnect
 {
   constructor(
@@ -30,56 +33,53 @@ export class ChannelChatGateWay
     private readonly channelFactory: ChannelFactory,
   ) {}
   @WebSocketServer()
-  server: Server;
-  sockets: Map<string, UserModel> = new Map();
-  users: Map<number, UserModel> = new Map();
+  private readonly server: Server;
+  private sockets: Map<string, UserModel> = new Map();
 
   async handleConnection(@ConnectedSocket() socket: Socket) {
-    console.log('connect: ', socket.id);
-    // const token = ExtractJwt.fromAuthHeaderAsBearerToken()(socket.handshake);
-    const accessToken = this.tokenService.verify(
-      socket.handshake.auth?.Authorization?.split(' ')[1] ?? null,
-    );
+    const accessToken = this.tokenService.verify(getTokenFromSocket(socket));
 
-    if (!accessToken) return;
     const { id } = accessToken;
     const user: UserModel = this.userFactory.findById(id);
+    checkUserExist(user);
 
-    this.users.set(user.id, user);
+    if (user.socket && user.socket?.id !== socket?.id) {
+      user.socket.disconnect();
+    }
+
     this.sockets.set(socket.id, user);
+    user.socket = socket;
     if (user.joinedChannel) {
       socket.join(user.joinedChannel);
     }
-    user.socket = socket;
   }
 
   async handleDisconnect(@ConnectedSocket() socket: Socket) {
-    const user: UserModel = this.sockets.get(socket.id);
-    this.users.delete(user.id);
     this.sockets.delete(socket.id);
-    console.log('disconnect: ', socket.id);
   }
 
-  async joinChannel(user: UserModel, channelId: string): Promise<void> {
+  async joinChannel(userId: number, channelId: string): Promise<void> {
+    const user: UserModel = this.userFactory.findById(userId);
     user.socket?.join(channelId);
     user.joinedChannel = channelId;
     this.channelFactory.join(user.id, channelId);
     this.sendNoticeToChannel(user.id, channelId, CHAT_JOIN);
-    this.server.to(channelId).emit('participants', {
-      nickname: user.nickname,
-      imgUrl: user.profileImage,
-    });
   }
 
-  async leaveChannel(user: UserModel, channelId: string): Promise<void> {
+  async leaveChannel(userId: number, channelId: string): Promise<void> {
+    const user: UserModel = this.userFactory.findById(userId);
     user.socket?.leave(channelId);
     user.joinedChannel = null;
     this.channelFactory.leave(user.id, channelId);
     this.sendNoticeToChannel(user.id, channelId, CHAT_LEAVE);
-    this.server.to(channelId).emit('participants', {
-      nickname: user.nickname,
-      imgUrl: user.profileImage,
-    });
+  }
+
+  async invite(targetId: number, invite: InviteModel) {
+    const target = this.userFactory.findById(targetId);
+    if (target.socket) {
+      target.socket.emit('invite', invite);
+    }
+    this.userFactory.invite(target.id, invite);
   }
 
   async sendMessageToChannel(messageDto: MessageDto) {
@@ -110,5 +110,6 @@ export class ChannelChatGateWay
     const nickname = this.userFactory.findById(userId).nickname;
     const message = new MessageModel(nickname, type, CHATTYPE_SYSTEM);
     this.server?.to(channelId).emit(CHATTYPE_SYSTEM, message);
+    this.server?.to(channelId).emit('participants', {});
   }
 }
