@@ -24,6 +24,8 @@ import { BlockRepository } from './domain/block/block.repository';
 import { Block } from './domain/block/block.entity';
 import { NotificationModule } from './domain/notification/notification.module';
 import { GatewayModule } from './gateway/gateway.module';
+import { ProfileImageRepository } from './domain/profile-image/profile-image.repository';
+import { ProfileImage } from './domain/profile-image/profile-image.entity';
 
 @Module({
   imports: [
@@ -51,7 +53,7 @@ import { GatewayModule } from './gateway/gateway.module';
     AuthModule,
     FactoryModule,
     GatewayModule,
-    TypeOrmModule.forFeature([Channel, User, ChannelUser, Block]),
+    TypeOrmModule.forFeature([Channel, User, ChannelUser, Block, ProfileImage]),
   ],
   controllers: [AppController],
   providers: [
@@ -60,6 +62,7 @@ import { GatewayModule } from './gateway/gateway.module';
     UserRepository,
     ChannelUserRepository,
     BlockRepository,
+    ProfileImageRepository,
   ],
 })
 export class AppModule {}

@@ -15,12 +15,15 @@ import {
 } from './domain/channel/type/type.channel-participant';
 import { BlockRepository } from './domain/block/block.repository';
 import { Block } from './domain/block/block.entity';
+import { ProfileImageRepository } from './domain/profile-image/profile-image.repository';
+import { ProfileImage } from './domain/profile-image/profile-image.entity';
 
 @Injectable()
 export class AppService implements OnApplicationBootstrap {
   constructor(
     private readonly channelRepository: ChannelRepository,
     private readonly userRepository: UserRepository,
+    private readonly imageRepository: ProfileImageRepository,
     private readonly channelUserRepository: ChannelUserRepository,
     private readonly blockRepository: BlockRepository,
     private readonly channelFactory: ChannelFactory,
@@ -28,6 +31,35 @@ export class AppService implements OnApplicationBootstrap {
   ) {}
 
   async onApplicationBootstrap(): Promise<void> {
+    const images: ProfileImage[] = await this.imageRepository.findAll();
+    if (images.length === 0) {
+      await this.imageRepository.save(
+        {
+          id: 1,
+          url: 'https://42gg-public-image.s3.ap-northeast-2.amazonaws.com/images/kipark.jpeg',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          id: 2,
+          url: 'https://42gg-public-image.s3.ap-northeast-2.amazonaws.com/images/jihyukim.jpeg',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          id: 3,
+          url: 'https://42gg-public-image.s3.ap-northeast-2.amazonaws.com/images/nheo.jpeg',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          id: 4,
+          url: 'https://42gg-public-image.s3.ap-northeast-2.amazonaws.com/images/hakim.jpeg',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      );
+    }
     const channels: Channel[] = await this.channelRepository.findAll();
     const users: User[] = await this.userRepository.findAll();
     const channelUsers: ChannelUser[] =

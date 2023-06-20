@@ -17,4 +17,8 @@ export class ProfileImageRepository {
   async findAll(): Promise<ProfileImage[]> {
     return await this.repository.find();
   }
+
+  async save(...images: ProfileImage[]): Promise<ProfileImage[]> {
+    return await this.repository.save(images);
+  }
 }
