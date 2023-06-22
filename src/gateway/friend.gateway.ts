@@ -57,4 +57,9 @@ export class FriendGateWay implements OnGatewayConnection {
     });
     user.socket[GATEWAY_FRIEND]?.emit('friends', data);
   }
+
+  async friendNotice(targetId: number): Promise<void> {
+    const target: UserModel = this.userFactory.findById(targetId);
+    target.socket[GATEWAY_FRIEND]?.emit('friend', {});
+  }
 }
