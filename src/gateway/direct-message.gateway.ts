@@ -85,11 +85,11 @@ export class DirectMessageGateway
     friend?.socket[GATEWAY_DIRECTMESSAGE]?.emit('message', message);
   }
 
+  @SubscribeMessage('dear')
   /**
    * 유저가 현재 대화중인 친구가 누구인지 알려줍니다.
    * disconnect 이벤트가 발생했을 때, 마지막 읽은 메시지 id를 업데이트하기 위해 사용됩니다.
    */
-  @SubscribeMessage('deer')
   async joinDirectMessageRoom(
     @ConnectedSocket() socket: Socket,
     data: { nickname: string },
