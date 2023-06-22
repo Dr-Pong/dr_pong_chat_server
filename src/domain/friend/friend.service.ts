@@ -24,6 +24,7 @@ import {
 } from '../../global/type/type.friend.status';
 import { BlockRepository } from '../block/block.repository';
 import { NotificationGateWay } from 'src/gateway/notification.gateway';
+import { FriendGateWay } from '../../gateway/friend.gateway';
 
 @Injectable()
 export class FriendService {
@@ -31,6 +32,7 @@ export class FriendService {
     private friendRepository: FriendRepository,
     private blockRepository: BlockRepository,
     private notificationGateway: NotificationGateWay,
+    private friendGateway: FriendGateWay,
   ) {}
 
   /**친구 목록 GET
@@ -133,6 +135,10 @@ export class FriendService {
       userId,
       friendId,
     );
+
+    runOnTransactionComplete(() => {
+      this.friendGateway.friendNotice(friendId);
+    });
   }
 
   /**  친구요청 거절
@@ -183,6 +189,10 @@ export class FriendService {
       friend.sender.id,
       friend.receiver.id,
     );
+
+    runOnTransactionComplete(() => {
+      this.friendGateway.friendNotice(friendId);
+    });
   }
 
   /** 친구요청 개수
