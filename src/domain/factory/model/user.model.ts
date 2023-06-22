@@ -15,9 +15,10 @@ export class UserModel {
   inviteList: Map<string, InviteModel>;
   roleType: ChannelParticipantType;
   isMuted: boolean;
-  socket: Socket;
+  socket: Map<string, Socket>;
   profileImage: string;
   status: UserStatusType;
+  directMessageFriendId: number;
 
   static fromEntity(user: User): UserModel {
     const { id, nickname } = user;
@@ -33,7 +34,7 @@ export class UserModel {
     this.inviteList = new Map();
     this.roleType = null;
     this.isMuted = false;
-    this.socket = null;
+    this.socket = new Map();
     this.profileImage = profileImage;
     this.status = USERSTATUS_OFFLINE;
   }
