@@ -67,9 +67,8 @@ export class ChannelGateWay
    * 채널에 입장하면 채널에 있는 모든 유저에게 입장 메시지를 보냅니다.
    */
   async joinChannel(userId: number, channelId: string): Promise<void> {
-    const user: UserModel = this.userFactory.findById(userId);
-    this.channelFactory.join(user.id, channelId);
-    this.sendNoticeToChannel(user.id, channelId, CHAT_JOIN);
+    this.channelFactory.join(userId, channelId);
+    this.sendNoticeToChannel(userId, channelId, CHAT_JOIN);
   }
 
   /**
