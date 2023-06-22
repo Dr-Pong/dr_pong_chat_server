@@ -99,7 +99,7 @@ export class DirectMessageGateway
     friend.socket['directMessage'].emit('message', message);
   }
 
-  @SubscribeMessage('deer')
+  @SubscribeMessage('dear')
   async joinDirectMessageRoom(
     @ConnectedSocket() socket: Socket,
     data: { nickname: string },
