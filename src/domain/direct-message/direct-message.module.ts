@@ -7,10 +7,12 @@ import { FriendRepository } from '../friend/friend.repository';
 import { Friend } from '../friend/friend.entity';
 import { DirectMessageRoom } from '../direct-message-room/direct-message-room.entity';
 import { DirectMessageRoomRepository } from '../direct-message-room/direct-message-room.repository';
+import { GatewayModule } from 'src/gateway/gateway.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([DirectMessage, Friend, DirectMessageRoom]),
+    GatewayModule,
   ],
   providers: [
     DirectMessageService,
