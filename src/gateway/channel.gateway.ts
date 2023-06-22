@@ -111,9 +111,9 @@ export class ChannelGateWay
       CHATTYPE_OTHERS,
     );
 
-    const sockets = await this.server.in(channelId).fetchSockets();
+    const sockets = await this.server?.in(channelId).fetchSockets();
 
-    sockets.forEach((socket) => {
+    sockets?.forEach((socket) => {
       if (
         socket.id !== user.socket[GATEWAY_CHANNEL]?.id &&
         !this.sockets.get(socket.id).blockedList.has(user.id)
