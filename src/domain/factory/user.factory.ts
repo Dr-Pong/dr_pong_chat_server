@@ -2,13 +2,18 @@ import { Injectable } from '@nestjs/common';
 import { UserModel } from './model/user.model';
 import { ChannelModel } from './model/channel.model';
 import { Socket } from 'socket.io';
-import { UserStatusType } from 'src/global/type/type.user.status';
+import {
+  USERSTATUS_OFFLINE,
+  USERSTATUS_ONLINE,
+  UserStatusType,
+} from 'src/global/type/type.user.status';
 import { InviteModel } from './model/invite.model';
 import {
   CHANNEL_PARTICIPANT_ADMIN,
   CHANNEL_PARTICIPANT_NORMAL,
   CHANNEL_PARTICIPANT_OWNER,
 } from '../channel/type/type.channel-participant';
+import { GateWayType } from 'src/gateway/type/type.gateway';
 
 @Injectable()
 export class UserFactory {
@@ -16,6 +21,12 @@ export class UserFactory {
 
   findById(id: number): UserModel {
     return this.users.get(id);
+  }
+
+  findByNickname(nickname: string): UserModel {
+    return Array.from(this.users.values()).find(
+      (user: UserModel) => user.nickname === nickname,
+    );
   }
 
   create(user: UserModel) {
@@ -92,9 +103,14 @@ export class UserFactory {
     return false;
   }
 
-  setSocket(userId: number, socket: Socket): void {
+  setSocket(userId: number, type: GateWayType, socket: Socket): void {
     const user: UserModel = this.findById(userId);
-    user.socket = socket;
+    user.socket[type] = socket;
+    if (socket) {
+      user.status = USERSTATUS_ONLINE;
+    } else if (!user.socket['notification']) {
+      user.status = USERSTATUS_OFFLINE;
+    }
     this.users.set(user.id, user);
   }
 

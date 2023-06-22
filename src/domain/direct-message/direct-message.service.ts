@@ -12,13 +12,19 @@ import { Friend } from '../friend/friend.entity';
 import { FRIENDSTATUS_FRIEND } from 'src/global/type/type.friend.status';
 import { DirectMessageRoom } from '../direct-message-room/direct-message-room.entity';
 import { DirectMessageRoomRepository } from '../direct-message-room/direct-message-room.repository';
-import { IsolationLevel, Transactional } from 'typeorm-transactional';
+import {
+  IsolationLevel,
+  Transactional,
+  runOnTransactionComplete,
+} from 'typeorm-transactional';
 import {
   CHATTYPE_ME,
   CHATTYPE_OTHERS,
   CHATTYPE_SYSTEM,
   ChatType,
 } from 'src/global/type/type.chat';
+import { DirectMessageGateway } from 'src/gateway/direct-message.gateway';
+import { NotificationGateWay } from 'src/gateway/notification.gateway';
 
 @Injectable()
 export class DirectMessageService {
@@ -26,6 +32,8 @@ export class DirectMessageService {
     private directRepository: DirectMessageRepository,
     private friendRepository: FriendRepository,
     private directMessageRoomRepository: DirectMessageRoomRepository,
+    private directMessageGateway: DirectMessageGateway,
+    private readonly notificationGateway: NotificationGateWay,
   ) {}
 
   /** DirectMessage 히스토리조회
@@ -98,21 +106,13 @@ export class DirectMessageService {
     if (!isFriend) throw new BadRequestException('not a friend');
 
     // 대화방 확인
+    this.directMessageGateway.sendMessageToFriend(userId, friendId, message);
     await this.checkRoomExistsAndDisplayed(userId, friendId);
-
     await this.directRepository.save(userId, friendId, message);
 
-    // TODO: 가장 최근 메시지 업데이트는 소켓에서 진행하기로 수정되어야 함니다
-    // const lastmessage: DirectMessage =
-    //   await this.directRepository.findByUserIdAndFriendIdOrderByIdDesc(
-    //     userId,
-    //     friendId,
-    //   );
-    // await this.directMessageRoomRepository.updateLastMessageIdByUserIdAndFriendId(
-    //   userId,
-    //   friendId,
-    //   lastmessage.id,
-    // );
+    runOnTransactionComplete(() => {
+      this.notificationGateway.newChatNotice(friendId);
+    });
   }
 
   private async checkRoomExistsAndDisplayed(userId: number, friendId: number) {
