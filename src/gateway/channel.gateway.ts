@@ -68,8 +68,6 @@ export class ChannelGateWay
    */
   async joinChannel(userId: number, channelId: string): Promise<void> {
     const user: UserModel = this.userFactory.findById(userId);
-    user.socket[GATEWAY_CHANNEL]?.join(channelId);
-    user.joinedChannel = channelId;
     this.channelFactory.join(user.id, channelId);
     this.sendNoticeToChannel(user.id, channelId, CHAT_JOIN);
   }
