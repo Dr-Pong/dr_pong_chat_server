@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { FriendRepository } from './friend.repository';
 import { GetUserFriendDto } from './dto/get.user.friend.dto';
 import { FriendDto, UserFriendsDto } from './dto/user.friends.dto';
@@ -9,7 +9,11 @@ import { UserPendingFriendsDto } from './dto/user.pending.friends.dto';
 import { PostUserFriendAcceptDto } from './dto/post.user.friend.accept.dto';
 import { DeleteUserFriendRejectDto } from './dto/delete.user.friend.reject.dto';
 import { DeleteUserFriendDto } from './dto/delete.user.friend.dto';
-import { IsolationLevel, Transactional } from 'typeorm-transactional';
+import {
+  IsolationLevel,
+  Transactional,
+  runOnTransactionComplete,
+} from 'typeorm-transactional';
 import { GetUserFriendNotificationsRequestDto } from './dto/get.user.friend.notifications.request.dto';
 import { UserFriendNotificationsDto } from './dto/user.friend.notifications.dto';
 import { SortUtil } from '../../global/utils/sort.util';
@@ -19,12 +23,14 @@ import {
   FRIENDSTATUS_PENDING,
 } from '../../global/type/type.friend.status';
 import { BlockRepository } from '../block/block.repository';
+import { NotificationGateWay } from 'src/gateway/notification.gateway';
 
 @Injectable()
 export class FriendService {
   constructor(
     private friendRepository: FriendRepository,
     private blockRepository: BlockRepository,
+    private notificationGateway: NotificationGateWay,
   ) {}
 
   /**친구 목록 GET
@@ -69,6 +75,10 @@ export class FriendService {
       userId,
       friendId,
     );
+
+    runOnTransactionComplete(() => {
+      this.notificationGateway.friendNotice(friendId);
+    });
   }
 
   /**친구 요청 목록

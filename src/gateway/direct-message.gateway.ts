@@ -1,4 +1,3 @@
-import { JwtService } from '@nestjs/jwt';
 import {
   ConnectedSocket,
   OnGatewayConnection,
@@ -7,81 +6,68 @@ import {
   WebSocketGateway,
 } from '@nestjs/websockets';
 import { Socket } from 'socket.io';
-import { checkUserExist } from 'src/domain/channel/validation/errors.channel';
 import { DirectMessageRepository } from 'src/domain/direct-message/direct-message.repository';
 import { UserModel } from 'src/domain/factory/model/user.model';
 import { UserFactory } from 'src/domain/factory/user.factory';
 import { FriendChatManager } from 'src/global/utils/generate.room.id';
-import { getTokenFromSocket } from './notification.gateway';
+import { getUserFromSocket } from './notification.gateway';
 import { DirectMessageRoomRepository } from 'src/domain/direct-message-room/direct-message-room.repository';
 import { IsolationLevel, Transactional } from 'typeorm-transactional';
 import { MessageModel } from './dto/message.model';
 import { CHATTYPE_OTHERS } from 'src/global/type/type.chat';
+import { GATEWAY_DIRECTMESSAGE } from './type/type.gateway';
 
 @WebSocketGateway({ namespace: 'dm' })
 export class DirectMessageGateway
   implements OnGatewayConnection, OnGatewayDisconnect
 {
   constructor(
-    private readonly tokenService: JwtService,
     private readonly userFactory: UserFactory,
     private readonly directMessageRepository: DirectMessageRepository,
     private readonly directMessageRoomRepository: DirectMessageRoomRepository,
   ) {}
   sockets: Map<string, UserModel> = new Map();
 
+  /**
+   * 'dm' 네임스페이스에 연결되었을 때 실행되는 메서드입니다.
+   * 유저가 이미 네임스페이스에 연결된 소켓을 가지고 있다면, 이전 소켓을 끊고 새로운 소켓으로 교체합니다.
+   * 유저가 dm을 주고받으려면 네임스페이스에 연결되어 있어야 합니다.
+   */
   async handleConnection(@ConnectedSocket() socket: Socket): Promise<void> {
-    const accessToken = getTokenFromSocket(socket);
-    if (!accessToken) {
-      socket.disconnect();
-      return;
-    }
-    let userToken;
-    try {
-      userToken = this.tokenService.verify(accessToken);
-    } catch (e) {
-      socket.disconnect();
-      return;
-    }
-    const userId = userToken.id;
-    console.log('friend connect', userToken.nickname, socket.id);
-
-    const user: UserModel = this.userFactory.findById(userId);
+    const user: UserModel = getUserFromSocket(socket, this.userFactory);
     if (!user) {
       socket.disconnect();
       return;
     }
 
-    if (user.socket && user.socket['directMessage']?.id !== socket?.id) {
-      user.socket['directMessage']?.disconnect();
+    if (user.socket && user.socket[GATEWAY_DIRECTMESSAGE]?.id !== socket?.id) {
+      user.socket[GATEWAY_DIRECTMESSAGE]?.disconnect();
     }
 
     this.sockets.set(socket.id, user);
-    this.userFactory.setSocket(user.id, 'directMessage', socket);
+    this.userFactory.setSocket(user.id, GATEWAY_DIRECTMESSAGE, socket);
   }
 
-  @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
+  /**
+   * 'dm' 네임스페이스에서 연결이 끊겼을 때 실행되는 메서드입니다.
+   * 유저가 dm을 주고받는 중에 연결이 끊겼다면, 마지막 읽은 메시지 id를 업데이트합니다.
+   */
   async handleDisconnect(@ConnectedSocket() socket: Socket): Promise<void> {
     const user = this.sockets.get(socket.id);
 
-    const lastMessageId: number =
-      await this.directMessageRepository.findLastMessageIdByRoomId(
-        FriendChatManager.generateRoomId(
-          user.id.toString(),
-          user.directMessageFriendId.toString(),
-        ),
-      );
-
-    this.directMessageRoomRepository.updateLastMessageIdByUserIdAndFriendId(
-      user.id,
-      user.directMessageFriendId,
-      lastMessageId,
-    );
-
+    try {
+      await this.updateLastMessageId(user.id);
+    } catch (e) {
+      console.log(e);
+    }
     this.sockets.delete(socket.id);
-    this.userFactory.setSocket(user.id, 'directMessage', null);
+    this.userFactory.setSocket(user.id, GATEWAY_DIRECTMESSAGE, null);
   }
 
+  /**
+   * 유저가 친구에게 메시지를 보냅니다.
+   * 친구가 dm 네임스페이스에 연결되어 있지 않다면, 메시지를 보내지 않습니다.
+   */
   async sendMessageToFriend(
     userId: number,
     friendId: number,
@@ -91,24 +77,49 @@ export class DirectMessageGateway
     const friend: UserModel = this.userFactory.findById(friendId);
 
     const message: MessageModel = new MessageModel(
-      user.nickname,
+      user?.nickname,
       content,
       CHATTYPE_OTHERS,
     );
 
-    friend.socket['directMessage'].emit('message', message);
+    friend?.socket[GATEWAY_DIRECTMESSAGE]?.emit('message', message);
   }
 
   @SubscribeMessage('dear')
+  /**
+   * 유저가 현재 대화중인 친구가 누구인지 알려줍니다.
+   * disconnect 이벤트가 발생했을 때, 마지막 읽은 메시지 id를 업데이트하기 위해 사용됩니다.
+   */
   async joinDirectMessageRoom(
     @ConnectedSocket() socket: Socket,
     data: { nickname: string },
   ): Promise<void> {
     const friend: UserModel = this.userFactory.findByNickname(data.nickname);
     const user: UserModel = this.sockets.get(socket.id);
-    checkUserExist(friend);
-    checkUserExist(user);
 
-    user.directMessageFriendId = friend.id;
+    user.directMessageFriendId = friend?.id ?? null;
+  }
+
+  /**
+   * 마지막 읽은 메시지 id를 업데이트합니다.
+   * user를 찾아와서 현재 dm을 주고받는 친구가 누구인지 확인합니다.
+   * 그리고 해당 친구와의 대화방의 마지막 읽은 메시지 id를 업데이트합니다.
+   */
+  @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
+  private async updateLastMessageId(userId: number): Promise<void> {
+    const user: UserModel = this.userFactory.findById(userId);
+    const lastMessageId: number =
+      await this.directMessageRepository.findLastMessageIdByRoomId(
+        FriendChatManager.generateRoomId(
+          user.id.toString(),
+          user.directMessageFriendId.toString(),
+        ),
+      );
+
+    await this.directMessageRoomRepository.updateLastMessageIdByUserIdAndFriendId(
+      user.id,
+      user.directMessageFriendId,
+      lastMessageId,
+    );
   }
 }

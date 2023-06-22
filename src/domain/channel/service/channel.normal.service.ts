@@ -144,7 +144,7 @@ export class ChannelNormalService {
       host.nickname,
     );
 
-    this.channelGateway.invite(postDto.userId, invite);
+    this.channelGateway.invite(postDto.targetId, invite);
   }
 
   /**

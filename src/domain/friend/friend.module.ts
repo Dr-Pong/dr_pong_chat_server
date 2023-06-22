@@ -10,6 +10,7 @@ import { DirectMessageModule } from '../direct-message/direct-message.module';
 import { DirectMessageRoomModule } from '../direct-message-room/direct-message-room.module';
 import { BlockRepository } from '../block/block.repository';
 import { Block } from '../block/block.entity';
+import { GatewayModule } from 'src/gateway/gateway.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { Block } from '../block/block.entity';
     UserModule,
     DirectMessageModule,
     DirectMessageRoomModule,
+    GatewayModule,
   ],
   providers: [FriendService, FriendRepository, BlockRepository],
   exports: [FriendService],
