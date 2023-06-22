@@ -18,17 +18,15 @@ import {
 } from 'src/domain/channel/type/type.channel.action';
 import { MessageModel } from 'src/gateway/dto/message.model';
 import { CHATTYPE_OTHERS, CHATTYPE_SYSTEM } from 'src/global/type/type.chat';
-import { JwtService } from '@nestjs/jwt';
 import { InviteModel } from 'src/domain/factory/model/invite.model';
-import { getTokenFromSocket } from './notification.gateway';
-import { checkUserExist } from 'src/domain/channel/validation/errors.channel';
+import { getUserFromSocket } from './notification.gateway';
+import { GATEWAY_CHANNEL, GATEWAY_NOTIFICATION } from './type/type.gateway';
 
 @WebSocketGateway({ namespace: 'channel' })
 export class ChannelGateWay
   implements OnGatewayConnection, OnGatewayDisconnect
 {
   constructor(
-    private readonly tokenService: JwtService,
     private readonly userFactory: UserFactory,
     private readonly channelFactory: ChannelFactory,
   ) {}
@@ -36,52 +34,74 @@ export class ChannelGateWay
   private readonly server: Server;
   private sockets: Map<string, UserModel> = new Map();
 
+  /**
+   * 'channel' 네임스페이스에 연결되었을 때 실행되는 메서드입니다.
+   *  유저가 이미 네임스페이스에 연결된 소켓을 가지고 있다면, 이전 소켓을 끊고 새로운 소켓으로 교체합니다.
+   *  유저가 채널에 들어가 있었다면, 채널의 id와 같은 room에 소켓을 join합니다.
+   */
   async handleConnection(@ConnectedSocket() socket: Socket) {
-    const accessToken = this.tokenService.verify(getTokenFromSocket(socket));
-
-    const { id } = accessToken;
-    const user: UserModel = this.userFactory.findById(id);
-    checkUserExist(user);
-
-    if (user.socket && user.socket?.id !== socket?.id) {
-      user.socket.disconnect();
+    const user: UserModel = getUserFromSocket(socket, this.userFactory);
+    if (!user) {
+      socket.disconnect();
+      return;
     }
 
-    this.sockets.set(socket.id, user);
-    user.socket = socket;
+    if (user.socket && user.socket[GATEWAY_CHANNEL]?.id !== socket?.id) {
+      user.socket[GATEWAY_CHANNEL]?.disconnect();
+    }
+
     if (user.joinedChannel) {
       socket.join(user.joinedChannel);
     }
+    this.sockets.set(socket.id, user);
+    this.userFactory.setSocket(user.id, GATEWAY_CHANNEL, socket);
   }
 
   async handleDisconnect(@ConnectedSocket() socket: Socket) {
     this.sockets.delete(socket.id);
   }
 
+  /**
+   * 유저가 채널에 처음 입장하도록 하는 함수입니다.
+   * 유저가 이미 채널에 들어가 있는 상태라면, 채널에서 나가고 새로운 채널에 들어갑니다.
+   * 채널에 입장하면 채널에 있는 모든 유저에게 입장 메시지를 보냅니다.
+   */
   async joinChannel(userId: number, channelId: string): Promise<void> {
     const user: UserModel = this.userFactory.findById(userId);
-    user.socket?.join(channelId);
+    user.socket[GATEWAY_CHANNEL]?.join(channelId);
     user.joinedChannel = channelId;
     this.channelFactory.join(user.id, channelId);
     this.sendNoticeToChannel(user.id, channelId, CHAT_JOIN);
   }
 
+  /**
+   * 유저가 채널에서 나가도록 하는 함수입니다.
+   * 채널에서 나가면 채널에 있는 모든 유저에게 퇴장 메시지를 보냅니다.
+   */
   async leaveChannel(userId: number, channelId: string): Promise<void> {
     const user: UserModel = this.userFactory.findById(userId);
-    user.socket?.leave(channelId);
+    user.socket[GATEWAY_CHANNEL]?.leave(channelId);
     user.joinedChannel = null;
     this.channelFactory.leave(user.id, channelId);
     this.sendNoticeToChannel(user.id, channelId, CHAT_LEAVE);
   }
 
+  /**
+   * 유저를 채널에 초대하는 함수입니다.
+   * 유저가 접속해 있다면, notification 네임스페이스에 연결된 소켓으로 초대 메시지를 보냅니다.
+   * 유저가 접속해 있지 않다면, 초대 메시지를 보내지 않습니다.
+   */
   async invite(targetId: number, invite: InviteModel) {
     const target = this.userFactory.findById(targetId);
-    if (target.socket) {
-      target.socket.emit('invite', invite);
-    }
+    target.socket[GATEWAY_NOTIFICATION]?.emit('invite', invite);
     this.userFactory.invite(target.id, invite);
   }
 
+  /**
+   * 유저가 채널에 메시지를 보내는 함수입니다.
+   * 채널에 있는 모든 참여자에게 메시지를 보냅니다.
+   * 유저를 차단한 채널 참여자에게는 메시지를 보내지 않습니다.
+   */
   async sendMessageToChannel(messageDto: MessageDto) {
     const { userId, channelId } = messageDto;
     const user: UserModel = this.userFactory.findById(userId);
@@ -95,13 +115,22 @@ export class ChannelGateWay
 
     sockets.forEach((socket) => {
       if (
-        socket.id !== user.socket?.id &&
+        socket.id !== user.socket[GATEWAY_CHANNEL]?.id &&
         !this.sockets.get(socket.id).blockedList.has(user.id)
       )
         socket.emit(CHAT_MESSAGE, message);
     });
   }
 
+  /**
+   * 채널의 참여자에게 변동이 생겼을 경우, 참여자에게 알림을 보내는 함수입니다.
+   * 유저가 채널에 들어오거나 나갔을 경우, 참여자에게 알림을 보냅니다.
+   * 유저가 mute 또는 unmute 되었을 경우, 참여자에게 알림을 보냅니다.
+   * 유저가 ban되었을 경우, 참여자에게 알림을 보냅니다.
+   * 유저가 kick되었을 경우, 참여자에게 알림을 보냅니다.
+   * 유저가 admin이 되었을 경우, 참여자에게 알림을 보냅니다.
+   * 유저가 admin이 해제되었을 경우, 참여자에게 알림을 보냅니다.
+   */
   async sendNoticeToChannel(
     userId: number,
     channelId: string,
