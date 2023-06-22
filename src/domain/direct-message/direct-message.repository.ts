@@ -49,7 +49,7 @@ export class DirectMessageRepository {
    * @returns Promise<void> - Promise를 반환하며, 아무 값도 반환하지 않습니다.
    */
   async save(userId: number, friendId: number, message: string): Promise<void> {
-    const directMessage: DirectMessage = await this.repository.create({
+    const directMessage: DirectMessage = this.repository.create({
       sender: { id: userId },
       roomId: FriendChatManager.generateRoomId(
         userId.toString(),
@@ -127,5 +127,17 @@ export class DirectMessageRepository {
     });
 
     return unreadChat !== null;
+  }
+
+  async findLastMessageIdByRoomId(roomId: string): Promise<number> {
+    const directMessage: DirectMessage = await this.repository.findOne({
+      where: {
+        roomId: roomId,
+      },
+      order: {
+        id: 'DESC',
+      },
+    });
+    return directMessage.id;
   }
 }
