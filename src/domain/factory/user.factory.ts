@@ -5,7 +5,6 @@ import { Socket } from 'socket.io';
 import {
   USERSTATUS_OFFLINE,
   USERSTATUS_ONLINE,
-  UserStatusType,
 } from 'src/global/type/type.user.status';
 import { InviteModel } from './model/invite.model';
 import {
@@ -13,7 +12,7 @@ import {
   CHANNEL_PARTICIPANT_NORMAL,
   CHANNEL_PARTICIPANT_OWNER,
 } from '../channel/type/type.channel-participant';
-import { GateWayType } from 'src/gateway/type/type.gateway';
+import { GATEWAY_CHANNEL, GateWayType } from 'src/gateway/type/type.gateway';
 
 @Injectable()
 export class UserFactory {
@@ -36,6 +35,7 @@ export class UserFactory {
   joinChannel(userId: number, channel: ChannelModel): void {
     const user: UserModel = this.findById(userId);
     user.joinedChannel = channel.id;
+    user.socket[GATEWAY_CHANNEL]?.join(channel.id);
     if (channel.muteList.has(user.id)) {
       user.isMuted = true;
     }
@@ -45,6 +45,7 @@ export class UserFactory {
 
   leaveChannel(userId: number): void {
     const user: UserModel = this.findById(userId);
+    user.socket[GATEWAY_CHANNEL]?.leave(user.joinedChannel);
     user.joinedChannel = null;
     user.isMuted = false;
     user.roleType = null;
@@ -117,12 +118,6 @@ export class UserFactory {
   updateProfile(userId: number, profileImage: string): void {
     const user: UserModel = this.findById(userId);
     user.profileImage = profileImage;
-    this.users.set(user.id, user);
-  }
-
-  setStatus(userId: number, status: UserStatusType): void {
-    const user: UserModel = this.findById(userId);
-    user.status = status;
     this.users.set(user.id, user);
   }
 
