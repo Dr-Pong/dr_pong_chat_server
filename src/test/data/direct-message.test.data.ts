@@ -16,10 +16,7 @@ export class DirectMessageTestData {
   async createDirectMessageFromTo(from: User, to: User): Promise<void> {
     await this.directMessageRepository.save({
       sender: from,
-      roomId: FriendChatManager.generateRoomId(
-        from.id.toString(),
-        to.id.toString(),
-      ),
+      roomId: FriendChatManager.generateRoomId(from.id, to.id),
       message: 'message' + (++this.count).toString(),
       time: new Date().toISOString(),
     });
