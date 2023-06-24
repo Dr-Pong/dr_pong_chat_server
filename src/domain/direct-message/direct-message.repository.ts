@@ -28,10 +28,7 @@ export class DirectMessageRepository {
     const directMessages: DirectMessage[] = await this.repository.find({
       where: {
         id: LessThan(offset),
-        roomId: FriendChatManager.generateRoomId(
-          userId.toString(),
-          friendId.toString(),
-        ),
+        roomId: FriendChatManager.generateRoomId(userId, friendId),
       },
       take: count,
       order: {
@@ -48,17 +45,18 @@ export class DirectMessageRepository {
    * @param message - 전송할 메시지 내용
    * @returns Promise<void> - Promise를 반환하며, 아무 값도 반환하지 않습니다.
    */
-  async save(userId: number, friendId: number, message: string): Promise<void> {
+  async save(
+    userId: number,
+    friendId: number,
+    message: string,
+  ): Promise<DirectMessage> {
     const directMessage: DirectMessage = this.repository.create({
       sender: { id: userId },
-      roomId: FriendChatManager.generateRoomId(
-        userId.toString(),
-        friendId.toString(),
-      ),
+      roomId: FriendChatManager.generateRoomId(userId, friendId),
       message: message,
       time: new Date(),
     });
-    await this.repository.save(directMessage);
+    return await this.repository.save(directMessage);
   }
 
   /**
@@ -73,10 +71,7 @@ export class DirectMessageRepository {
   ): Promise<DirectMessage> {
     const directMessage: DirectMessage = await this.repository.findOne({
       where: {
-        roomId: FriendChatManager.generateRoomId(
-          userId.toString(),
-          friendId.toString(),
-        ),
+        roomId: FriendChatManager.generateRoomId(userId, friendId),
       },
       order: {
         id: 'DESC',
