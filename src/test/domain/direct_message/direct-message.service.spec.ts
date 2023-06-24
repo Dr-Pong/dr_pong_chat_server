@@ -265,7 +265,9 @@ describe('Direct Message Service', () => {
           });
 
         expect(beforeDirectMessages.length).toBe(0);
-        expect(beforeDirectMessageRooms.length).toBe(0);
+        beforeDirectMessageRooms.forEach((room) => {
+          expect(room.isDisplay).toBe(false);
+        });
 
         await service.postDirectMessage(userDirectMessageDto);
 
@@ -273,6 +275,9 @@ describe('Direct Message Service', () => {
           await directMessageRepository.find({
             where: {
               roomId: roomId,
+            },
+            order: {
+              id: 'DESC',
             },
           });
         const afterDirectMessageRooms: DirectMessageRoom[] =
@@ -283,14 +288,18 @@ describe('Direct Message Service', () => {
           });
 
         expect(afterDirectMessages.length).toBe(1);
-        expect(afterDirectMessageRooms.length).toBe(1);
+        afterDirectMessageRooms.forEach((room) => {
+          expect(room.isDisplay).toBe(true);
+          if (room.user.id === user.id) {
+            expect(room.lastReadMessageId).toBe(afterDirectMessages[0].id);
+          }
+        });
       });
 
       it('[Valid Case] DM 전송(있던방에 전송)', async () => {
         const user = userData.users[0];
         const friend = userData.users[1];
         const roomId = `${user.id}+${friend.id}`;
-        await directMessageRoomData.createEmptyDirectMessageRoom(user, friend);
         for (let i = 0; i < 12; i++) {
           await directMessageData.createDirectMessageFromTo(user, friend);
           await directMessageData.createDirectMessageFromTo(friend, user);
@@ -302,21 +311,44 @@ describe('Direct Message Service', () => {
           message: '아아 테스트중log0',
         };
 
-        const beforeDirectMessages: DirectMessage[] =
+        const beforeUsersDirectMessages: DirectMessage[] =
           await directMessageRepository.find({
             where: {
+              sender: user,
+              roomId: roomId,
+            },
+            order: {
+              id: 'DESC',
+            },
+          });
+        const beforeFriendsDirectMessages: DirectMessage[] =
+          await directMessageRepository.find({
+            where: {
+              sender: friend,
+              roomId: roomId,
+            },
+            order: {
+              id: 'DESC',
+            },
+          });
+
+        const beforeUserDirectMessageRoom: DirectMessageRoom =
+          await directMessageRoomRepository.findOne({
+            where: {
+              user: user,
               roomId: roomId,
             },
           });
-        const beforeDirectMessageRooms: DirectMessageRoom[] =
-          await directMessageRoomRepository.find({
+        const beforeFriendDirectMessageRoom: DirectMessageRoom =
+          await directMessageRoomRepository.findOne({
             where: {
+              user: friend,
               roomId: roomId,
             },
           });
 
-        expect(beforeDirectMessages.length).toBe(24);
-        expect(beforeDirectMessageRooms.length).toBe(1);
+        expect(beforeUsersDirectMessages.length).toBe(12);
+        expect(beforeFriendsDirectMessages.length).toBe(12);
 
         await service.postDirectMessage(userDirectMessageDto);
 
@@ -325,16 +357,21 @@ describe('Direct Message Service', () => {
             where: {
               roomId: roomId,
             },
+            order: {
+              id: 'DESC',
+            },
           });
-        const afterDirectMessageRooms: DirectMessageRoom[] =
-          await directMessageRoomRepository.find({
+        const afterUserDirectMessageRoom: DirectMessageRoom =
+          await directMessageRoomRepository.findOne({
             where: {
               roomId: roomId,
             },
           });
 
         expect(afterDirectMessages.length).toBe(25);
-        expect(afterDirectMessageRooms.length).toBe(1);
+        expect(afterUserDirectMessageRoom.lastReadMessageId).toBe(
+          afterDirectMessages[0].id,
+        );
       });
 
       it('[Valid Case] 친구가 아닌 유저에게 전송이 불가능한지', async () => {
