@@ -32,7 +32,7 @@ export class ChannelGateWay
   ) {}
   @WebSocketServer()
   private readonly server: Server;
-  private sockets: Map<string, UserModel> = new Map();
+  private sockets: Map<string, number> = new Map();
 
   /**
    * 'channel' 네임스페이스에 연결되었을 때 실행되는 메서드입니다.
@@ -53,11 +53,14 @@ export class ChannelGateWay
     if (user.joinedChannel) {
       socket.join(user.joinedChannel);
     }
-    this.sockets.set(socket.id, user);
+    this.sockets.set(socket.id, user.id);
     this.userFactory.setSocket(user.id, GATEWAY_CHANNEL, socket);
   }
 
   async handleDisconnect(@ConnectedSocket() socket: Socket) {
+    const userId = this.sockets.get(socket.id);
+
+    this.userFactory.setSocket(userId, GATEWAY_CHANNEL, null);
     this.sockets.delete(socket.id);
   }
 
@@ -113,7 +116,9 @@ export class ChannelGateWay
     sockets?.forEach((socket) => {
       if (
         socket.id !== user.socket[GATEWAY_CHANNEL]?.id &&
-        !this.sockets.get(socket.id).blockedList.has(user.id)
+        !this.userFactory
+          .findById(this.sockets.get(socket.id))
+          .blockedList.has(user.id)
       )
         socket.emit(CHAT_MESSAGE, message);
     });

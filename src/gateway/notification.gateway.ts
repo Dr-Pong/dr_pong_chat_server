@@ -75,11 +75,14 @@ export class NotificationGateWay
 
   /**
    * 새로운 dm을 받았을 때 실행되는 메서드입니다.
+   * 현재 채팅인 상대의 dm으로는 알림을 받지 않습니다.
    * 알림을 받기 위해서는 '' 네임스페이스에 연결되어 있어야 합니다.
    */
-  async newChatNotice(targetId: number): Promise<void> {
+  async newChatNotice(userId: number, targetId: number): Promise<void> {
     const target: UserModel = this.userFactory.findById(targetId);
-    target.socket[GATEWAY_NOTIFICATION]?.emit('newChat', {});
+    if (target.directMessageFriendId !== userId) {
+      target.socket[GATEWAY_NOTIFICATION]?.emit('newChat', {});
+    }
   }
 
   /**
@@ -136,7 +139,7 @@ export function getUserFromSocket(
     const user: UserModel = userFactory.findById(userId);
     return user;
   } catch (e) {
-    console.log(e);
+    console.log(accesstoken, e);
     return null;
   }
 }

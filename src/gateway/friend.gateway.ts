@@ -1,6 +1,7 @@
 import {
   ConnectedSocket,
   OnGatewayConnection,
+  OnGatewayDisconnect,
   WebSocketGateway,
 } from '@nestjs/websockets';
 import { Socket } from 'socket.io';
@@ -13,7 +14,7 @@ import { UserStatusType } from 'src/global/type/type.user.status';
 import { GATEWAY_FRIEND } from './type/type.gateway';
 
 @WebSocketGateway({ namespace: 'friends' })
-export class FriendGateWay implements OnGatewayConnection {
+export class FriendGateWay implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(
     private readonly userFactory: UserFactory,
     private readonly friendRepository: FriendRepository,
@@ -36,6 +37,14 @@ export class FriendGateWay implements OnGatewayConnection {
     this.userFactory.setSocket(user.id, GATEWAY_FRIEND, socket);
 
     await this.getFriendsStatus(user.id);
+  }
+
+  async handleDisconnect(@ConnectedSocket() socket: Socket): Promise<void> {
+    const user: UserModel = getUserFromSocket(socket, this.userFactory);
+    if (!user) {
+      return;
+    }
+    this.userFactory.setSocket(user.id, GATEWAY_FRIEND, null);
   }
 
   /**
