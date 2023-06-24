@@ -25,14 +25,17 @@ import {
 import { BlockRepository } from '../block/block.repository';
 import { NotificationGateWay } from 'src/gateway/notification.gateway';
 import { FriendGateWay } from '../../gateway/friend.gateway';
+import { DirectMessageRoomRepository } from '../direct-message-room/direct-message-room.repository';
+import { FriendChatManager } from 'src/global/utils/generate.room.id';
 
 @Injectable()
 export class FriendService {
   constructor(
-    private friendRepository: FriendRepository,
-    private blockRepository: BlockRepository,
-    private notificationGateway: NotificationGateWay,
-    private friendGateway: FriendGateWay,
+    private readonly friendRepository: FriendRepository,
+    private readonly blockRepository: BlockRepository,
+    private readonly dmRoomRepository: DirectMessageRoomRepository,
+    private readonly notificationGateway: NotificationGateWay,
+    private readonly friendGateway: FriendGateWay,
   ) {}
 
   /**친구 목록 GET
@@ -135,6 +138,8 @@ export class FriendService {
       userId,
       friendId,
     );
+
+    await this.createDmRoomIfNotExists(userId, friendId);
 
     runOnTransactionComplete(() => {
       this.friendGateway.friendNotice(friendId);
@@ -247,5 +252,20 @@ export class FriendService {
     if (isFriend || isRequesting || isBlocked || isBlockedByTarget)
       return false;
     return true;
+  }
+
+  private async createDmRoomIfNotExists(
+    userId: number,
+    friendId: number,
+  ): Promise<void> {
+    const isDmRoomExists: boolean =
+      await this.dmRoomRepository.checkRoomExistByRoomId(
+        FriendChatManager.generateRoomId(userId, friendId),
+      );
+
+    if (!isDmRoomExists) {
+      await this.dmRoomRepository.save(userId, friendId);
+      await this.dmRoomRepository.save(friendId, userId);
+    }
   }
 }

@@ -39,17 +39,23 @@ export class DirectMessageRoomRepository {
     });
   }
 
+  async checkRoomExistByRoomId(roomId: string): Promise<boolean> {
+    return await this.repository.exist({
+      where: {
+        roomId: roomId,
+      },
+    });
+  }
+
   /**
    * DM Room 을 생성하는 함수
    * 사용자 ID와 친구 ID로 검색하여 DM Room 을 생성합니다.
    */
   async save(userId: number, friendId: number): Promise<DirectMessageRoom> {
-    const directMessageRoom: DirectMessageRoom = await this.repository.create({
+    const directMessageRoom: DirectMessageRoom = this.repository.create({
       user: { id: userId },
       friend: { id: friendId },
       roomId: FriendChatManager.generateRoomId(userId, friendId),
-      lastReadMessageId: null,
-      isDisplay: true,
     });
     return await this.repository.save(directMessageRoom);
   }
