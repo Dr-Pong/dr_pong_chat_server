@@ -349,6 +349,10 @@ describe('Direct Message Service', () => {
 
         expect(beforeUsersDirectMessages.length).toBe(12);
         expect(beforeFriendsDirectMessages.length).toBe(12);
+        expect(beforeUserDirectMessageRoom.isDisplay).toBe(false);
+        expect(beforeFriendDirectMessageRoom.isDisplay).toBe(false);
+        expect(beforeUserDirectMessageRoom.lastReadMessageId).toBe(null);
+        expect(beforeFriendDirectMessageRoom.lastReadMessageId).toBe(null);
 
         await service.postDirectMessage(userDirectMessageDto);
 
@@ -367,11 +371,21 @@ describe('Direct Message Service', () => {
               roomId: roomId,
             },
           });
+        const afterFriendDirectMessageRoom: DirectMessageRoom =
+          await directMessageRoomRepository.findOne({
+            where: {
+              user: friend,
+              roomId: roomId,
+            },
+          });
 
         expect(afterDirectMessages.length).toBe(25);
+        expect(afterUserDirectMessageRoom.isDisplay).toBe(true);
         expect(afterUserDirectMessageRoom.lastReadMessageId).toBe(
           afterDirectMessages[0].id,
         );
+        expect(afterFriendDirectMessageRoom.isDisplay).toBe(true);
+        expect(afterFriendDirectMessageRoom.lastReadMessageId).toBe(null);
       });
 
       it('[Valid Case] 친구가 아닌 유저에게 전송이 불가능한지', async () => {
