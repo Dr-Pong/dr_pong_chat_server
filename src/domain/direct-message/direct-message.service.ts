@@ -10,7 +10,6 @@ import { PostDirectMessageDto } from './dto/post.direct-message.dto';
 import { FriendRepository } from '../friend/friend.repository';
 import { Friend } from '../friend/friend.entity';
 import { FRIENDSTATUS_FRIEND } from 'src/global/type/type.friend.status';
-import { DirectMessageRoom } from '../direct-message-room/direct-message-room.entity';
 import { DirectMessageRoomRepository } from '../direct-message-room/direct-message-room.repository';
 import {
   IsolationLevel,
@@ -25,6 +24,8 @@ import {
 } from 'src/global/type/type.chat';
 import { DirectMessageGateway } from 'src/gateway/direct-message.gateway';
 import { NotificationGateWay } from 'src/gateway/notification.gateway';
+import { UserFactory } from '../factory/user.factory';
+import { FriendChatManager } from 'src/global/utils/generate.room.id';
 
 @Injectable()
 export class DirectMessageService {
@@ -34,6 +35,7 @@ export class DirectMessageService {
     private directMessageRoomRepository: DirectMessageRoomRepository,
     private directMessageGateway: DirectMessageGateway,
     private readonly notificationGateway: NotificationGateWay,
+    private userFactory: UserFactory,
   ) {}
 
   /** DirectMessage 히스토리조회
@@ -107,35 +109,42 @@ export class DirectMessageService {
 
     // 대화방 확인
     this.directMessageGateway.sendMessageToFriend(userId, friendId, message);
-    await this.checkRoomExistsAndDisplayed(userId, friendId);
-    await this.directRepository.save(userId, friendId, message);
+    const newMessage: DirectMessage = await this.directRepository.save(
+      userId,
+      friendId,
+      message,
+    );
+    await this.renewDirectMessageRoom(userId, friendId, newMessage.id);
 
     runOnTransactionComplete(() => {
-      this.notificationGateway.newChatNotice(friendId);
+      this.notificationGateway.newChatNotice(userId, friendId);
     });
   }
 
-  private async checkRoomExistsAndDisplayed(userId: number, friendId: number) {
-    let directMessageRoom: DirectMessageRoom =
-      await this.directMessageRoomRepository.findByUserIdAndFriendId(
-        userId,
-        friendId,
-      );
+  private async renewDirectMessageRoom(
+    userId: number,
+    friendId: number,
+    newMessageId: number,
+  ) {
+    // 대화방이 표시되지 않는 경우 표시 여부 업데이트
+    await this.directMessageRoomRepository.updateIsDisplayTrueByRoomId(
+      FriendChatManager.generateRoomId(userId, friendId),
+    );
 
-    if (!directMessageRoom) {
-      // 대화방이 존재하지 않는 경우 새로 생성
-      directMessageRoom = await this.directMessageRoomRepository.save(
-        userId,
+    // 대화방의 마지막 메시지 업데이트
+    if (this.userFactory.findById(friendId)?.directMessageFriendId === userId) {
+      this.directMessageRoomRepository.updateLastMessageIdByUserIdAndFriendId(
         friendId,
+        userId,
+        newMessageId,
       );
     }
-    if (!directMessageRoom.isDisplay) {
-      // 대화방이 표시되지 않는 경우 표시 여부 업데이트
-      await this.directMessageRoomRepository.updateIsDisplayTrueByUserIdAndFriendId(
-        userId,
-        friendId,
-      );
-    }
+
+    await this.directMessageRoomRepository.updateLastMessageIdByUserIdAndFriendId(
+      userId,
+      friendId,
+      newMessageId,
+    );
   }
 
   /**
