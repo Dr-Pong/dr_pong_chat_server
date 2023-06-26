@@ -215,6 +215,23 @@ export class ChannelNormalController {
   }
 
   /**
+   * DELETE /channels/{roomId}/invitation
+   * response header {
+   *   200: ok;
+   * 400: error;
+   * }
+   */
+  @Delete('/:roomId/invitation')
+  @UseGuards(AuthGuard('jwt'))
+  async channelInvitationDelete(
+    @Requestor() requestor: UserIdCardDto,
+    @Param('roomId') channelId: string,
+  ): Promise<void> {
+    const { id: userId } = requestor;
+    await this.channelService.deleteChannelInvite({ userId, channelId });
+  }
+
+  /**
    * POST /channels/{roomId}/chats
    * response body {
    * 	message: string;
