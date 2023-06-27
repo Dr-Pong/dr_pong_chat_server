@@ -498,6 +498,33 @@ describe('ChannelController - Normal', () => {
         expect(response.body.isLastPage).toBe(false);
       });
     });
+
+    describe('DELETE /channels/{roomId}/invitation', () => {
+      it('[Valid Case] 채널 초대 목록에서 삭제 성공', async () => {
+        const user = await channelData.createInvitePendingUser(10);
+        const token = await userData.giveTokenToUser(user);
+        const inviteIterator = user.inviteList.values();
+        inviteIterator.next();
+        const invite = inviteIterator.next().value;
+        const response = await req(
+          token,
+          'DELETE',
+          `/channels/${invite.id}/invitation`,
+        );
+        expect(response.status).toBe(200);
+      });
+
+      it('[Valid Case] 채널 초대 목록에서 삭제 씹기(없는초대)', async () => {
+        const user = await channelData.createInvitePendingUser(10);
+        const token = await userData.giveTokenToUser(user);
+        const response = await req(
+          token,
+          'DELETE',
+          `/channels/invalidid/invitation`,
+        );
+        expect(response.status).toBe(200);
+      });
+    });
   });
 
   const req = async (

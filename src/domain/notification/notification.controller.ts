@@ -1,6 +1,6 @@
 import { FriendService } from '../friend/friend.service';
 import { ChannelNormalService } from '../channel/service/channel.normal.service';
-import { Controller, Delete, Get, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { Requestor } from '../auth/jwt/auth.requestor.decorator';
 import { UserIdCardDto } from '../auth/jwt/auth.user.id-card.dto';
@@ -58,23 +58,5 @@ export class NotificationController {
       userId: id,
     });
     return { invitations };
-  }
-
-  /*
-   * 채널 초대 삭제
-   * DELETE /users/notifications/channels/{id}
-   * response header {
-   *     200: ok;
-   *     400: error;
-   * }
-   * */
-  @Delete('/channels/:id')
-  @UseGuards(AuthGuard('jwt'))
-  async channelInvitationDelete(
-    @Requestor() requestor: UserIdCardDto,
-    @Param('id') id: string,
-  ): Promise<void> {
-    const { id: userId } = requestor;
-    await this.channelService.deleteChannelInvite({ userId, channelId: id });
   }
 }
