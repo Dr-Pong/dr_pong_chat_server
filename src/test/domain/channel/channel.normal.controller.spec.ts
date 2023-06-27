@@ -325,7 +325,7 @@ describe('ChannelController - Normal', () => {
       });
     });
 
-    describe('POST /channels/{roomId}/magicpass', () => {
+    describe('PATCH /channels/{roomId}/invitation', () => {
       it('[Valid Case] 채널 초대 수락', async () => {
         const user: UserModel = await channelData.createInvitePendingUser(10);
         const invite: InviteModel = user.inviteList.values().next().value;
@@ -333,11 +333,11 @@ describe('ChannelController - Normal', () => {
 
         const response = await req(
           token,
-          'POST',
-          `/channels/${invite.channelId}/magicpass`,
+          'PATCH',
+          `/channels/${invite.channelId}/invitation`,
         );
 
-        expect(response.status).toBe(201);
+        expect(response.status).toBe(200);
       });
 
       it('[Valid Case] private 채널 초대 수락', async () => {
@@ -355,11 +355,11 @@ describe('ChannelController - Normal', () => {
 
         const response = await req(
           token,
-          'POST',
-          `/channels/${invite.channelId}/magicpass`,
+          'PATCH',
+          `/channels/${invite.channelId}/invitation`,
         );
 
-        expect(response.status).toBe(201);
+        expect(response.status).toBe(200);
       });
 
       it('[Error Case] 채널이 꽉찬 경우', async () => {
@@ -377,8 +377,8 @@ describe('ChannelController - Normal', () => {
 
         const response = await req(
           token,
-          'POST',
-          `/channels/${invite.channelId}/magicpass`,
+          'PATCH',
+          `/channels/${invite.channelId}/invitation`,
         );
 
         expect(response.status).toBe(400);
@@ -397,8 +397,8 @@ describe('ChannelController - Normal', () => {
 
         const response = await req(
           token,
-          'POST',
-          `/channels/${invite.channelId}/magicpass`,
+          'PATCH',
+          `/channels/${invite.channelId}/invitation`,
         );
 
         expect(response.status).toBe(404);
