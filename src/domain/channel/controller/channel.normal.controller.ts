@@ -5,6 +5,7 @@ import {
   Get,
   Param,
   ParseIntPipe,
+  Patch,
   Post,
   Query,
   UseGuards,
@@ -204,9 +205,9 @@ export class ChannelNormalController {
    *     400: full bang | no bang;
    * }
    */
-  @Post('/:roomId/magicpass')
+  @Patch('/:roomId/invitation')
   @UseGuards(AuthGuard('jwt'))
-  async channelMagicPassPost(
+  async channelInvitationPatch(
     @Requestor() requestor: UserIdCardDto,
     @Param('roomId') channelId: string,
   ): Promise<void> {
