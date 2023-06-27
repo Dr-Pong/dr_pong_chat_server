@@ -40,7 +40,6 @@ export class UserFactory {
       user.isMuted = true;
     }
     user.roleType = CHANNEL_PARTICIPANT_NORMAL;
-    this.users.set(user.id, user);
   }
 
   leaveChannel(userId: number): void {
@@ -49,37 +48,31 @@ export class UserFactory {
     user.joinedChannel = null;
     user.isMuted = false;
     user.roleType = null;
-    this.users.set(user.id, user);
   }
 
   setOwner(userId: number): void {
     const user: UserModel = this.findById(userId);
     user.roleType = CHANNEL_PARTICIPANT_OWNER;
-    this.users.set(user.id, user);
   }
 
   mute(userId: number) {
     const user: UserModel = this.findById(userId);
     user.isMuted = true;
-    this.users.set(user.id, user);
   }
 
   unMute(userId: number) {
     const user: UserModel = this.findById(userId);
     user.isMuted = false;
-    this.users.set(user.id, user);
   }
 
   setAdmin(userId: number): void {
     const user: UserModel = this.findById(userId);
     user.roleType = CHANNEL_PARTICIPANT_ADMIN;
-    this.users.set(user.id, user);
   }
 
   unsetAdmin(userId: number): void {
     const user: UserModel = this.findById(userId);
     user.roleType = CHANNEL_PARTICIPANT_NORMAL;
-    this.users.set(user.id, user);
   }
 
   block(userId: number, targetId: number): boolean {
@@ -87,7 +80,6 @@ export class UserFactory {
     const target: UserModel = this.findById(targetId);
     if (!user.blockedList.has(target.id)) {
       user.blockedList.set(target.id, target.id);
-      this.users.set(user.id, user);
       return true;
     }
     return false;
@@ -98,7 +90,6 @@ export class UserFactory {
     const target: UserModel = this.findById(targetId);
     if (user.blockedList.has(target.id)) {
       user.blockedList.delete(target.id);
-      this.users.set(user.id, user);
       return true;
     }
     return false;
@@ -112,20 +103,17 @@ export class UserFactory {
     } else if (!user.socket['notification']) {
       user.status = USERSTATUS_OFFLINE;
     }
-    this.users.set(user.id, user);
   }
 
   updateProfile(userId: number, profileImage: string): void {
     const user: UserModel = this.findById(userId);
     user.profileImage = profileImage;
-    this.users.set(user.id, user);
   }
 
   invite(userId: number, invite: InviteModel): void {
     const user: UserModel = this.findById(userId);
     if (!user.inviteList.has(invite.channelId)) {
       user.inviteList.set(invite.channelId, invite);
-      this.users.set(user.id, user);
     }
   }
 
@@ -138,7 +126,11 @@ export class UserFactory {
     const user: UserModel = this.findById(userId);
     if (user.inviteList.has(channelId)) {
       user.inviteList.delete(channelId);
-      this.users.set(user.id, user);
     }
+  }
+
+  setDirectMessageFriendId(userId: number, friendId: number): void {
+    const user: UserModel = this.findById(userId);
+    user.directMessageFriendId = friendId;
   }
 }

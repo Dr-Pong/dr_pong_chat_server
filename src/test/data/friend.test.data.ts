@@ -8,6 +8,8 @@ import {
   FRIENDSTATUS_FRIEND,
   FRIENDSTATUS_PENDING,
 } from 'src/global/type/type.friend.status';
+import { DirectMessageRoom } from 'src/domain/direct-message-room/direct-message-room.entity';
+import { FriendChatManager } from 'src/global/utils/generate.room.id';
 
 @Injectable()
 export class FriendTestData {
@@ -18,6 +20,8 @@ export class FriendTestData {
     private profileImageRepository: Repository<ProfileImage>,
     @InjectRepository(Friend)
     private friendRepository: Repository<Friend>,
+    @InjectRepository(DirectMessageRoom)
+    private directMessageRoomRepository: Repository<DirectMessageRoom>,
   ) {}
 
   async createFriendRequestFromTo(from: User, to: User): Promise<void> {
@@ -33,6 +37,16 @@ export class FriendTestData {
       sender: a,
       receiver: b,
       status: FRIENDSTATUS_FRIEND,
+    });
+    await this.directMessageRoomRepository.save({
+      user: a,
+      friend: b,
+      roomId: FriendChatManager.generateRoomId(a.id, b.id),
+    });
+    await this.directMessageRoomRepository.save({
+      user: b,
+      friend: a,
+      roomId: FriendChatManager.generateRoomId(a.id, b.id),
     });
   }
 }

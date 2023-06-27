@@ -27,6 +27,8 @@ import { UserFriendNotificationsDto } from '../../../domain/friend/dto/user.frie
 import { BadRequestException } from '@nestjs/common';
 import { UserTestData } from 'src/test/data/user.test.data';
 import { TestDataModule } from 'src/test/data/test.data.module';
+import { DirectMessageRoom } from 'src/domain/direct-message-room/direct-message-room.entity';
+import { FriendChatManager } from 'src/global/utils/generate.room.id';
 
 describe('FriendService', () => {
   let service: FriendService;
@@ -34,6 +36,7 @@ describe('FriendService', () => {
   let friendData: FriendTestData;
   let dataSources: DataSource;
   let friendRepository: Repository<Friend>;
+  let dmRoomRepository: Repository<DirectMessageRoom>;
 
   beforeAll(async () => {
     initializeTransactionalContext();
@@ -60,6 +63,10 @@ describe('FriendService', () => {
           provide: getRepositoryToken(Friend),
           useClass: Repository,
         },
+        {
+          provide: getRepositoryToken(DirectMessageRoom),
+          useClass: Repository,
+        },
       ],
     }).compile();
 
@@ -69,6 +76,9 @@ describe('FriendService', () => {
     dataSources = module.get<DataSource>(DataSource);
     friendRepository = module.get<Repository<Friend>>(
       getRepositoryToken(Friend),
+    );
+    dmRoomRepository = module.get<Repository<DirectMessageRoom>>(
+      getRepositoryToken(DirectMessageRoom),
     );
   });
 
@@ -305,6 +315,21 @@ describe('FriendService', () => {
         });
 
         expect(friend.status).toBe(FRIENDSTATUS_FRIEND);
+
+        const directMessageRooms: DirectMessageRoom[] =
+          await dmRoomRepository.find({
+            where: {
+              roomId: FriendChatManager.generateRoomId(user.id, requestor.id),
+            },
+          });
+
+        expect(directMessageRooms.length).toBe(2);
+        directMessageRooms.forEach((dmRoom) => {
+          expect(dmRoom.isDisplay).toBe(false);
+          expect(dmRoom.roomId).toBe(
+            FriendChatManager.generateRoomId(user.id, requestor.id),
+          );
+        });
       });
 
       it('[Valid Case] 양쪽에서 친구 요청 보낸경우', async () => {

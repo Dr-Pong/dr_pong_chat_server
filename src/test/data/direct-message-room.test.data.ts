@@ -19,10 +19,7 @@ export class DirectMessageRoomTestData {
     await this.directMessageRoomRepository.save({
       user: user1,
       friend: user2,
-      roomId: FriendChatManager.generateRoomId(
-        user1.id.toString(),
-        user2.id.toString(),
-      ),
+      roomId: FriendChatManager.generateRoomId(user1.id, user2.id),
       lastReadMessageId: null,
       isDisplay: true,
     });
@@ -32,10 +29,7 @@ export class DirectMessageRoomTestData {
     user1: User,
     user2: User,
   ): Promise<void> {
-    const roomId = FriendChatManager.generateRoomId(
-      user1.id.toString(),
-      user2.id.toString(),
-    );
+    const roomId = FriendChatManager.generateRoomId(user1.id, user2.id);
     const roomMessages = await this.directMessageRepository.find({
       where: { roomId: roomId },
     });
@@ -52,10 +46,7 @@ export class DirectMessageRoomTestData {
     user1: User,
     user2: User,
   ): Promise<void> {
-    const roomId = FriendChatManager.generateRoomId(
-      user1.id.toString(),
-      user2.id.toString(),
-    );
+    const roomId = FriendChatManager.generateRoomId(user1.id, user2.id);
     const roomMessages = await this.directMessageRepository.find({
       where: { roomId: roomId },
     });

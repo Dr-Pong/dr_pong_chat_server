@@ -11,16 +11,23 @@ import { DirectMessageRoomModule } from '../direct-message-room/direct-message-r
 import { BlockRepository } from '../block/block.repository';
 import { Block } from '../block/block.entity';
 import { GatewayModule } from 'src/gateway/gateway.module';
+import { DirectMessageRoomRepository } from '../direct-message-room/direct-message-room.repository';
+import { DirectMessageRoom } from '../direct-message-room/direct-message-room.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Friend, Block]),
+    TypeOrmModule.forFeature([Friend, Block, DirectMessageRoom]),
     UserModule,
     DirectMessageModule,
     DirectMessageRoomModule,
     GatewayModule,
   ],
-  providers: [FriendService, FriendRepository, BlockRepository],
+  providers: [
+    FriendService,
+    FriendRepository,
+    BlockRepository,
+    DirectMessageRoomRepository,
+  ],
   exports: [FriendService],
   controllers: [FriendRelationController, FriendChatController],
 })

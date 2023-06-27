@@ -8,11 +8,13 @@ import { Friend } from '../friend/friend.entity';
 import { DirectMessageRoom } from '../direct-message-room/direct-message-room.entity';
 import { DirectMessageRoomRepository } from '../direct-message-room/direct-message-room.repository';
 import { GatewayModule } from 'src/gateway/gateway.module';
+import { FactoryModule } from '../factory/factory.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([DirectMessage, Friend, DirectMessageRoom]),
     GatewayModule,
+    FactoryModule,
   ],
   providers: [
     DirectMessageService,

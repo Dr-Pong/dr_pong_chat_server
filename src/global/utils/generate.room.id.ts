@@ -1,7 +1,7 @@
 export class FriendChatManager {
-  static generateRoomId(nickname1: string, nickname2: string): string {
-    const sortedNicknames = [nickname1, nickname2].sort((a, b) =>
-      a.localeCompare(b),
+  static generateRoomId(userId1: number, userId2: number): string {
+    const sortedNicknames = [userId1?.toString(), userId2?.toString()].sort(
+      (a, b) => a.localeCompare(b),
     );
     return sortedNicknames.join('+');
   }
