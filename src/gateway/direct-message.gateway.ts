@@ -86,7 +86,9 @@ export class DirectMessageGateway
       CHATTYPE_OTHERS,
     );
 
-    friend?.socket[GATEWAY_DIRECTMESSAGE]?.emit('message', message);
+    if (friend?.directMessageFriendId === user?.id) {
+      friend?.socket[GATEWAY_DIRECTMESSAGE]?.emit('message', message);
+    }
   }
 
   /**
