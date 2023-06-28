@@ -7,7 +7,6 @@ import {
 } from 'src/domain/channel/type/type.channel';
 import { ChannelRepository } from '../repository/channel.repository';
 import { UserModel } from '../../factory/model/user.model';
-import { User } from '../../user/user.entity';
 import { ChannelFactory } from '../../factory/channel.factory';
 import { UserFactory } from '../../factory/user.factory';
 import { ChannelJoinDto } from '../dto/channel.join.dto';
@@ -23,12 +22,6 @@ export function checkUserInChannel(
 ): void {
   if (!channel.users.has(userId))
     throw new BadRequestException('You are not in this channel');
-}
-
-export function checkUserExist(user: User | UserModel): void {
-  if (!user) {
-    throw new NotFoundException('User does not exist');
-  }
 }
 
 export function checkChannelExist(channel: Channel | ChannelModel): void {
@@ -78,7 +71,6 @@ export async function validateChannelJoin(
 }
 
 export function checkUserIsInvited(user: UserModel, channelId: string): void {
-  checkUserExist(user);
   if (!user.inviteList.has(channelId)) {
     throw new BadRequestException('You are not invited');
   }

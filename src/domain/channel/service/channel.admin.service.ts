@@ -16,7 +16,7 @@ import {
   checkUserInChannel,
   checkUserIsOwner,
   isUserAdmin,
-} from '../validation/errors.channel';
+} from '../validation/validation.channel';
 import { UserModel } from '../../factory/model/user.model';
 import { SaveChannelMessageDto } from '../dto/post/save.channel-message.dto';
 import { ChannelMessageRepository } from '../repository/channel-message.repository';
