@@ -19,12 +19,11 @@ import { SaveChannelDto } from '../dto/post/save.channel.dto';
 import { SaveChannelUserDto } from '../dto/post/save.channel-user.dto';
 import {
   checkUserInChannel,
-  checkUserExist,
   checkChannelExist,
   checkUserIsInvited,
   validateChannelJoin,
   checkChannelNameIsDuplicate,
-} from '../validation/errors.channel';
+} from '../validation/validation.channel';
 import { InviteModel } from '../../factory/model/invite.model';
 import {
   JOIN_CHANNEL_INVITE,
@@ -134,9 +133,6 @@ export class ChannelNormalService {
     checkChannelExist(channel);
 
     const host: UserModel = this.userFactory.findById(postDto.userId);
-    const target: UserModel = this.userFactory.findById(postDto.targetId);
-    checkUserExist(host);
-    checkUserExist(target);
 
     const invite: InviteModel = new InviteModel(
       channel.id,
