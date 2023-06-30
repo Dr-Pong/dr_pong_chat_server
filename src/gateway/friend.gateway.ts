@@ -51,7 +51,7 @@ export class FriendGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage('status')
   @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
-  async joinDirectMessageRoom(
+  async emitFriendStatus(
     @ConnectedSocket() socket: Socket,
   ): Promise<void> {
     const user: UserModel = getUserFromSocket(socket, this.userFactory);
