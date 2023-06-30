@@ -2,6 +2,7 @@ import {
   ConnectedSocket,
   OnGatewayConnection,
   OnGatewayDisconnect,
+  SubscribeMessage,
   WebSocketGateway,
 } from '@nestjs/websockets';
 import { Socket } from 'socket.io';
@@ -12,6 +13,7 @@ import { UserModel } from 'src/domain/factory/model/user.model';
 import { Friend } from 'src/domain/friend/friend.entity';
 import { UserStatusType } from 'src/global/type/type.user.status';
 import { GATEWAY_FRIEND } from './type/type.gateway';
+import { IsolationLevel, Transactional } from 'typeorm-transactional';
 
 @WebSocketGateway({ namespace: 'friends' })
 export class FriendGateWay implements OnGatewayConnection, OnGatewayDisconnect {
@@ -45,6 +47,29 @@ export class FriendGateWay implements OnGatewayConnection, OnGatewayDisconnect {
       return;
     }
     this.userFactory.setSocket(user.id, GATEWAY_FRIEND, null);
+  }
+
+  @SubscribeMessage('status')
+  @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
+  async joinDirectMessageRoom(
+    @ConnectedSocket() socket: Socket,
+  ): Promise<void> {
+    const user: UserModel = getUserFromSocket(socket, this.userFactory);
+    if (!user) return;
+
+    const friends: Friend[] = await this.friendRepository.findFriendsByUserId(
+      user.id,
+    );
+
+    const data: { [key: string]: UserStatusType } = {};
+
+    friends.forEach((c) => {
+      const friendId: number =
+        c.sender.id === user.id ? c.receiver.id : c.sender.id;
+      const friend: UserModel = this.userFactory.findById(friendId);
+      data[friend.nickname] = friend.status;
+    });
+    user.socket[GATEWAY_FRIEND]?.emit('friends', data);
   }
 
   /**
