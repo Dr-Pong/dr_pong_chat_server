@@ -50,7 +50,6 @@ export class FriendGateWay implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('status')
-  @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
   async emitFriendStatus(
     @ConnectedSocket() socket: Socket,
   ): Promise<void> {
