@@ -54,6 +54,7 @@
     "testEnvironment": "node"
   },
   "dependencies": {
+    "@nestjs/cli": "^9.0.0",
     "@nestjs/common": "^10.0.0",
     "@nestjs/jwt": "^10.1.0",
     "@nestjs/passport": "^10.0.0",
@@ -65,7 +66,6 @@
     "@types/supertest": "^2.0.12",
     "@typescript-eslint/eslint-plugin": "^5.57.1",
     "@typescript-eslint/parser": "^5.57.1",
-    "cli": "^1.0.1",
     "eslint": "^8.40.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-import": "^2.27.5",
@@ -76,7 +76,7 @@
     "pg": "^8.11.0",
     "prettier": "^2.3.2",
     "reflect-metadata": "^0.1.13",
-    "socket.io": "^4.6.2",
+    "socket.io": "^4.7.1",
     "source-map-support": "^0.5.20",
     "supertest": "^6.3.3",
     "ts-jest": "29.0.3",

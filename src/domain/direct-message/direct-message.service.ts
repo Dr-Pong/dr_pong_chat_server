@@ -108,7 +108,6 @@ export class DirectMessageService {
     if (!isFriend) throw new BadRequestException('not a friend');
 
     // 대화방 확인
-    this.directMessageGateway.sendMessageToFriend(userId, friendId, message);
     const newMessage: DirectMessage = await this.directRepository.save(
       userId,
       friendId,
@@ -117,6 +116,7 @@ export class DirectMessageService {
     await this.renewDirectMessageRoom(userId, friendId, newMessage.id);
 
     runOnTransactionComplete(() => {
+      this.directMessageGateway.sendMessageToFriend(userId, friendId, message);
       this.notificationGateway.newChatNotice(userId, friendId);
     });
   }

@@ -3,6 +3,7 @@ import { UserModel } from './model/user.model';
 import { ChannelModel } from './model/channel.model';
 import { Socket } from 'socket.io';
 import {
+  USERSTATUS_INGAME,
   USERSTATUS_OFFLINE,
   USERSTATUS_ONLINE,
 } from 'src/global/type/type.user.status';
@@ -12,7 +13,11 @@ import {
   CHANNEL_PARTICIPANT_NORMAL,
   CHANNEL_PARTICIPANT_OWNER,
 } from '../channel/type/type.channel-participant';
-import { GATEWAY_CHANNEL, GateWayType } from 'src/gateway/type/type.gateway';
+import {
+  GATEWAY_CHANNEL,
+  GATEWAY_NOTIFICATION,
+  GateWayType,
+} from 'src/gateway/type/type.gateway';
 
 @Injectable()
 export class UserFactory {
@@ -103,6 +108,17 @@ export class UserFactory {
     } else if (!user.socket['notification']) {
       user.status = USERSTATUS_OFFLINE;
     }
+  }
+
+  setStatus(userId: number, state: 'inGame' | 'endGame'): void {
+    const user: UserModel = this.findById(userId);
+    if (state === 'inGame') user.status = USERSTATUS_INGAME;
+    else
+      this.setSocket(
+        userId,
+        GATEWAY_NOTIFICATION,
+        user.socket[GATEWAY_NOTIFICATION],
+      );
   }
 
   updateProfile(userId: number, profileImage: string): void {

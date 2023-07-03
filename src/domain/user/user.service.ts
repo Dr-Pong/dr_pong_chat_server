@@ -78,4 +78,9 @@ export class UserService {
       this.userFactory.updateProfile(user.id, image.url);
     });
   }
+
+  async patchUserState(userId: number, state: string): Promise<void> {
+    if (state === 'inGame') this.userFactory.setStatus(userId, state);
+    else this.userFactory.setStatus(userId, 'endGame');
+  }
 }
