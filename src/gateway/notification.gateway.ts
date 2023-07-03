@@ -25,7 +25,7 @@ export class NotificationGateWay
     private readonly userFactory: UserFactory,
     private readonly friendRepository: FriendRepository,
   ) {}
-  private sockets: Map<string, UserModel> = new Map();
+  private sockets: Map<string, number> = new Map();
 
   /**
    * '' 네임스페이스에 연결되었을 때 실행되는 메서드입니다.
@@ -40,14 +40,11 @@ export class NotificationGateWay
       return;
     }
 
-    if (
-      user.socket &&
-      user.socket.get(GATEWAY_NOTIFICATION)?.id !== socket?.id
-    ) {
+    if (user.socket.get(GATEWAY_NOTIFICATION)?.id !== socket?.id) {
       user.socket[GATEWAY_NOTIFICATION]?.disconnect();
     }
 
-    this.sockets.set(socket.id, user);
+    this.sockets.set(socket.id, user.id);
     this.userFactory.setSocket(user.id, GATEWAY_NOTIFICATION, socket);
 
     await this.sendStatusToFriends(user, USERSTATUS_ONLINE);
@@ -58,7 +55,9 @@ export class NotificationGateWay
    * 네임스페이스에서 연결이 끊어지면 친구들에게 자신의 상태를 알립니다. (offline)
    */
   async handleDisconnect(@ConnectedSocket() socket: Socket): Promise<void> {
-    const user: UserModel = this.sockets.get(socket.id);
+    const user: UserModel = this.userFactory.findById(
+      this.sockets.get(socket.id),
+    );
     await this.sendStatusToFriends(user, USERSTATUS_OFFLINE);
     this.userFactory.setSocket(user.id, GATEWAY_NOTIFICATION, null);
     this.sockets.delete(socket.id);
