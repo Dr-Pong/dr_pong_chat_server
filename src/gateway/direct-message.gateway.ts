@@ -34,7 +34,6 @@ export class DirectMessageGateway
    * 유저가 이미 네임스페이스에 연결된 소켓을 가지고 있다면, 이전 소켓을 끊고 새로운 소켓으로 교체합니다.
    * 유저가 dm을 주고받으려면 네임스페이스에 연결되어 있어야 합니다.
    */
-  @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
   async handleConnection(@ConnectedSocket() socket: Socket): Promise<void> {
     const user: UserModel = getUserFromSocket(socket, this.userFactory);
     if (!user) {
@@ -96,7 +95,6 @@ export class DirectMessageGateway
    * disconnect 이벤트가 발생했을 때, 마지막 읽은 메시지 id를 업데이트하기 위해 사용됩니다.
    */
   @SubscribeMessage('dear')
-  @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
   async joinDirectMessageRoom(
     @ConnectedSocket() socket: Socket,
     @MessageBody() data: { nickname: string },
