@@ -162,14 +162,13 @@ export class ChannelNormalService {
     if (user.isMuted) return;
 
     const message: MessageDto = MessageDto.fromPostDto(postDto);
-    await this.channelGateway.sendMessageToChannel(message);
 
     await this.messageRepository.save(
       SaveChannelMessageDto.fromMessageDto(message),
     );
 
-    runOnTransactionRollback(() => {
-      //에러 메시지 전송
+    runOnTransactionComplete(() => {
+      this.channelGateway.sendMessageToChannel(message);
     });
   }
 
