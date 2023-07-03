@@ -51,7 +51,7 @@ export class UserService {
   @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
   async getUserRelation(getDto: GetUserRelationDto): Promise<UserRelationDto> {
     const { userId, targetId } = getDto;
-    const isMe = userId === targetId;
+    const isMe: boolean = userId === targetId;
     const isFriend: boolean =
       await this.friendRepository.checkIsFriendByUserIdAndFriendId(
         userId,
