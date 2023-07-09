@@ -110,7 +110,7 @@ export class UserFactory {
     }
   }
 
-  setStatus(userId: number, state: 'inGame' | 'endGame'): void {
+  setStatus(userId: number, state: 'inGame' | 'notInGame'): void {
     const user: UserModel = this.findById(userId);
     if (state === 'inGame') user.status = USERSTATUS_INGAME;
     else

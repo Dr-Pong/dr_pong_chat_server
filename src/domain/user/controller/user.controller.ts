@@ -60,10 +60,9 @@ export class UserController {
     });
   }
 
-  @Patch('users/state')
+  @Patch('/state')
   async usersPatch(@Body() body): Promise<void> {
-    const { user1Id, user2Id, state } = body;
-    await this.userService.patchUserState(user1Id, state);
-    await this.userService.patchUserState(user2Id, state);
+    const { userId, state } = body;
+    await this.userService.patchUserState(userId, state);
   }
 }
