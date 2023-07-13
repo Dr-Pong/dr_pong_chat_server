@@ -41,13 +41,17 @@ export class NotificationGateWay
     }
 
     if (user.socket.get(GATEWAY_NOTIFICATION)?.id !== socket?.id) {
+      user.socket[GATEWAY_NOTIFICATION]?.emit('multiConnect');
       user.socket[GATEWAY_NOTIFICATION]?.disconnect();
     }
 
     this.sockets.set(socket.id, user.id);
     this.userFactory.setSocket(user.id, GATEWAY_NOTIFICATION, socket);
 
-    await this.sendStatusToFriends(user, USERSTATUS_ONLINE);
+    await this.sendStatusToFriends(user.id, user.status);
+    user.socket[GATEWAY_NOTIFICATION]?.emit('isInGame', {
+      roomId: user.gameId,
+    });
   }
 
   /**
@@ -58,7 +62,7 @@ export class NotificationGateWay
     const user: UserModel = this.userFactory.findById(
       this.sockets.get(socket.id),
     );
-    await this.sendStatusToFriends(user, USERSTATUS_OFFLINE);
+    await this.sendStatusToFriends(user.id, USERSTATUS_OFFLINE);
     this.userFactory.setSocket(user.id, GATEWAY_NOTIFICATION, null);
     this.sockets.delete(socket.id);
   }
@@ -89,9 +93,10 @@ export class NotificationGateWay
    * 현재 friend namespace에 연결된 모든 자신의 친구들에게 자신의 상태를 알립니다.
    */
   async sendStatusToFriends(
-    user: UserModel,
+    userId: number,
     status: UserStatusType,
   ): Promise<void> {
+    const user: UserModel = this.userFactory.findById(userId);
     const friends: Friend[] = await this.friendRepository.findFriendsByUserId(
       user.id,
     );
