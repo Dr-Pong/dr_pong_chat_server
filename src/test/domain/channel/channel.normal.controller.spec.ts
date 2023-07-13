@@ -300,7 +300,10 @@ describe('ChannelController - Normal', () => {
         const response = await req(
           token,
           'POST',
-          `/channels/${user.joinedChannel}/invitation/${target.nickname}`,
+          `/channels/${user.joinedChannel}/invitation`,
+          {
+            nickname: target.nickname,
+          },
         );
 
         expect(response.status).toBe(201);
@@ -318,7 +321,10 @@ describe('ChannelController - Normal', () => {
         const response = await req(
           token,
           'POST',
-          `/channels/${channel.id}/invitation/${target.nickname}`,
+          `/channels/${channel.id}/invitation`,
+          {
+            nickname: target.nickname,
+          },
         );
 
         expect(response.status).toBe(201);

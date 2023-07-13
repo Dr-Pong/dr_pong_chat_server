@@ -184,12 +184,12 @@ export class ChannelNormalController {
    * 	400: no bang;
    * }
    */
-  @Post('/:roomId/invitation/:nickname')
+  @Post('/:roomId/invitation')
   @UseGuards(AuthGuard('jwt'))
   async channelInvitationPost(
     @Requestor() requestor: UserIdCardDto,
     @Param('roomId') channelId: string,
-    @Param('nickname') nickname: string,
+    @Body('nickname') nickname: string,
   ): Promise<void> {
     const { id: userId } = requestor;
     const { id: targetId } = await this.userServie.getIdFromNickname({

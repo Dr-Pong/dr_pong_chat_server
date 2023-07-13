@@ -9,6 +9,7 @@ import { ChannelParticipantType } from 'src/domain/channel/type/type.channel-par
 
 export class UserModel {
   id: number;
+  gameId: string;
   nickname: string;
   joinedChannel: string;
   blockedList: Map<number, number>;
@@ -30,11 +31,11 @@ export class UserModel {
     this.id = id;
     this.nickname = nickname;
     this.joinedChannel = null;
-    this.blockedList = new Map();
-    this.inviteList = new Map();
+    this.blockedList = new Map<number, number>();
+    this.inviteList = new Map<string, InviteModel>();
     this.roleType = null;
     this.isMuted = false;
-    this.socket = new Map();
+    this.socket = new Map<string, Socket>();
     this.profileImage = profileImage;
     this.status = USERSTATUS_OFFLINE;
   }

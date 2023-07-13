@@ -11,11 +11,13 @@ import { FactoryModule } from '../factory/factory.module';
 import { ProfileImageRepository } from '../profile-image/profile-image.repository';
 import { ProfileImage } from '../profile-image/profile-image.entity';
 import { UserController } from './controller/user.controller';
+import { GatewayModule } from 'src/gateway/gateway.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([User, Friend, Block, ProfileImage]),
     FactoryModule,
+    GatewayModule,
   ],
   providers: [
     UserService,
