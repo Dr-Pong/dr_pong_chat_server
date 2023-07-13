@@ -21,6 +21,8 @@ import { GetUserRelationDto } from './dto/get.user.relation.dto';
 import { UserRelationDto } from './dto/user.relation.dto';
 import { PatchUserImageDto } from './dto/patch.user.image.dto';
 import { ProfileImageRepository } from '../profile-image/profile-image.repository';
+import { NotificationGateWay } from 'src/gateway/notification.gateway';
+import { USERSTATUS_INGAME } from 'src/global/type/type.user.status';
 
 @Injectable()
 export class UserService {
@@ -30,6 +32,7 @@ export class UserService {
     private readonly blockRepository: BlockRepository,
     private readonly userFactory: UserFactory,
     private readonly profileImageRepository: ProfileImageRepository,
+    private readonly notificationGateway: NotificationGateWay,
   ) {}
 
   @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
@@ -78,8 +81,9 @@ export class UserService {
     });
   }
 
-  async patchUserState(userId: number, state: string): Promise<void> {
-    if (state === 'inGame') this.userFactory.setStatus(userId, state);
-    else this.userFactory.setStatus(userId, 'notInGame');
+  async patchUserState(userId: number, gameId: string): Promise<void> {
+    this.userFactory.setGameId(userId, gameId);
+    this.userFactory.setStatus(userId, USERSTATUS_INGAME);
+    this.notificationGateway.sendStatusToFriends(userId, USERSTATUS_INGAME);
   }
 }

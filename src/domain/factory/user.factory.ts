@@ -6,6 +6,7 @@ import {
   USERSTATUS_INGAME,
   USERSTATUS_OFFLINE,
   USERSTATUS_ONLINE,
+  UserStatusType,
 } from 'src/global/type/type.user.status';
 import { InviteModel } from './model/invite.model';
 import {
@@ -13,11 +14,7 @@ import {
   CHANNEL_PARTICIPANT_NORMAL,
   CHANNEL_PARTICIPANT_OWNER,
 } from '../channel/type/type.channel-participant';
-import {
-  GATEWAY_CHANNEL,
-  GATEWAY_NOTIFICATION,
-  GateWayType,
-} from 'src/gateway/type/type.gateway';
+import { GATEWAY_CHANNEL, GateWayType } from 'src/gateway/type/type.gateway';
 
 @Injectable()
 export class UserFactory {
@@ -103,22 +100,23 @@ export class UserFactory {
   setSocket(userId: number, type: GateWayType, socket: Socket): void {
     const user: UserModel = this.findById(userId);
     user.socket[type] = socket;
-    if (socket) {
+    if (socket && user.gameId) {
+      user.status = USERSTATUS_INGAME;
+    } else if (socket) {
       user.status = USERSTATUS_ONLINE;
     } else if (!user.socket['notification']) {
       user.status = USERSTATUS_OFFLINE;
     }
   }
 
-  setStatus(userId: number, state: 'inGame' | 'notInGame'): void {
+  setStatus(userId: number, status: UserStatusType): void {
     const user: UserModel = this.findById(userId);
-    if (state === 'inGame') user.status = USERSTATUS_INGAME;
-    else
-      this.setSocket(
-        userId,
-        GATEWAY_NOTIFICATION,
-        user.socket[GATEWAY_NOTIFICATION],
-      );
+    user.status = status;
+  }
+
+  setGameId(userId: number, gameId: string): void {
+    const user: UserModel = this.findById(userId);
+    user.gameId = gameId;
   }
 
   updateProfile(userId: number, profileImage: string): void {
