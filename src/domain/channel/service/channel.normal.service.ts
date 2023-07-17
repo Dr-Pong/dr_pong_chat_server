@@ -9,11 +9,10 @@ import {
   IsolationLevel,
   Transactional,
   runOnTransactionComplete,
-  runOnTransactionRollback,
 } from 'typeorm-transactional';
 import { UserFactory } from '../../factory/user.factory';
 import { ChannelUser } from '../entity/channel-user.entity';
-import { PostChannelAcceptInviteDto } from '../dto/post/post.channel.accept.invite.dto';
+import { PostChannelAcceptInviteDto } from '../../invitation/dto/post.channel.accept.invite.dto';
 import { Page } from 'src/global/utils/page';
 import { SaveChannelDto } from '../dto/post/save.channel.dto';
 import { SaveChannelUserDto } from '../dto/post/save.channel-user.dto';
@@ -24,7 +23,6 @@ import {
   validateChannelJoin,
   checkChannelNameIsDuplicate,
 } from '../validation/validation.channel';
-import { InviteModel } from '../../factory/model/invite.model';
 import {
   JOIN_CHANNEL_INVITE,
   JOIN_CHANNEL_JOIN,
@@ -46,7 +44,6 @@ import {
 } from '../dto/channel-participant.dto';
 import { GetChannelMyDto } from '../dto/get/get.channel.my.dto';
 import { ChannelMeDto } from '../dto/channel.me.dto';
-import { PostInviteDto } from '../dto/post/post.invite.dto';
 import { GetChannelPageDto } from '../dto/get/get.channel.page.dto';
 import { ChannelPageDtos } from '../dto/channel.page.dto';
 import { FindChannelPageDto } from '../dto/get/find.channel.page.dto';
@@ -56,10 +53,7 @@ import { ChannelJoinDto } from '../dto/channel.join.dto';
 import { DeleteChannelUserDto } from '../dto/delete/delete.channel.user.dto';
 import { ChannelExitDto } from '../dto/channel.exit.dto';
 import { GetChannelMessageHistoryDto } from '../dto/get/get.channel-message.history.dto';
-import { DeleteChannelInviteDto } from '../dto/delete/delete.channel.invite.dto';
 import { UpdateChannelHeadCountDto } from '../dto/patch/update.channel.headcount.dto';
-import GetChannelInviteListDto from '../dto/get/get.channel.invitation.list.dto';
-import ChannelInviteListDto from '../dto/channel.invite.list.dto';
 import { ChannelIdDto } from '../dto/channel.id.dto';
 import { ChannelGateWay } from 'src/gateway/channel.gateway';
 
@@ -119,28 +113,6 @@ export class ChannelNormalService {
       return ChannelMeDto.fromModel(channel);
     }
     return null;
-  }
-
-  /**
-   * 유저를 채널에 초대하는 함수
-   * 이미 초대된 유저라면 아무 일도 일어나지 않는다
-   * UserModel의 inviteList에 추가해준다
-   */
-  async postInvite(postDto: PostInviteDto): Promise<void> {
-    const channel: ChannelModel = this.channelFactory.channels.get(
-      postDto.channelId,
-    );
-    checkChannelExist(channel);
-
-    const host: UserModel = this.userFactory.findById(postDto.userId);
-
-    const invite: InviteModel = new InviteModel(
-      channel.id,
-      channel.name,
-      host.nickname,
-    );
-
-    this.channelGateway.invite(postDto.targetId, invite);
   }
 
   /**
@@ -255,40 +227,6 @@ export class ChannelNormalService {
   }
 
   /**
-   * 유저가 채널 초대를 수락하는 함수
-   * 입장 성공 시 기존에 있던 채널에서는 자동 퇴장처리된다
-   */
-  @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
-  async postChannelAcceptInvite(
-    postDto: PostChannelAcceptInviteDto,
-  ): Promise<void> {
-    const user: UserModel = this.userFactory.findById(postDto.userId);
-    const channel: ChannelModel = this.channelFactory.findById(
-      postDto.channelId,
-    );
-
-    checkChannelExist(channel);
-    checkUserIsInvited(user, postDto.channelId);
-    this.userFactory.deleteInvite(postDto.userId, postDto.channelId);
-
-    await this.exitIfUserIsInChannel(postDto.userId);
-
-    await this.joinChannel(
-      new ChannelJoinDto(
-        postDto.userId,
-        postDto.channelId,
-        null,
-        JOIN_CHANNEL_INVITE,
-      ),
-    );
-
-    /** 트랜잭션이 성공하면 Factory에도 결과를 반영한다 */
-    runOnTransactionComplete(() => {
-      this.channelGateway.joinChannel(postDto.userId, postDto.channelId);
-    });
-  }
-
-  /**
    * 유저가 채널에서 나가는 함수
    * 관리자가 퇴장할 경우 관리자 권한이 없어진다
    * mute 상태인 유저가 퇴장할 경우 mute 상태가 유지된다 (mute 상태는 관리자가 풀어줘야 한다)
@@ -350,26 +288,6 @@ export class ChannelNormalService {
       isLastPage,
     };
     return responseDto;
-  }
-
-  /**
-   * 유저가 받은 채널 초대 목록을 보여주는 함수
-   * userModel의 invite를 조회해 보내준다
-   * */
-  async getChannelInviteList(
-    getDto: GetChannelInviteListDto,
-  ): Promise<ChannelInviteListDto> {
-    const invites: InviteModel[] = this.userFactory.getInvites(getDto.userId);
-    return { invitations: invites };
-  }
-
-  /**
-   * 채널 초대를 거절하는 함수
-   * userModel의 invite에서 해당 채널을 삭제한다
-   * */
-  async deleteChannelInvite(deleteDto: DeleteChannelInviteDto): Promise<void> {
-    const user: UserModel = this.userFactory.findById(deleteDto.userId);
-    this.userFactory.deleteInvite(user.id, deleteDto.channelId);
   }
 
   /**
