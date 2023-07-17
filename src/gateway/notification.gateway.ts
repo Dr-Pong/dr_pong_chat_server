@@ -11,7 +11,6 @@ import { JwtService } from '@nestjs/jwt';
 import { FriendRepository } from 'src/domain/friend/friend.repository';
 import {
   USERSTATUS_OFFLINE,
-  USERSTATUS_ONLINE,
   UserStatusType,
 } from 'src/global/type/type.user.status';
 import { Friend } from 'src/domain/friend/friend.entity';
@@ -42,16 +41,18 @@ export class NotificationGateWay
 
     if (user.socket.get(GATEWAY_NOTIFICATION)?.id !== socket?.id) {
       user.socket[GATEWAY_NOTIFICATION]?.emit('multiConnect');
-      user.socket[GATEWAY_NOTIFICATION]?.disconnect();
+      setTimeout(() => user.socket[GATEWAY_NOTIFICATION]?.disconnect(), 500);
     }
 
     this.sockets.set(socket.id, user.id);
     this.userFactory.setSocket(user.id, GATEWAY_NOTIFICATION, socket);
 
     await this.sendStatusToFriends(user.id, user.status);
-    user.socket[GATEWAY_NOTIFICATION]?.emit('isInGame', {
-      roomId: user.gameId,
-    });
+    if (user.gameId) {
+      user.socket[GATEWAY_NOTIFICATION]?.emit('isInGame', {
+        roomId: user.gameId,
+      });
+    }
   }
 
   /**
