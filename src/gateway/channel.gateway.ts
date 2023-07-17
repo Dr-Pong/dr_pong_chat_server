@@ -18,7 +18,7 @@ import {
 } from 'src/domain/channel/type/type.channel.action';
 import { MessageModel } from 'src/gateway/dto/message.model';
 import { CHATTYPE_OTHERS, CHATTYPE_SYSTEM } from 'src/global/type/type.chat';
-import { InviteModel } from 'src/domain/factory/model/invite.model';
+import { ChannelInviteModel } from 'src/domain/factory/model/channel.invite.model';
 import { getUserFromSocket } from './notification.gateway';
 import { GATEWAY_CHANNEL, GATEWAY_NOTIFICATION } from './type/type.gateway';
 
@@ -91,10 +91,10 @@ export class ChannelGateWay
    * 유저가 접속해 있다면, notification 네임스페이스에 연결된 소켓으로 초대 메시지를 보냅니다.
    * 유저가 접속해 있지 않다면, 초대 메시지를 보내지 않습니다.
    */
-  async invite(targetId: number, invite: InviteModel) {
+  async invite(targetId: number, invite: ChannelInviteModel) {
     const target = this.userFactory.findById(targetId);
     target.socket[GATEWAY_NOTIFICATION]?.emit('invite', invite);
-    this.userFactory.invite(target.id, invite);
+    this.userFactory.inviteChannel(target.id, invite);
   }
 
   /**
