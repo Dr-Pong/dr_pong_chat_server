@@ -1,10 +1,7 @@
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { AppModule } from 'src/app.module';
-import {
-  GAMEMODE_CLASSIC,
-  GameMode,
-} from 'src/domain/invitation/type/type.game.mode';
+import { GAMEMODE_CLASSIC, GameMode } from 'src/global/type/type.game';
 import { User } from 'src/domain/user/user.entity';
 import { TestDataModule } from 'src/test/data/test.data.module';
 import { UserTestData } from 'src/test/data/user.test.data';

@@ -26,7 +26,7 @@ import { User } from 'src/domain/user/user.entity';
 import { CHANNEL_PARTICIPANT_NORMAL } from 'src/domain/channel/type/type.channel-participant';
 import { PostChannelInviteDto } from 'src/domain/invitation/dto/post.invite.dto';
 import { InvitationService } from 'src/domain/invitation/invitation.service';
-import { GAMEMODE_CLASSIC } from 'src/domain/invitation/type/type.game.mode';
+import { GAMEMODE_CLASSIC } from 'src/global/type/type.game';
 import { USERSTATUS_INGAME } from 'src/global/type/type.user.status';
 import { DeleteGameInviteRejectDto } from 'src/domain/invitation/dto/delete.game.invite.reject.dto';
 import { GameInviteModel } from 'src/domain/factory/model/game.invite.model';
