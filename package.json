@@ -64,6 +64,7 @@
     "@nestjs/typeorm": "^10.0.0",
     "@nestjs/websockets": "^10.0.0",
     "@types/supertest": "^2.0.12",
+    "dotenv": "^16.0.3",
     "@typescript-eslint/eslint-plugin": "^5.57.1",
     "@typescript-eslint/parser": "^5.57.1",
     "eslint": "^8.40.0",
