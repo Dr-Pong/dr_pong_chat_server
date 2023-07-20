@@ -23,6 +23,9 @@ import { PatchUserImageDto } from './dto/patch.user.image.dto';
 import { ProfileImageRepository } from '../profile-image/profile-image.repository';
 import { NotificationGateWay } from 'src/gateway/notification.gateway';
 import { USERSTATUS_INGAME } from 'src/global/type/type.user.status';
+import { GameModel } from '../factory/model/game.model';
+import { GameMode, GameType } from '../../global/type/type.game';
+import { GATEWAY_NOTIFICATION } from 'src/gateway/type/type.gateway';
 
 @Injectable()
 export class UserService {
@@ -82,9 +85,25 @@ export class UserService {
     });
   }
 
-  async patchUserState(userId: number, gameId: string): Promise<void> {
-    this.userFactory.setGameId(userId, gameId);
+  async patchUserStateInGame(
+    userId: number,
+    gameId: string,
+    type: GameType,
+    mode: GameMode,
+  ): Promise<void> {
+    this.userFactory.setGame(userId, new GameModel(gameId, type, mode));
     this.userFactory.setStatus(userId, USERSTATUS_INGAME);
     this.notificationGateway.sendStatusToFriends(userId, USERSTATUS_INGAME);
+  }
+
+  async patchUserStateOutGame(userId: number): Promise<void> {
+    const user: UserModel = this.userFactory.findById(userId);
+    this.userFactory.setGame(userId, null);
+    this.userFactory.setSocket(
+      userId,
+      GATEWAY_NOTIFICATION,
+      user.socket[GATEWAY_NOTIFICATION],
+    );
+    this.notificationGateway.sendStatusToFriends(userId, user.status);
   }
 }

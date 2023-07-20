@@ -40,17 +40,18 @@ export class NotificationGateWay
     }
 
     if (user.socket.get(GATEWAY_NOTIFICATION)?.id !== socket?.id) {
-      user.socket[GATEWAY_NOTIFICATION]?.emit('multiConnect');
-      setTimeout(() => user.socket[GATEWAY_NOTIFICATION]?.disconnect(), 500);
+      await user.socket[GATEWAY_NOTIFICATION]?.emit('multiConnect');
+      await user.socket[GATEWAY_NOTIFICATION]?.disconnect();
     }
 
     this.sockets.set(socket.id, user.id);
     this.userFactory.setSocket(user.id, GATEWAY_NOTIFICATION, socket);
 
     await this.sendStatusToFriends(user.id, user.status);
-    if (user.gameId) {
+    if (user.playingGame?.id) {
       user.socket[GATEWAY_NOTIFICATION]?.emit('isInGame', {
-        roomId: user.gameId,
+        roomId: user.playingGame.id,
+        gameType: user.playingGame.type,
       });
     }
   }
@@ -102,12 +103,12 @@ export class NotificationGateWay
       user.id,
     );
 
+    const data: { [key: string]: UserStatusType } = {};
+    data[user.nickname] = status;
     for (const c of friends) {
       const friendId: number =
         c.sender.id === user.id ? c.receiver.id : c.sender.id;
       const friend: UserModel = this.userFactory.findById(friendId);
-      const data: { [key: string]: UserStatusType } = {};
-      data[user.nickname] = status;
       friend?.socket[GATEWAY_FRIEND]?.emit('friends', data);
     }
   }

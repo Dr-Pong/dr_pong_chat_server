@@ -50,9 +50,8 @@ export class FriendGateWay implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('status')
-  async emitFriendStatus(
-    @ConnectedSocket() socket: Socket,
-  ): Promise<void> {
+  @Transactional({ isolationLevel: IsolationLevel.READ_UNCOMMITTED })
+  async emitFriendStatus(@ConnectedSocket() socket: Socket): Promise<void> {
     const user: UserModel = getUserFromSocket(socket, this.userFactory);
     if (!user) return;
 
@@ -74,6 +73,7 @@ export class FriendGateWay implements OnGatewayConnection, OnGatewayDisconnect {
   /**
    * namespace에 최초 연결시, 기존에 접속해 있던 친구들의 상태를 받아오는 메서드입니다.
    */
+  @Transactional({ isolationLevel: IsolationLevel.READ_UNCOMMITTED })
   async getFriendsStatus(userId: number): Promise<void> {
     const user: UserModel = this.userFactory.findById(userId);
     const friends: Friend[] = await this.friendRepository.findFriendsByUserId(
