@@ -46,6 +46,7 @@ import GameInviteListDto from './dto/game.invite.list.dto';
 import { GameInviteModel } from '../factory/model/game.invite.model';
 import axios from 'axios';
 import { GameModel } from '../factory/model/game.model';
+import { GAMETYPE_NORMAL } from 'src/global/type/type.game';
 
 @Injectable()
 export class InvitationService {
@@ -171,9 +172,9 @@ export class InvitationService {
     const { senderId } = deleteDto;
     const sendUser: UserModel = this.userFactory.findById(senderId);
     const receivedUser: UserModel = this.userFactory.findById(
-      sendUser.gameInvite.receiverId,
+      sendUser?.gameInvite?.receiverId,
     );
-    this.userFactory.deleteGameInvite(sendUser.id, receivedUser.id);
+    this.userFactory.deleteGameInvite(sendUser.id, receivedUser?.id);
   }
 
   async postGameInviteAccept(
@@ -194,10 +195,8 @@ export class InvitationService {
     const { userId, inviteId } = deleteDto;
     const receiver = this.userFactory.findById(userId);
     const invitation: GameInviteModel = receiver.gameInviteList.get(inviteId);
-    validateInvite(invitation);
 
-    const sender = this.userFactory.findById(invitation.senderId);
-
+    const sender = this.userFactory.findById(invitation?.senderId);
     this.userFactory.deleteGameInvite(sender.id, receiver.id);
   }
 
@@ -261,12 +260,20 @@ export class InvitationService {
   ): Promise<GameModel> {
     const { senderId, receiverId, mode } = invitation;
     try {
-      const response = await axios.post(process.env.GAME_SERVER + 'games', {
+      const response = await axios.post(process.env.GAME_SERVER + '/games', {
         user1Id: senderId,
         user2Id: receiverId,
+        type: GAMETYPE_NORMAL,
         mode,
       });
-      return new GameModel(response.data.gameId, 'normal', mode);
+      const game: GameModel = new GameModel(
+        response.data.gameId,
+        GAMETYPE_NORMAL,
+        mode,
+      );
+      this.userFactory.setGame(senderId, game);
+      this.userFactory.setGame(receiverId, game);
+      return game;
     } catch (error) {
       console.log(error.errno, error.code, error.message);
       throw new BadRequestException('게임 생성에 실패했습니다.');
