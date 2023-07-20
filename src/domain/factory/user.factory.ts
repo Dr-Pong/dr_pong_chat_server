@@ -16,6 +16,7 @@ import {
 } from '../channel/type/type.channel-participant';
 import { GATEWAY_CHANNEL, GateWayType } from 'src/gateway/type/type.gateway';
 import { GameInviteModel } from './model/game.invite.model';
+import { GameModel } from './model/game.model';
 
 @Injectable()
 export class UserFactory {
@@ -101,7 +102,7 @@ export class UserFactory {
   setSocket(userId: number, type: GateWayType, socket: Socket): void {
     const user: UserModel = this.findById(userId);
     user.socket[type] = socket;
-    if (socket && user.gameId) {
+    if (socket && user.playingGame) {
       user.status = USERSTATUS_INGAME;
     } else if (socket) {
       user.status = USERSTATUS_ONLINE;
@@ -115,9 +116,9 @@ export class UserFactory {
     user.status = status;
   }
 
-  setGameId(userId: number, gameId: string): void {
+  setGame(userId: number, game: GameModel): void {
     const user: UserModel = this.findById(userId);
-    user.gameId = gameId;
+    user.playingGame = game;
   }
 
   updateProfile(userId: number, profileImage: string): void {

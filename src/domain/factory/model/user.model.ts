@@ -7,10 +7,11 @@ import { User } from '../../user/user.entity';
 import { ChannelInviteModel } from './channel.invite.model';
 import { ChannelParticipantType } from 'src/domain/channel/type/type.channel-participant';
 import { GameInviteModel } from './game.invite.model';
+import { GameModel } from './game.model';
 
 export class UserModel {
   id: number;
-  gameId: string;
+  playingGame: GameModel;
   nickname: string;
   joinedChannel: string;
   blockedList: Map<number, number>;
@@ -32,6 +33,7 @@ export class UserModel {
 
   constructor(id: number, nickname: string, profileImage: string) {
     this.id = id;
+    this.playingGame = null;
     this.nickname = nickname;
     this.joinedChannel = null;
     this.blockedList = new Map<number, number>();

@@ -45,6 +45,7 @@ import {
 import GameInviteListDto from './dto/game.invite.list.dto';
 import { GameInviteModel } from '../factory/model/game.invite.model';
 import axios from 'axios';
+import { GameModel } from '../factory/model/game.model';
 
 @Injectable()
 export class InvitationService {
@@ -179,12 +180,12 @@ export class InvitationService {
     postDto: PostGameInviteAcceptDto,
   ): Promise<GameInviteAcceptResponseDto> {
     const { userId, inviteId } = postDto;
-    const acceptUser = this.userFactory.findById(userId);
+    const acceptUser: UserModel = this.userFactory.findById(userId);
     const invitation: GameInviteModel = acceptUser.gameInviteList.get(inviteId);
     validateInvite(invitation);
     this.deleteGameInvite({ senderId: invitation.senderId });
-    const gameId: string = await this.postGameFromInvitation(invitation);
-    return new GameInviteAcceptResponseDto(gameId);
+    acceptUser.playingGame = await this.postGameFromInvitation(invitation);
+    return new GameInviteAcceptResponseDto(acceptUser.playingGame.id);
   }
 
   async deleteGameInviteReject(
@@ -257,7 +258,7 @@ export class InvitationService {
 
   private async postGameFromInvitation(
     invitation: GameInviteModel,
-  ): Promise<string> {
+  ): Promise<GameModel> {
     const { senderId, receiverId, mode } = invitation;
     try {
       const response = await axios.post(process.env.GAME_SERVER + 'games', {
@@ -265,7 +266,7 @@ export class InvitationService {
         user2Id: receiverId,
         mode,
       });
-      return response.data.gameId;
+      return new GameModel(response.data.gameId, 'normal', mode);
     } catch (error) {
       console.log(error.errno, error.code, error.message);
       throw new BadRequestException('게임 생성에 실패했습니다.');
