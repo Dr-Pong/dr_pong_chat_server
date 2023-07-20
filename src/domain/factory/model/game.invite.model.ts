@@ -1,4 +1,4 @@
-import { GameMode } from 'src/domain/invitation/type/type.game.mode';
+import { GameMode } from 'src/global/type/type.game';
 import { v4 as uuid } from 'uuid';
 
 export class GameInviteModel {

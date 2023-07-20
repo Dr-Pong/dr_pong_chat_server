@@ -1,4 +1,4 @@
-import { GameMode } from '../type/type.game.mode';
+import { GameMode } from '../../../global/type/type.game';
 
 export class PostGameInviteDto {
   senderId: number;

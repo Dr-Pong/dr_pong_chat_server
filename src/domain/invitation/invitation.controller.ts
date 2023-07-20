@@ -18,7 +18,7 @@ import { PostGameInviteDto } from './dto/post.game.invite.dto';
 import { GameInviteAcceptResponseDto } from './dto/game.invite.accept.response.dto';
 import { DeleteGameInviteRejectDto } from './dto/delete.game.invite.reject.dto';
 import { DeleteGameInviteDto } from './dto/delete.game.invite.dto';
-import { GameMode } from './type/type.game.mode';
+import { GameMode } from '../../global/type/type.game';
 
 @Controller('invitations')
 export class InvitationController {

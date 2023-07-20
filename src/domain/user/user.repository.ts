@@ -11,6 +11,7 @@ export class UserRepository {
     @InjectRepository(User)
     private readonly repository: Repository<User>,
   ) {}
+
   async findByNickname(nickname: string): Promise<User> {
     return await this.repository.findOne({
       where: { nickname: nickname },
