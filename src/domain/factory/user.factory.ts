@@ -8,13 +8,15 @@ import {
   USERSTATUS_ONLINE,
   UserStatusType,
 } from 'src/global/type/type.user.status';
-import { InviteModel } from './model/invite.model';
+import { ChannelInviteModel } from './model/channel.invite.model';
 import {
   CHANNEL_PARTICIPANT_ADMIN,
   CHANNEL_PARTICIPANT_NORMAL,
   CHANNEL_PARTICIPANT_OWNER,
 } from '../channel/type/type.channel-participant';
 import { GATEWAY_CHANNEL, GateWayType } from 'src/gateway/type/type.gateway';
+import { GameInviteModel } from './model/game.invite.model';
+import { GameModel } from './model/game.model';
 
 @Injectable()
 export class UserFactory {
@@ -100,7 +102,7 @@ export class UserFactory {
   setSocket(userId: number, type: GateWayType, socket: Socket): void {
     const user: UserModel = this.findById(userId);
     user.socket[type] = socket;
-    if (socket && user.gameId) {
+    if (socket && user.playingGame) {
       user.status = USERSTATUS_INGAME;
     } else if (socket) {
       user.status = USERSTATUS_ONLINE;
@@ -114,9 +116,9 @@ export class UserFactory {
     user.status = status;
   }
 
-  setGameId(userId: number, gameId: string): void {
+  setGame(userId: number, game: GameModel): void {
     const user: UserModel = this.findById(userId);
-    user.gameId = gameId;
+    user.playingGame = game;
   }
 
   updateProfile(userId: number, profileImage: string): void {
@@ -124,23 +126,47 @@ export class UserFactory {
     user.profileImage = profileImage;
   }
 
-  invite(userId: number, invite: InviteModel): void {
+  inviteChannel(userId: number, invite: ChannelInviteModel): void {
     const user: UserModel = this.findById(userId);
-    if (!user.inviteList.has(invite.channelId)) {
-      user.inviteList.set(invite.channelId, invite);
+    if (!user.channelInviteList.has(invite.channelId)) {
+      user.channelInviteList.set(invite.channelId, invite);
     }
   }
 
-  getInvites(userId: number): InviteModel[] {
+  getChannelInvites(userId: number): ChannelInviteModel[] {
     const user: UserModel = this.findById(userId);
-    return Array.from(user.inviteList.values());
+    return Array.from(user.channelInviteList.values());
   }
 
-  deleteInvite(userId: number, channelId: string): void {
+  deleteChannelInvite(userId: number, channelId: string): void {
     const user: UserModel = this.findById(userId);
-    if (user.inviteList.has(channelId)) {
-      user.inviteList.delete(channelId);
+    if (user.channelInviteList.has(channelId)) {
+      user.channelInviteList.delete(channelId);
     }
+  }
+
+  inviteGame(
+    senderId: number,
+    receiverId: number,
+    invite: GameInviteModel,
+  ): void {
+    const sender: UserModel = this.findById(senderId);
+    const receiver: UserModel = this.findById(receiverId);
+    receiver.gameInviteList.set(invite.id, invite);
+    sender.gameInvite = invite;
+  }
+
+  getGameInvites(userId: number): GameInviteModel[] {
+    const user: UserModel = this.findById(userId);
+    return Array.from(user.gameInviteList.values());
+  }
+
+  deleteGameInvite(senderId: number, receiverId: number): void {
+    const sender: UserModel = this.findById(senderId);
+    const receiver: UserModel = this.findById(receiverId);
+    if (!sender || !receiver) return;
+    receiver.gameInviteList.delete(sender.gameInvite.id);
+    sender.gameInvite = null;
   }
 
   setDirectMessageFriendId(userId: number, friendId: number): void {

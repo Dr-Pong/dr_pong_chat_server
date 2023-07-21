@@ -62,7 +62,9 @@ export class UserController {
 
   @Patch('/state')
   async usersPatch(@Body() body): Promise<void> {
-    const { userId, gameId } = body;
-    await this.userService.patchUserState(userId, gameId);
+    const { userId, gameId, type, mode } = body;
+    if (gameId)
+      await this.userService.patchUserStateInGame(userId, gameId, type, mode);
+    else await this.userService.patchUserStateOutGame(userId);
   }
 }

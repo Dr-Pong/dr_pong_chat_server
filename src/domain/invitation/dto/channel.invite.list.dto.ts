@@ -1,4 +1,4 @@
-interface Invitation {
+interface ChannelInvitation {
   id: string;
   channelId: string;
   channelName: string;
@@ -7,5 +7,5 @@ interface Invitation {
 }
 
 export default class ChannelInviteListDto {
-  invitations: Invitation[];
+  invitations: ChannelInvitation[];
 }

@@ -13,7 +13,6 @@ import { ChannelFactory } from '../../../domain/factory/channel.factory';
 import { UserFactory } from '../../../domain/factory/user.factory';
 import { DataSource, Repository } from 'typeorm';
 import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
-import { InviteModel } from '../../../domain/factory/model/invite.model';
 import { ChannelTestData as ChannelData } from '../../data/channel.test.data';
 import { typeORMConfig } from 'src/configs/typeorm.config';
 import {
@@ -35,7 +34,6 @@ import {
   CHATTYPE_SYSTEM,
 } from 'src/global/type/type.chat';
 import { ChannelUser } from '../../../domain/channel/entity/channel-user.entity';
-import { PostChannelAcceptInviteDto } from '../../../domain/channel/dto/post/post.channel.accept.invite.dto';
 import { ChannelMessagesHistoryDto } from '../../../domain/channel/dto/channel-message.dto';
 import { GetChannelPageDto } from '../../../domain/channel/dto/get/get.channel.page.dto';
 import { ChannelPageDtos } from '../../../domain/channel/dto/channel.page.dto';
@@ -43,8 +41,6 @@ import { GetChannelParticipantsDto } from '../../../domain/channel/dto/get/get.c
 import { ChannelParticipantsDto } from '../../../domain/channel/dto/channel-participant.dto';
 import { PostChannelDto } from '../../../domain/channel/dto/post/post.channel.dto';
 import { PostChannelJoinDto } from '../../../domain/channel/dto/post/post.channel.join.dto';
-import { PostInviteDto } from '../../../domain/channel/dto/post/post.invite.dto';
-import { DeleteChannelInviteDto } from '../../../domain/channel/dto/delete/delete.channel.invite.dto';
 import { DeleteChannelUserDto } from '../../../domain/channel/dto/delete/delete.channel.user.dto';
 import { ChannelModule } from '../../../domain/channel/channel.module';
 import { UserTestData } from 'src/test/data/user.test.data';
@@ -698,7 +694,9 @@ describe('ChannelUserService', () => {
         const savedUserFt: UserModel = userFactory.findById(user.id);
 
         expect(savedChannelFt.users.size).toBe(7);
-        expect(savedUserFt.inviteList.size).toBe(user.inviteList.size);
+        expect(savedUserFt.channelInviteList.size).toBe(
+          user.channelInviteList.size,
+        );
       });
 
       it('[Valid Case] 소속된 채팅방이 있는 상태로 다른 채팅방에 입장한 경우', async () => {
@@ -791,314 +789,6 @@ describe('ChannelUserService', () => {
         await expect(() =>
           service.postChannelJoin(joinChannelRequest),
         ).rejects.toThrow(new BadRequestException('You are banned'));
-      });
-    });
-
-    /**
-     * 채팅방 초대
-     * 유저를 초대하면 UserModel의 inviteList에 초대받은 채팅방이 추가되어야 한다.
-     * 초대를 수락하면 UserModel의 inviteList에서 해당 채팅방이 삭제되어야 한다.
-     * 초대를 거절하면 UserModel의 inviteList에서 해당 채팅방이 삭제되어야 한다.
-     * 초대를 수락하면 채널 입장 성공과 동일하게 처리된다.
-     * 초대를 거절하면 ChannelUser에 유저가 추가되지 않아야 한다.
-     * 초대를 거절하면 Channel의 headCount가 증가하지 않아야 한다.
-     * 초대를 거절하면 ChannelModel의 users에 유저가 추가되지 않아야 한다.
-     * 채널의 정원이 초과되면 초대를 수락해도 채널에 입장할 수 없다.
-     * 채널에서 ban된 유저는 초대를 수락할 수 없다.
-     */
-    describe('채팅방 초대', () => {
-      it('[Valid Case] 일반 유저 초대', async () => {
-        const basicChannel: ChannelModel = await channelData.createBasicChannel(
-          'chanel',
-          5,
-        );
-        const user: User = await userData.createUser('user');
-
-        const inviteRequest: PostInviteDto = {
-          userId: basicChannel.ownerId,
-          channelId: basicChannel.id,
-          targetId: user.id,
-        };
-
-        service.postInvite(inviteRequest);
-
-        const savedUserFt: UserModel = userFactory.findById(user.id);
-
-        expect(savedUserFt.inviteList.size).toBe(1);
-      });
-
-      it('[Valid Case] public 채팅방 초대 수락', async () => {
-        const basicChannel: ChannelModel = await channelData.createBasicChannel(
-          'channel',
-          6,
-        );
-        const user: User = await userData.createUser('user');
-        const invite: InviteModel = new InviteModel(
-          basicChannel.id,
-          basicChannel.name,
-          basicChannel.ownerId.toString(),
-        );
-
-        userFactory.invite(user.id, invite);
-
-        const InviteAcceptRequest: PostChannelAcceptInviteDto = {
-          userId: user.id,
-          channelId: basicChannel.id,
-        };
-
-        await service.postChannelAcceptInvite(InviteAcceptRequest);
-
-        const savedChannelUserDb: ChannelUser[] =
-          await channelUserRepository.find({
-            where: {
-              user: { id: user.id },
-              channel: { id: basicChannel.id },
-              isDeleted: false,
-            },
-          });
-
-        expect(savedChannelUserDb.length).toBe(1);
-        expect(savedChannelUserDb[0].roleType).toBe(CHANNEL_PARTICIPANT_NORMAL);
-
-        const savedUserFt: UserModel = userFactory.findById(user.id);
-        const savedChannelFt: ChannelModel = channelFactory.findById(
-          basicChannel.id,
-        );
-
-        expect(savedUserFt.inviteList.size).toBe(0);
-        expect(savedUserFt.joinedChannel).toBe(basicChannel.id);
-        expect(savedChannelFt.users.has(user.id)).toBe(true);
-      });
-
-      it('[Valid Case] private 채팅방 초대 수락', async () => {
-        const basicChannel: ChannelModel =
-          await channelData.createPrivateChannel('channel', 5);
-        const user: User = await userData.createUser('user');
-        const invite: InviteModel = new InviteModel(
-          basicChannel.id,
-          basicChannel.name,
-          basicChannel.ownerId.toString(),
-        );
-        userFactory.invite(user.id, invite);
-
-        const InviteAcceptRequest: PostChannelAcceptInviteDto = {
-          userId: user.id,
-          channelId: basicChannel.id,
-        };
-
-        await service.postChannelAcceptInvite(InviteAcceptRequest);
-        const savedChannelUserDb: ChannelUser[] =
-          await channelUserRepository.find({
-            where: {
-              user: { id: user.id },
-              channel: { id: basicChannel.id },
-              isDeleted: false,
-            },
-          });
-
-        expect(savedChannelUserDb.length).toBe(1);
-        expect(savedChannelUserDb[0].roleType).toBe(CHANNEL_PARTICIPANT_NORMAL);
-
-        const savedUserFt: UserModel = userFactory.findById(user.id);
-
-        const savedChannelFt: ChannelModel = channelFactory.findById(
-          basicChannel.id,
-        );
-
-        expect(savedUserFt.inviteList.size).toBe(0);
-        expect(savedUserFt.joinedChannel).toBe(basicChannel.id);
-        expect(savedChannelFt.users.has(user.id)).toBe(true);
-      });
-
-      it('[Valid Case] protected 채팅방 초대 수락', async () => {
-        const basicChannel: ChannelModel =
-          await channelData.createProtectedChannel('channel', 6);
-        const user: User = await userData.createUser('user');
-        const invite: InviteModel = new InviteModel(
-          basicChannel.id,
-          basicChannel.name,
-          basicChannel.ownerId.toString(),
-        );
-        userFactory.invite(user.id, invite);
-
-        const InviteAcceptRequest: PostChannelAcceptInviteDto = {
-          userId: user.id,
-          channelId: basicChannel.id,
-        };
-
-        await service.postChannelAcceptInvite(InviteAcceptRequest);
-        const savedChannelUserDb: ChannelUser =
-          await channelUserRepository.findOne({
-            where: {
-              user: { id: user.id },
-              channel: { id: basicChannel.id },
-              isDeleted: false,
-            },
-          });
-
-        expect(savedChannelUserDb.user.id).toBe(user.id);
-        const savedUserFt: UserModel = userFactory.findById(user.id);
-
-        const savedChannelFt: ChannelModel = channelFactory.findById(
-          basicChannel.id,
-        );
-
-        expect(savedUserFt.inviteList.size).toBe(0);
-        expect(savedUserFt.joinedChannel).toBe(basicChannel.id);
-        expect(savedChannelFt.users.has(user.id)).toBe(true);
-      });
-
-      it('[Valid Case] 이미 채팅방에 있는데 다른 채팅방 초대 수락한 경우', async () => {
-        const user: UserModel = await channelData.createUserInChannel(8);
-        const pastChannel: ChannelModel = channelFactory.findById(
-          user.joinedChannel,
-        );
-        const inviteChannel: ChannelModel =
-          await channelData.createBasicChannel('inviteChannel', 6);
-        const invite: InviteModel = new InviteModel(
-          inviteChannel.id,
-          inviteChannel.name,
-          inviteChannel.ownerId.toString(),
-        );
-
-        userFactory.invite(user.id, invite);
-
-        const InviteAcceptRequest: PostChannelAcceptInviteDto = {
-          userId: user.id,
-          channelId: inviteChannel.id,
-        };
-
-        await service.postChannelAcceptInvite(InviteAcceptRequest);
-
-        const savedChannelUserDb: ChannelUser[] =
-          await channelUserRepository.find({
-            where: {
-              user: { id: user.id },
-              channel: { id: inviteChannel.id },
-              isDeleted: false,
-            },
-          });
-
-        expect(savedChannelUserDb.length).toBe(1);
-        expect(savedChannelUserDb[0].roleType).toBe(CHANNEL_PARTICIPANT_NORMAL);
-
-        const savedUserFt: UserModel = userFactory.findById(user.id);
-        const savedChannelFt: ChannelModel = channelFactory.findById(
-          inviteChannel.id,
-        );
-
-        expect(savedUserFt.inviteList.size).toBe(0);
-        expect(savedUserFt.joinedChannel).toBe(inviteChannel.id);
-        expect(savedChannelFt.users.has(user.id)).toBe(true);
-
-        const pastChannelFt: ChannelModel = channelFactory.findById(
-          pastChannel.id,
-        );
-
-        expect(pastChannelFt.users.size).toBe(7);
-        expect(pastChannelFt.users.has(user.id)).toBe(false);
-      });
-
-      it('[Valid Case] 채팅방 초대 거절', async () => {
-        const basicChannel: ChannelModel = await channelData.createBasicChannel(
-          'channel',
-          6,
-        );
-        const user: User = await userData.createUser('user');
-        const invite: InviteModel = new InviteModel(
-          basicChannel.id,
-          basicChannel.name,
-          basicChannel.ownerId.toString(),
-        );
-        userFactory.invite(user.id, invite);
-
-        const deleteInviteRequest: DeleteChannelInviteDto = {
-          userId: user.id,
-          channelId: basicChannel.id,
-        };
-
-        await service.deleteChannelInvite(deleteInviteRequest);
-        const savedUserFt: UserModel = userFactory.findById(user.id);
-
-        expect(savedUserFt.inviteList.size).toBe(0);
-        expect(savedUserFt.joinedChannel).toBe(null);
-      });
-
-      it('[Error Case] BAN 목록에 있는 유저가 초대 수락한 경우', async () => {
-        const basicChannel: ChannelModel = await channelData.createBasicChannel(
-          'channel',
-          6,
-        );
-        const user: User = await userData.createUser('user');
-        basicChannel.banList.set(user.id, user.id);
-
-        const InviteAcceptRequest: PostChannelAcceptInviteDto = {
-          userId: user.id,
-          channelId: basicChannel.id,
-        };
-
-        await expect(
-          service.postChannelAcceptInvite(InviteAcceptRequest),
-        ).rejects.toThrow(new BadRequestException('You are not invited'));
-        const savedUserFt: UserModel = userFactory.findById(user.id);
-
-        const savedChannelFt: ChannelModel = channelFactory.findById(
-          basicChannel.id,
-        );
-
-        expect(savedUserFt.inviteList.size).toBe(0);
-        expect(savedUserFt.joinedChannel).toBe(null);
-        expect(savedChannelFt.users.has(user.id)).toBe(false);
-      });
-
-      it('[Error Case] 수락했는데 채팅방이 꽉 찬 경우', async () => {
-        const basicChannel: ChannelModel = await channelData.createBasicChannel(
-          'channel',
-          10,
-        );
-        const user: User = await userData.createUser('user');
-        const invite: InviteModel = new InviteModel(
-          basicChannel.id,
-          basicChannel.name,
-          basicChannel.ownerId.toString(),
-        );
-        userFactory.invite(user.id, invite);
-
-        const InviteAcceptRequest: PostChannelAcceptInviteDto = {
-          userId: user.id,
-          channelId: basicChannel.id,
-        };
-
-        await expect(
-          service.postChannelAcceptInvite(InviteAcceptRequest),
-        ).rejects.toThrow(new BadRequestException('Channel is full'));
-
-        const savedUserFt: UserModel = userFactory.findById(user.id);
-
-        const savedChannelFt: ChannelModel = channelFactory.findById(
-          basicChannel.id,
-        );
-
-        expect(savedUserFt.inviteList.size).toBe(0);
-        expect(savedUserFt.joinedChannel).toBe(null);
-        expect(savedChannelFt.users.has(user.id)).toBe(false);
-      });
-
-      it('[Valid Case] 초대 목록(초대가 있는 경우)', async () => {
-        const user: UserModel = await channelData.createInvitePendingUser(10);
-        const { invitations } = await service.getChannelInviteList({
-          userId: user.id,
-        });
-
-        expect(invitations.length).toBe(10);
-      });
-
-      it('[Valid Case] 초대 목록(초대가 없는 경우)', async () => {
-        const { id } = await userData.createUser('user');
-        const { invitations } = await service.getChannelInviteList({
-          userId: id,
-        });
-        expect(invitations.length).toBe(0);
       });
     });
 

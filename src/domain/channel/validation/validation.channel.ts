@@ -71,7 +71,7 @@ export async function validateChannelJoin(
 }
 
 export function checkUserIsInvited(user: UserModel, channelId: string): void {
-  if (!user.inviteList.has(channelId)) {
+  if (!user.channelInviteList.has(channelId)) {
     throw new BadRequestException('You are not invited');
   }
 }

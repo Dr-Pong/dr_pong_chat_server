@@ -16,7 +16,7 @@ import {
   ChannelType,
 } from 'src/domain/channel/type/type.channel';
 import { UserModel } from 'src/domain/factory/model/user.model';
-import { InviteModel } from 'src/domain/factory/model/invite.model';
+import { ChannelInviteModel } from 'src/domain/factory/model/channel.invite.model';
 import {
   CHAT_JOIN,
   CHAT_LEAVE,
@@ -192,12 +192,12 @@ export class ChannelTestData {
         'name' + i.toString(),
         i,
       );
-      const invite: InviteModel = new InviteModel(
+      const invite: ChannelInviteModel = new ChannelInviteModel(
         channel.id,
         channel.name,
         this.userFactory.findById(channel.ownerId).nickname,
       );
-      this.userFactory.invite(user.id, invite);
+      this.userFactory.inviteChannel(user.id, invite);
     }
     return this.userFactory.findById(user.id);
   }

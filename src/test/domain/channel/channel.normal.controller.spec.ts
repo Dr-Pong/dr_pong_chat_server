@@ -11,9 +11,7 @@ import {
   CHANNEL_PUBLIC,
 } from '../../../domain/channel/type/type.channel';
 import { ChannelModel } from '../../../domain/factory/model/channel.model';
-import { InviteModel } from '../../../domain/factory/model/invite.model';
 import { UserFactory } from '../../../domain/factory/user.factory';
-import { FactoryModule } from '../../../domain/factory/factory.module';
 import { ChannelFactory } from '../../../domain/factory/channel.factory';
 import { TestDataModule } from 'src/test/data/test.data.module';
 import { UserTestData } from 'src/test/data/user.test.data';
@@ -291,126 +289,6 @@ describe('ChannelController - Normal', () => {
       });
     });
 
-    describe('POST /channels/{roomId}/invitation/{nickname}', () => {
-      it('[Valid Case] 채널 초대', async () => {
-        const user: UserModel = await channelData.createUserInChannel(8);
-        const target: User = await userData.createUser('nheo');
-        const token: string = await userData.giveTokenToUser(user);
-
-        const response = await req(
-          token,
-          'POST',
-          `/channels/${user.joinedChannel}/invitation`,
-          {
-            nickname: target.nickname,
-          },
-        );
-
-        expect(response.status).toBe(201);
-      });
-
-      it('[Error Case] 요상한 채널에서 초대', async () => {
-        const user: User = await userData.createUser('user');
-        const target: User = await userData.createUser('target');
-        const channel: ChannelModel = await channelData.createBasicChannel(
-          'test',
-          9,
-        );
-        const token: string = await userData.giveTokenToUser(user);
-
-        const response = await req(
-          token,
-          'POST',
-          `/channels/${channel.id}/invitation`,
-          {
-            nickname: target.nickname,
-          },
-        );
-
-        expect(response.status).toBe(201);
-      });
-    });
-
-    describe('PATCH /channels/{roomId}/invitation', () => {
-      it('[Valid Case] 채널 초대 수락', async () => {
-        const user: UserModel = await channelData.createInvitePendingUser(10);
-        const invite: InviteModel = user.inviteList.values().next().value;
-        const token: string = await userData.giveTokenToUser(user);
-
-        const response = await req(
-          token,
-          'PATCH',
-          `/channels/${invite.channelId}/invitation`,
-        );
-
-        expect(response.status).toBe(200);
-      });
-
-      it('[Valid Case] private 채널 초대 수락', async () => {
-        const basicChannel: ChannelModel =
-          await channelData.createPrivateChannel('channel', 5);
-        const user: User = await userData.createUser('user');
-        const invite: InviteModel = new InviteModel(
-          basicChannel.id,
-          basicChannel.name,
-          basicChannel.ownerId.toString(),
-        );
-        userFactory.invite(user.id, invite);
-
-        const token: string = await userData.giveTokenToUser(user);
-
-        const response = await req(
-          token,
-          'PATCH',
-          `/channels/${invite.channelId}/invitation`,
-        );
-
-        expect(response.status).toBe(200);
-      });
-
-      it('[Error Case] 채널이 꽉찬 경우', async () => {
-        const basicChannel: ChannelModel =
-          await channelData.createPrivateChannel('channel', 10);
-        const user: User = await userData.createUser('user');
-        const invite: InviteModel = new InviteModel(
-          basicChannel.id,
-          basicChannel.name,
-          basicChannel.ownerId.toString(),
-        );
-        userFactory.invite(user.id, invite);
-
-        const token: string = await userData.giveTokenToUser(user);
-
-        const response = await req(
-          token,
-          'PATCH',
-          `/channels/${invite.channelId}/invitation`,
-        );
-
-        expect(response.status).toBe(400);
-      });
-
-      it('[Error Case] 채널이 없는 경우', async () => {
-        const invitor: User = await userData.createUser('invitor');
-        const user: User = await userData.createUser('user');
-        const token: string = await userData.giveTokenToUser(user);
-        const invite: InviteModel = new InviteModel(
-          'channelId',
-          'channelName',
-          invitor.id.toString(),
-        );
-        userFactory.invite(user.id, invite);
-
-        const response = await req(
-          token,
-          'PATCH',
-          `/channels/${invite.channelId}/invitation`,
-        );
-
-        expect(response.status).toBe(404);
-      });
-    });
-
     describe('GET /channels/me', () => {
       it('[Valid Case] 채널 없는 경우', async () => {
         const user: User = await userData.createUser('user');
@@ -502,33 +380,6 @@ describe('ChannelController - Normal', () => {
         }
         expect(response.body.chats.length).toBe(10);
         expect(response.body.isLastPage).toBe(false);
-      });
-    });
-
-    describe('DELETE /channels/{roomId}/invitation', () => {
-      it('[Valid Case] 채널 초대 목록에서 삭제 성공', async () => {
-        const user = await channelData.createInvitePendingUser(10);
-        const token = await userData.giveTokenToUser(user);
-        const inviteIterator = user.inviteList.values();
-        inviteIterator.next();
-        const invite = inviteIterator.next().value;
-        const response = await req(
-          token,
-          'DELETE',
-          `/channels/${invite.id}/invitation`,
-        );
-        expect(response.status).toBe(200);
-      });
-
-      it('[Valid Case] 채널 초대 목록에서 삭제 씹기(없는초대)', async () => {
-        const user = await channelData.createInvitePendingUser(10);
-        const token = await userData.giveTokenToUser(user);
-        const response = await req(
-          token,
-          'DELETE',
-          `/channels/invalidid/invitation`,
-        );
-        expect(response.status).toBe(200);
       });
     });
   });

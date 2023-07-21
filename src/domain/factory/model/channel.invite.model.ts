@@ -1,6 +1,6 @@
 import { v4 as uuid } from 'uuid';
 
-export class InviteModel {
+export class ChannelInviteModel {
   id: string;
   channelId: string;
   channelName: string;

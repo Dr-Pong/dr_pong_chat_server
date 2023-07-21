@@ -18,7 +18,6 @@ import { UserIdCardDto } from '../../auth/jwt/auth.user.id-card.dto';
 import { ChannelParticipantsResponseDto } from '../dto/channel.participant.request.dto';
 import { PostChannelRequestDto } from '../dto/post/post.channel.request.dto';
 import { PostChannelJoinRequestDto } from '../dto/post/post.channel.join.request.dto';
-import { UserService } from '../../user/user.service';
 import { CHAT_MESSAGE } from '../type/type.channel.action';
 import { PostChannelChatRequestDto } from '../dto/post/post.channel.chat.request.dto';
 import { ChannelMeResponseDto } from '../dto/channel.me.response.dto';
@@ -29,10 +28,7 @@ import { ChannelIdResponseDto } from '../dto/channel.id.response.dto';
 
 @Controller('/channels')
 export class ChannelNormalController {
-  constructor(
-    private readonly userServie: UserService,
-    private readonly channelService: ChannelNormalService,
-  ) {}
+  constructor(private readonly channelService: ChannelNormalService) {}
 
   /* DM 대화 내역
    * GET /channels?page={page}&count={count}&order={'recent' | 'popular'}&keyword={keyword | null}
@@ -175,61 +171,6 @@ export class ChannelNormalController {
   ): Promise<void> {
     const { id: userId } = requestor;
     await this.channelService.deleteChannelUser({ userId, channelId });
-  }
-
-  /**
-   * POST /channels/{roomId}/invitation/{nickname}
-   * response header {
-   * 	200: ok;
-   * 	400: no bang;
-   * }
-   */
-  @Post('/:roomId/invitation')
-  @UseGuards(AuthGuard('jwt'))
-  async channelInvitationPost(
-    @Requestor() requestor: UserIdCardDto,
-    @Param('roomId') channelId: string,
-    @Body('nickname') nickname: string,
-  ): Promise<void> {
-    const { id: userId } = requestor;
-    const { id: targetId } = await this.userServie.getIdFromNickname({
-      nickname,
-    });
-    await this.channelService.postInvite({ userId, channelId, targetId });
-  }
-
-  /**
-   * POST /channels/{roomId}/magicpass
-   * response header {
-   * 	200: ok;
-   *     400: full bang | no bang;
-   * }
-   */
-  @Patch('/:roomId/invitation')
-  @UseGuards(AuthGuard('jwt'))
-  async channelInvitationPatch(
-    @Requestor() requestor: UserIdCardDto,
-    @Param('roomId') channelId: string,
-  ): Promise<void> {
-    const { id: userId } = requestor;
-    await this.channelService.postChannelAcceptInvite({ userId, channelId });
-  }
-
-  /**
-   * DELETE /channels/{roomId}/invitation
-   * response header {
-   *   200: ok;
-   * 400: error;
-   * }
-   */
-  @Delete('/:roomId/invitation')
-  @UseGuards(AuthGuard('jwt'))
-  async channelInvitationDelete(
-    @Requestor() requestor: UserIdCardDto,
-    @Param('roomId') channelId: string,
-  ): Promise<void> {
-    const { id: userId } = requestor;
-    await this.channelService.deleteChannelInvite({ userId, channelId });
   }
 
   /**

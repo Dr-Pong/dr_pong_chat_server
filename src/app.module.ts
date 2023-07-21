@@ -22,10 +22,11 @@ import { User } from './domain/user/user.entity';
 import { ChannelUser } from './domain/channel/entity/channel-user.entity';
 import { BlockRepository } from './domain/block/block.repository';
 import { Block } from './domain/block/block.entity';
-import { NotificationModule } from './domain/notification/notification.module';
 import { GatewayModule } from './gateway/gateway.module';
 import { ProfileImageRepository } from './domain/profile-image/profile-image.repository';
 import { ProfileImage } from './domain/profile-image/profile-image.entity';
+import { InvitationModule } from './domain/invitation/invitation.module';
+import { NotificationModule } from './domain/notification/notification.module';
 
 @Module({
   imports: [
@@ -49,10 +50,11 @@ import { ProfileImage } from './domain/profile-image/profile-image.entity';
     ChannelModule,
     DirectMessageModule,
     DirectMessageRoomModule,
-    NotificationModule,
     AuthModule,
     FactoryModule,
     GatewayModule,
+    NotificationModule,
+    InvitationModule,
     TypeOrmModule.forFeature([Channel, User, ChannelUser, Block, ProfileImage]),
   ],
   controllers: [AppController],
