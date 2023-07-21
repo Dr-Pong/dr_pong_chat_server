@@ -26,6 +26,7 @@ import {
 } from 'src/domain/channel/type/type.channel.action';
 import { JwtService } from '@nestjs/jwt';
 import { UserTestData } from './user.test.data';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class ChannelTestData {
@@ -56,7 +57,8 @@ export class ChannelTestData {
       name: name,
       maxHeadCount: 10,
       headCount: 1,
-      password: type === CHANNEL_PROTECTED ? 'password' : null,
+      password:
+        type === CHANNEL_PROTECTED ? await bcrypt.hash('password', 12) : null,
       type: type,
     });
     await this.channelUserRepository.save({
