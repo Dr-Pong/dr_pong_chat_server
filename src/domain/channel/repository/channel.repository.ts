@@ -11,6 +11,7 @@ import { SaveChannelDto } from '../dto/post/save.channel.dto';
 import { UpdateChannelDto } from '../dto/patch/update.channel.dto';
 import { FindChannelPageDto } from '../dto/get/find.channel.page.dto';
 import { UpdateChannelHeadCountDto } from '../dto/patch/update.channel.headcount.dto';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class ChannelRepository {
@@ -114,7 +115,10 @@ export class ChannelRepository {
       name: saveDto.name,
       isDeleted: false,
       type: saveDto.access,
-      password: saveDto.access === CHANNEL_PROTECTED ? saveDto.password : null,
+      password:
+        saveDto.access === CHANNEL_PROTECTED
+          ? await bcrypt.hash(saveDto.password, Number(process.env.SALT_STRING))
+          : null,
       headCount: 1,
       maxHeadCount: saveDto.maxCount,
     });

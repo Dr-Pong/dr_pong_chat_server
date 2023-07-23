@@ -15,6 +15,7 @@ import {
   CHANNEL_PARTICIPANT_OWNER,
 } from '../type/type.channel-participant';
 import { ChannelAdminCommandDto } from '../dto/channel.admin.command.dto';
+import * as bcrypt from 'bcrypt';
 
 export function checkUserInChannel(
   channel: ChannelModel,
@@ -42,8 +43,14 @@ export function checkChannelIsFull(channel: Channel): void {
   }
 }
 
-export function checkChannelPassword(channel: Channel, password: string): void {
-  if (channel.type === CHANNEL_PROTECTED && channel.password !== password) {
+export async function checkChannelPassword(
+  channel: Channel,
+  password: string,
+): Promise<void> {
+  if (
+    channel.type === CHANNEL_PROTECTED &&
+    !(await bcrypt.compare(password, channel.password))
+  ) {
     throw new BadRequestException('Password is wrong');
   }
 }
@@ -66,7 +73,7 @@ export async function validateChannelJoin(
 
   if (dto.joinType === 'join') {
     checkChannelIsPrivate(channel);
-    checkChannelPassword(channel, dto.password);
+    await checkChannelPassword(channel, dto.password);
   }
 }
 

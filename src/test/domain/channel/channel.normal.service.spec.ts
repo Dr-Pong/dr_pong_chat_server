@@ -50,6 +50,7 @@ import {
   CHANNEL_PARTICIPANT_NORMAL,
   CHANNEL_PARTICIPANT_OWNER,
 } from 'src/domain/channel/type/type.channel-participant';
+import * as bcrypt from 'bcrypt';
 
 describe('ChannelUserService', () => {
   let service: ChannelNormalService;
@@ -411,7 +412,12 @@ describe('ChannelUserService', () => {
         expect(savedChannelDb[0].name).toBe(postChannelRequest.title);
         expect(savedChannelDb[0].type).toBe(postChannelRequest.access);
         expect(savedChannelDb[0].name).toBe(postChannelRequest.title);
-        expect(savedChannelDb[0].password).toBe(postChannelRequest.password);
+        expect(
+          await bcrypt.compare(
+            postChannelRequest.password,
+            savedChannelDb[0].password,
+          ),
+        ).toBe(true);
         expect(savedChannelDb[0].maxHeadCount).toBe(
           postChannelRequest.maxCount,
         );
@@ -431,7 +437,12 @@ describe('ChannelUserService', () => {
         expect(savedChannelFt.name).toBe(postChannelRequest.title);
         expect(savedChannelFt.type).toBe(postChannelRequest.access);
         expect(savedChannelFt.name).toBe(postChannelRequest.title);
-        expect(savedChannelFt.password).toBe(postChannelRequest.password);
+        expect(
+          await bcrypt.compare(
+            postChannelRequest.password,
+            savedChannelFt.password,
+          ),
+        ).toBe(true);
         expect(savedChannelFt.maxHeadCount).toBe(postChannelRequest.maxCount);
       });
 
