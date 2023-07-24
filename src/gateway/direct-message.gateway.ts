@@ -11,12 +11,12 @@ import { DirectMessageRepository } from 'src/domain/direct-message/direct-messag
 import { UserModel } from 'src/domain/factory/model/user.model';
 import { UserFactory } from 'src/domain/factory/user.factory';
 import { FriendChatManager } from 'src/global/utils/generate.room.id';
-import { getUserFromSocket } from './notification.gateway';
 import { DirectMessageRoomRepository } from 'src/domain/direct-message-room/direct-message-room.repository';
 import { IsolationLevel, Transactional } from 'typeorm-transactional';
 import { MessageModel } from './dto/message.model';
 import { CHATTYPE_OTHERS } from 'src/global/type/type.chat';
 import { GATEWAY_DIRECTMESSAGE } from './type/type.gateway';
+import { getUserFromSocket } from 'src/global/utils/socket.utils';
 
 @WebSocketGateway({ namespace: 'dm' })
 export class DirectMessageGateway
