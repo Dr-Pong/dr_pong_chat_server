@@ -7,7 +7,7 @@ import { UserIdCardDto } from './auth.user.id-card.dto';
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor() {
     super({
-      secretOrKey: 'jwtSecret',
+      secretOrKey: process.env.JWT_SECRET,
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
     });
   }
