@@ -161,9 +161,9 @@ export class UserFactory {
     return Array.from(user.gameInviteList.values());
   }
 
-  deleteGameInvite(senderId: number, receiverId: number): void {
+  deleteGameInviteBySenderId(senderId: number): void {
     const sender: UserModel = this.findById(senderId);
-    const receiver: UserModel = this.findById(receiverId);
+    const receiver: UserModel = this.findById(sender?.gameInvite?.receiverId);
     if (!sender || !receiver) return;
     receiver.gameInviteList.delete(sender.gameInvite.id);
     sender.gameInvite = null;
