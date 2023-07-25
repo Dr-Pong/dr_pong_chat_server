@@ -18,8 +18,7 @@ import {
 } from 'src/domain/channel/type/type.channel.action';
 import { MessageModel } from 'src/gateway/dto/message.model';
 import { CHATTYPE_OTHERS, CHATTYPE_SYSTEM } from 'src/global/type/type.chat';
-import { ChannelInviteModel } from 'src/domain/factory/model/channel.invite.model';
-import { GATEWAY_CHANNEL, GATEWAY_NOTIFICATION } from './type/type.gateway';
+import { GATEWAY_CHANNEL } from './type/type.gateway';
 import { getUserFromSocket } from 'src/global/utils/socket.utils';
 
 @WebSocketGateway({ namespace: 'channel' })
@@ -84,17 +83,6 @@ export class ChannelGateWay
     user.joinedChannel = null;
     this.channelFactory.leave(user.id, channelId);
     this.sendNoticeToChannel(user.id, channelId, CHAT_LEAVE);
-  }
-
-  /**
-   * 유저를 채널에 초대하는 함수입니다.
-   * 유저가 접속해 있다면, notification 네임스페이스에 연결된 소켓으로 초대 메시지를 보냅니다.
-   * 유저가 접속해 있지 않다면, 초대 메시지를 보내지 않습니다.
-   */
-  async invite(targetId: number, invite: ChannelInviteModel) {
-    const target = this.userFactory.findById(targetId);
-    target.socket[GATEWAY_NOTIFICATION]?.emit('invite', invite);
-    this.userFactory.inviteChannel(target.id, invite);
   }
 
   /**

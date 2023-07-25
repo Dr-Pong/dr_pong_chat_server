@@ -15,6 +15,8 @@ import {
 import { Friend } from 'src/domain/friend/friend.entity';
 import { GATEWAY_FRIEND, GATEWAY_NOTIFICATION } from './type/type.gateway';
 import { getUserFromSocket } from 'src/global/utils/socket.utils';
+import { ChannelInviteModel } from 'src/domain/factory/model/channel.invite.model';
+import { GameInviteModel } from 'src/domain/factory/model/game.invite.model';
 
 @WebSocketGateway({ namespace: '' })
 export class NotificationGateWay
@@ -88,6 +90,32 @@ export class NotificationGateWay
     if (target.directMessageFriendId !== userId) {
       target.socket[GATEWAY_NOTIFICATION]?.emit('newChat', {});
     }
+  }
+
+  /**
+   * 유저를 채널에 초대하는 함수입니다.
+   * 유저가 접속해 있다면, notification 네임스페이스에 연결된 소켓으로 초대 메시지를 보냅니다.
+   * 유저가 접속해 있지 않다면, 초대 메시지를 보내지 않습니다.
+   */
+  async inviteChannel(targetId: number, invite: ChannelInviteModel) {
+    const target: UserModel = this.userFactory.findById(targetId);
+    target.socket[GATEWAY_NOTIFICATION]?.emit('invite', invite);
+    this.userFactory.inviteChannel(target.id, invite);
+  }
+
+  async inviteGame(senderId: number, invite: GameInviteModel) {
+    const sender: UserModel = this.userFactory.findById(senderId);
+    const receiver: UserModel = this.userFactory.findById(invite.receiverId);
+    receiver.socket[GATEWAY_NOTIFICATION]?.emit('invite', invite);
+    this.userFactory.inviteGame(sender.id, receiver.id, invite);
+  }
+
+  async deleteGameInvite(senderId: number, receiverId: number) {
+    const sender: UserModel = this.userFactory.findById(senderId);
+    const receiver: UserModel = this.userFactory.findById(receiverId);
+    sender.socket[GATEWAY_NOTIFICATION]?.emit('deleteInvite', {});
+    receiver.socket[GATEWAY_NOTIFICATION]?.emit('deleteInvite', {});
+    this.userFactory.deleteGameInvite(sender.id, receiver.id);
   }
 
   /**

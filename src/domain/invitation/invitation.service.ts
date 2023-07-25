@@ -47,6 +47,7 @@ import { GameInviteModel } from '../factory/model/game.invite.model';
 import axios from 'axios';
 import { GameModel } from '../factory/model/game.model';
 import { GAMETYPE_NORMAL } from 'src/global/type/type.game';
+import { NotificationGateWay } from 'src/gateway/notification.gateway';
 
 @Injectable()
 export class InvitationService {
@@ -54,6 +55,7 @@ export class InvitationService {
     private readonly userFactory: UserFactory,
     private readonly channelFactory: ChannelFactory,
     private readonly channelGateWay: ChannelGateWay,
+    private readonly notificationGateWay: NotificationGateWay,
     private readonly channelRepository: ChannelRepository,
     private readonly messageRepository: ChannelMessageRepository,
     private readonly channelUserRepository: ChannelUserRepository,
@@ -116,7 +118,7 @@ export class InvitationService {
       host.nickname,
     );
 
-    this.channelGateWay.invite(postDto.targetId, invite);
+    this.notificationGateWay.inviteChannel(postDto.targetId, invite);
   }
 
   /**
@@ -165,7 +167,7 @@ export class InvitationService {
       receivedUser.id,
       mode,
     );
-    this.userFactory.inviteGame(sendUser.id, receivedUser.id, newInvite);
+    this.notificationGateWay.inviteGame(receivedUser.id, newInvite);
   }
 
   async deleteGameInvite(deleteDto: DeleteGameInviteDto): Promise<void> {
@@ -174,7 +176,7 @@ export class InvitationService {
     const receivedUser: UserModel = this.userFactory.findById(
       sendUser?.gameInvite?.receiverId,
     );
-    this.userFactory.deleteGameInvite(sendUser.id, receivedUser?.id);
+    this.notificationGateWay.deleteGameInvite(sendUser.id, receivedUser?.id);
   }
 
   async postGameInviteAccept(
@@ -197,7 +199,7 @@ export class InvitationService {
     const invitation: GameInviteModel = receiver.gameInviteList.get(inviteId);
 
     const sender = this.userFactory.findById(invitation?.senderId);
-    this.userFactory.deleteGameInvite(sender.id, receiver.id);
+    this.notificationGateWay.deleteGameInvite(sender.id, receiver.id);
   }
 
   /**
