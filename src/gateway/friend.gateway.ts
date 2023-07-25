@@ -8,12 +8,12 @@ import {
 import { Socket } from 'socket.io';
 import { UserFactory } from 'src/domain/factory/user.factory';
 import { FriendRepository } from 'src/domain/friend/friend.repository';
-import { getUserFromSocket } from './notification.gateway';
 import { UserModel } from 'src/domain/factory/model/user.model';
 import { Friend } from 'src/domain/friend/friend.entity';
 import { UserStatusType } from 'src/global/type/type.user.status';
 import { GATEWAY_FRIEND } from './type/type.gateway';
 import { IsolationLevel, Transactional } from 'typeorm-transactional';
+import { getUserFromSocket } from 'src/global/utils/socket.utils';
 
 @WebSocketGateway({ namespace: 'friends' })
 export class FriendGateWay implements OnGatewayConnection, OnGatewayDisconnect {

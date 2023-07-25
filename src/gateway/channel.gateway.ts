@@ -19,8 +19,8 @@ import {
 import { MessageModel } from 'src/gateway/dto/message.model';
 import { CHATTYPE_OTHERS, CHATTYPE_SYSTEM } from 'src/global/type/type.chat';
 import { ChannelInviteModel } from 'src/domain/factory/model/channel.invite.model';
-import { getUserFromSocket } from './notification.gateway';
 import { GATEWAY_CHANNEL, GATEWAY_NOTIFICATION } from './type/type.gateway';
+import { getUserFromSocket } from 'src/global/utils/socket.utils';
 
 @WebSocketGateway({ namespace: 'channel' })
 export class ChannelGateWay
