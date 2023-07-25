@@ -171,12 +171,7 @@ export class InvitationService {
   }
 
   async deleteGameInvite(deleteDto: DeleteGameInviteDto): Promise<void> {
-    const { senderId } = deleteDto;
-    const sendUser: UserModel = this.userFactory.findById(senderId);
-    const receivedUser: UserModel = this.userFactory.findById(
-      sendUser?.gameInvite?.receiverId,
-    );
-    this.notificationGateWay.deleteGameInvite(sendUser.id, receivedUser?.id);
+    this.notificationGateWay.deleteGameInvite(deleteDto?.senderId);
   }
 
   async postGameInviteAccept(
@@ -186,8 +181,8 @@ export class InvitationService {
     const acceptUser: UserModel = this.userFactory.findById(userId);
     const invitation: GameInviteModel = acceptUser.gameInviteList.get(inviteId);
     validateInvite(invitation);
-    this.deleteGameInvite({ senderId: invitation.senderId });
     acceptUser.playingGame = await this.postGameFromInvitation(invitation);
+    this.userFactory.deleteGameInviteBySenderId(invitation.senderId);
     return new GameInviteAcceptResponseDto(acceptUser.playingGame.id);
   }
 
@@ -199,7 +194,7 @@ export class InvitationService {
     const invitation: GameInviteModel = receiver.gameInviteList.get(inviteId);
 
     const sender = this.userFactory.findById(invitation?.senderId);
-    this.notificationGateWay.deleteGameInvite(sender.id, receiver.id);
+    this.notificationGateWay.deleteGameInvite(sender.id);
   }
 
   /**

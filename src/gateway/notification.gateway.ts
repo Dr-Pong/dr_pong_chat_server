@@ -110,12 +110,15 @@ export class NotificationGateWay
     this.userFactory.inviteGame(sender.id, receiver.id, invite);
   }
 
-  async deleteGameInvite(senderId: number, receiverId: number) {
+  async deleteGameInvite(senderId: number) {
     const sender: UserModel = this.userFactory.findById(senderId);
-    const receiver: UserModel = this.userFactory.findById(receiverId);
+    const receiver: UserModel = this.userFactory.findById(
+      sender?.gameInvite?.receiverId,
+    );
+    if (!sender || !receiver) return;
     sender.socket[GATEWAY_NOTIFICATION]?.emit('deleteInvite', {});
     receiver.socket[GATEWAY_NOTIFICATION]?.emit('deleteInvite', {});
-    this.userFactory.deleteGameInvite(sender.id, receiver.id);
+    this.userFactory.deleteGameInviteBySenderId(sender.id);
   }
 
   /**
