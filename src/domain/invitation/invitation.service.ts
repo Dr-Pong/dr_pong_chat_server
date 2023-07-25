@@ -262,7 +262,7 @@ export class InvitationService {
   ): Promise<GameModel> {
     const { senderId, receiverId, mode } = invitation;
     try {
-      const response = await axios.post(process.env.GAME_SERVER + '/games', {
+      const response = await axios.post(process.env.GAMESERVER_URL + '/games', {
         user1Id: senderId,
         user2Id: receiverId,
         type: GAMETYPE_NORMAL,

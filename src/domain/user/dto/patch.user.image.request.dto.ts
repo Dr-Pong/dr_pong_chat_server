@@ -1,3 +1,3 @@
 export class PatchUserImageRequestDto {
-  imgId: number;
+  id: number;
 }
