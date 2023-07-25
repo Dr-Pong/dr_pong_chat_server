@@ -56,7 +56,7 @@ export class UserController {
   ): Promise<void> {
     await this.userService.patchUserImage({
       userId: requestor.id,
-      imgId: patchRequestDto.imgId,
+      imgId: patchRequestDto.id,
     });
   }
 

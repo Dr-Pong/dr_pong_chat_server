@@ -144,7 +144,7 @@ describe('UserController', () => {
       await userData.createProfileImage();
       const token = await userData.giveTokenToUser(user);
       const PatchUserImageRequest: PatchUserImageRequestDto = {
-        imgId: userData.profileImages[1].id,
+        id: userData.profileImages[1].id,
       };
 
       const response = await req(
@@ -161,7 +161,7 @@ describe('UserController', () => {
       const user: User = await userData.createUser('user1');
       const token = await userData.giveTokenToUser(user);
       const PatchUserImageRequest: PatchUserImageRequestDto = {
-        imgId: 123,
+        id: 123,
       };
 
       const response = await req(
