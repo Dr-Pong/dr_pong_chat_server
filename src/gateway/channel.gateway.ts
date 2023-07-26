@@ -139,6 +139,6 @@ export class ChannelGateWay
 
   async sendMuteEvent(targetUserId: number){
     const user: UserModel = this.userFactory.findById(targetUserId);
-    user.socket[GATEWAY_CHANNEL]?.emit('muted', {});
+    user.socket[GATEWAY_CHANNEL]?.emit('mute', {});
   }
 }
