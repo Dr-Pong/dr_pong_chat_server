@@ -152,8 +152,8 @@ export class UserFactory {
   ): void {
     const sender: UserModel = this.findById(senderId);
     const receiver: UserModel = this.findById(receiverId);
-    receiver.gameInviteList.set(invite.id, invite);
     sender.gameInvite = invite;
+    receiver.gameInviteList.set(invite.id, invite);
   }
 
   getGameInvites(userId: number): GameInviteModel[] {

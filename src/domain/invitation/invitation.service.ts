@@ -167,11 +167,11 @@ export class InvitationService {
       receivedUser.id,
       mode,
     );
-    this.notificationGateWay.inviteGame(receivedUser.id, newInvite);
+    await this.notificationGateWay.inviteGame(senderId, newInvite);
   }
 
   async deleteGameInvite(deleteDto: DeleteGameInviteDto): Promise<void> {
-    this.notificationGateWay.deleteGameInvite(deleteDto?.senderId);
+    await this.notificationGateWay.deleteGameInvite(deleteDto?.senderId);
   }
 
   async postGameInviteAccept(
@@ -190,11 +190,11 @@ export class InvitationService {
     deleteDto: DeleteGameInviteRejectDto,
   ): Promise<void> {
     const { userId, inviteId } = deleteDto;
-    const receiver = this.userFactory.findById(userId);
+    const receiver: UserModel = this.userFactory.findById(userId);
     const invitation: GameInviteModel = receiver.gameInviteList.get(inviteId);
 
-    const sender = this.userFactory.findById(invitation?.senderId);
-    this.notificationGateWay.deleteGameInvite(sender.id);
+    const sender: UserModel = this.userFactory.findById(invitation?.senderId);
+    await this.notificationGateWay.deleteGameInvite(sender.id);
   }
 
   /**

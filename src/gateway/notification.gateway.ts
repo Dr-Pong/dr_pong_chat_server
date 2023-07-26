@@ -107,7 +107,7 @@ export class NotificationGateWay
     const sender: UserModel = this.userFactory.findById(senderId);
     const receiver: UserModel = this.userFactory.findById(invite.receiverId);
     receiver.socket[GATEWAY_NOTIFICATION]?.emit('invite', invite);
-    this.userFactory.inviteGame(sender.id, receiver.id, invite);
+    this.userFactory.inviteGame(senderId, receiver.id, invite);
   }
 
   async deleteGameInvite(senderId: number) {
