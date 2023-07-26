@@ -307,6 +307,7 @@ export class ChannelAdminService {
         deleteDto.targetUserId,
         deleteDto.channelId,
       );
+      this.chatGateway.sendUnMuteEvent(deleteDto.targetUserId);
       this.chatGateway.sendNoticeToChannel(
         deleteDto.targetUserId,
         deleteDto.channelId,

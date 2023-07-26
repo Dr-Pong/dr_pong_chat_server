@@ -141,4 +141,9 @@ export class ChannelGateWay
     const user: UserModel = this.userFactory.findById(targetUserId);
     user.socket[GATEWAY_CHANNEL]?.emit('mute', {});
   }
+
+  async sendUnMuteEvent(targetUserId: number){
+    const user: UserModel = this.userFactory.findById(targetUserId);
+    user.socket[GATEWAY_CHANNEL]?.emit('unmute', {});
+  }
 }
