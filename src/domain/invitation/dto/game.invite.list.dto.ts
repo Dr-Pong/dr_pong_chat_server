@@ -6,8 +6,8 @@ export class GameInvitation {
   from: string;
   createdAt: Date;
 
-  constructor(senderNickname: string){
-    this.id = uuid();
+  constructor(gameId:string ,senderNickname: string){
+    this.id = gameId;
     this.from = senderNickname;
     this.createdAt = new Date();
   }

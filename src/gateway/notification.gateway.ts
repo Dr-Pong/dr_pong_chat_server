@@ -107,7 +107,7 @@ export class NotificationGateWay
   async inviteGame(senderId: number, invite: GameInviteModel) {
     const sender: UserModel = this.userFactory.findById(senderId);
     const receiver: UserModel = this.userFactory.findById(invite.receiverId);
-    const gameInvitation: GameInvitation = new GameInvitation(sender.nickname)
+    const gameInvitation: GameInvitation = new GameInvitation(invite.id, sender.nickname)
     receiver.socket[GATEWAY_NOTIFICATION]?.emit('invite', gameInvitation);
     this.userFactory.inviteGame(senderId, receiver.id, invite);
   }
