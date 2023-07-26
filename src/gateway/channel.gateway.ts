@@ -131,4 +131,14 @@ export class ChannelGateWay
     this.server?.to(channelId).emit(CHATTYPE_SYSTEM, message);
     this.server?.to(channelId).emit('participants', {});
   }
+
+  async sendOutEvent(targetUserId: number){
+    const user: UserModel = this.userFactory.findById(targetUserId);
+    user.socket[GATEWAY_CHANNEL]?.emit('out', {});
+  }
+
+  async sendMuteEvent(targetUserId: number){
+    const user: UserModel = this.userFactory.findById(targetUserId);
+    user.socket[GATEWAY_CHANNEL]?.emit('muted', {});
+  }
 }
