@@ -1,5 +1,4 @@
 import { GameMode } from 'src/global/type/type.game';
-import { v4 as uuid } from 'uuid';
 
 export class GameInvitation {
   id: string;
