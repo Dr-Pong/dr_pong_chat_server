@@ -173,7 +173,7 @@ export class ChannelAdminService {
     /** 트랜잭션이 성공하면 Factory에도 결과를 반영한다 */
     runOnTransactionComplete(() => {
       this.channelFactory.leave(deleteDto.targetUserId, deleteDto.channelId);
-      this.chatGateway.sendOutEvent(deleteDto.targetUserId);
+      this.chatGateway.sendOutEvent(deleteDto.targetUserId, CHAT_KICK);
       this.chatGateway.sendNoticeToChannel(
         deleteDto.targetUserId,
         deleteDto.channelId,
@@ -220,7 +220,7 @@ export class ChannelAdminService {
     runOnTransactionComplete(() => {
       this.channelFactory.setBan(postDto.targetUserId, postDto.channelId);
       this.channelFactory.leave(postDto.targetUserId, postDto.channelId);
-      this.chatGateway.sendOutEvent(postDto.targetUserId);
+      this.chatGateway.sendOutEvent(postDto.targetUserId, CHAT_BAN);
       this.chatGateway.sendNoticeToChannel(
         postDto.targetUserId,
         postDto.channelId,

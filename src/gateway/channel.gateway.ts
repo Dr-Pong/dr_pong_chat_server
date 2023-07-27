@@ -132,17 +132,19 @@ export class ChannelGateWay
     this.server?.to(channelId).emit('participants', {});
   }
 
-  async sendOutEvent(targetUserId: number){
+  async sendOutEvent(targetUserId: number, reason: string) {
     const user: UserModel = this.userFactory.findById(targetUserId);
-    user.socket[GATEWAY_CHANNEL]?.emit('out', {});
+    user.socket[GATEWAY_CHANNEL]?.emit('out', {
+      type: reason,
+    });
   }
 
-  async sendMuteEvent(targetUserId: number){
+  async sendMuteEvent(targetUserId: number) {
     const user: UserModel = this.userFactory.findById(targetUserId);
     user.socket[GATEWAY_CHANNEL]?.emit('mute', {});
   }
 
-  async sendUnMuteEvent(targetUserId: number){
+  async sendUnMuteEvent(targetUserId: number) {
     const user: UserModel = this.userFactory.findById(targetUserId);
     user.socket[GATEWAY_CHANNEL]?.emit('unmute', {});
   }
