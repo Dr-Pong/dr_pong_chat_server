@@ -131,4 +131,21 @@ export class ChannelGateWay
     this.server?.to(channelId).emit(CHATTYPE_SYSTEM, message);
     this.server?.to(channelId).emit('participants', {});
   }
+
+  async sendOutEvent(targetUserId: number, reason: string) {
+    const user: UserModel = this.userFactory.findById(targetUserId);
+    user.socket[GATEWAY_CHANNEL]?.emit('out', {
+      type: reason,
+    });
+  }
+
+  async sendMuteEvent(targetUserId: number) {
+    const user: UserModel = this.userFactory.findById(targetUserId);
+    user.socket[GATEWAY_CHANNEL]?.emit('mute', {});
+  }
+
+  async sendUnMuteEvent(targetUserId: number) {
+    const user: UserModel = this.userFactory.findById(targetUserId);
+    user.socket[GATEWAY_CHANNEL]?.emit('unmute', {});
+  }
 }

@@ -17,6 +17,7 @@ import { GATEWAY_FRIEND, GATEWAY_NOTIFICATION } from './type/type.gateway';
 import { getUserFromSocket } from 'src/global/utils/socket.utils';
 import { ChannelInviteModel } from 'src/domain/factory/model/channel.invite.model';
 import { GameInviteModel } from 'src/domain/factory/model/game.invite.model';
+import { GameInvitation } from 'src/domain/invitation/dto/game.invite.list.dto';
 
 @WebSocketGateway({ namespace: '' })
 export class NotificationGateWay
@@ -106,8 +107,9 @@ export class NotificationGateWay
   async inviteGame(senderId: number, invite: GameInviteModel) {
     const sender: UserModel = this.userFactory.findById(senderId);
     const receiver: UserModel = this.userFactory.findById(invite.receiverId);
-    receiver.socket[GATEWAY_NOTIFICATION]?.emit('invite', invite);
-    this.userFactory.inviteGame(sender.id, receiver.id, invite);
+    const gameInvitation: GameInvitation = new GameInvitation(invite.id, sender.nickname)
+    receiver.socket[GATEWAY_NOTIFICATION]?.emit('invite', gameInvitation);
+    this.userFactory.inviteGame(senderId, receiver.id, invite);
   }
 
   async deleteGameInvite(senderId: number) {
