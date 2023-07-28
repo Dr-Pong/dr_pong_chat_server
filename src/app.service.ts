@@ -36,25 +36,43 @@ export class AppService implements OnApplicationBootstrap {
       await this.imageRepository.save(
         {
           id: 1,
-          url: 'https://42gg-public-image.s3.ap-northeast-2.amazonaws.com/images/kipark.jpeg',
+          url: 'https://drpong.s3.ap-northeast-2.amazonaws.com/developers/hakim.png',
           createdAt: new Date(),
           updatedAt: new Date(),
         },
         {
           id: 2,
-          url: 'https://42gg-public-image.s3.ap-northeast-2.amazonaws.com/images/jihyukim.jpeg',
+          url: 'https://drpong.s3.ap-northeast-2.amazonaws.com/developers/jiyun.png',
           createdAt: new Date(),
           updatedAt: new Date(),
         },
         {
           id: 3,
-          url: 'https://42gg-public-image.s3.ap-northeast-2.amazonaws.com/images/nheo.jpeg',
+          url: 'https://drpong.s3.ap-northeast-2.amazonaws.com/developers/jihyukim.png',
           createdAt: new Date(),
           updatedAt: new Date(),
         },
         {
           id: 4,
-          url: 'https://42gg-public-image.s3.ap-northeast-2.amazonaws.com/images/hakim.jpeg',
+          url: 'https://drpong.s3.ap-northeast-2.amazonaws.com/developers/jaehwkim.png',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          id: 5,
+          url: 'https://drpong.s3.ap-northeast-2.amazonaws.com/developers/junyopar.png',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          id: 6,
+          url: 'https://drpong.s3.ap-northeast-2.amazonaws.com/developers/keokim.png',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          id: 7,
+          url: 'https://drpong.s3.ap-northeast-2.amazonaws.com/developers/nheo.png',
           createdAt: new Date(),
           updatedAt: new Date(),
         },
