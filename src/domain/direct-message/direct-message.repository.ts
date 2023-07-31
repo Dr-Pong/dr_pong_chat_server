@@ -133,6 +133,6 @@ export class DirectMessageRepository {
         id: 'DESC',
       },
     });
-    return directMessage.id;
+    return directMessage?.id ?? 0;
   }
 }
