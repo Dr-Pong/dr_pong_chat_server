@@ -153,7 +153,13 @@ export class ChannelRepository {
       },
       {
         type: updateDto.type,
-        password: updateDto.password,
+        password:
+          updateDto.type === CHANNEL_PROTECTED
+            ? await bcrypt.hash(
+                updateDto.password,
+                Number(process.env.SALT_STRING),
+              )
+            : null,
       },
     );
   }
