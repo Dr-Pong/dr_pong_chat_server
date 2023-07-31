@@ -42,7 +42,7 @@ export class NotificationGateWay
       return;
     }
 
-    if (user.socket.get(GATEWAY_NOTIFICATION)?.id !== socket?.id) {
+    if (user.socket[GATEWAY_NOTIFICATION]?.id !== socket?.id) {
       await user.socket[GATEWAY_NOTIFICATION]?.emit('multiConnect');
       await user.socket[GATEWAY_NOTIFICATION]?.disconnect();
     }
