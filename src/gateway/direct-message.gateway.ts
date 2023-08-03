@@ -14,9 +14,10 @@ import { FriendChatManager } from 'src/global/utils/generate.room.id';
 import { DirectMessageRoomRepository } from 'src/domain/direct-message-room/direct-message-room.repository';
 import { IsolationLevel, Transactional } from 'typeorm-transactional';
 import { MessageModel } from './dto/message.model';
-import { CHATTYPE_OTHERS } from 'src/global/type/type.chat';
+import { CHATTYPE_ME, CHATTYPE_OTHERS } from 'src/global/type/type.chat';
 import { GATEWAY_DIRECTMESSAGE } from './type/type.gateway';
 import { getUserFromSocket } from 'src/global/utils/socket.utils';
+import { DirectMessage } from 'src/domain/direct-message/direct-message.entity';
 
 @WebSocketGateway({ namespace: 'dm' })
 export class DirectMessageGateway
@@ -41,8 +42,9 @@ export class DirectMessageGateway
       return;
     }
 
-    if (user.socket && user.socket[GATEWAY_DIRECTMESSAGE]?.id !== socket?.id) {
-      user.socket[GATEWAY_DIRECTMESSAGE]?.disconnect();
+    if (user.socket[GATEWAY_DIRECTMESSAGE]?.size >= 5) {
+      socket.disconnect();
+      return;
     }
 
     this.sockets.set(socket.id, user.id);
@@ -63,7 +65,7 @@ export class DirectMessageGateway
     }
 
     this.sockets.delete(socket.id);
-    this.userFactory.setSocket(userId, GATEWAY_DIRECTMESSAGE, null);
+    this.userFactory.deleteSocket(userId, GATEWAY_DIRECTMESSAGE, socket);
     this.userFactory.setDirectMessageFriendId(userId, null);
   }
 
@@ -74,20 +76,35 @@ export class DirectMessageGateway
   async sendMessageToFriend(
     userId: number,
     friendId: number,
-    content: string,
+    message: DirectMessage,
   ): Promise<void> {
     const user: UserModel = this.userFactory.findById(userId);
     const friend: UserModel = this.userFactory.findById(friendId);
 
-    const message: MessageModel = new MessageModel(
-      user?.nickname,
-      content,
-      CHATTYPE_OTHERS,
-    );
-
     if (friend?.directMessageFriendId === user?.id) {
-      friend?.socket[GATEWAY_DIRECTMESSAGE]?.emit('message', message);
+      friend?.socket[GATEWAY_DIRECTMESSAGE].forEach((socket: Socket) => {
+        socket?.emit(
+          'message',
+          new MessageModel(
+            message.id,
+            user?.nickname,
+            message.message,
+            CHATTYPE_OTHERS,
+          ),
+        );
+      });
     }
+    user?.socket[GATEWAY_DIRECTMESSAGE].forEach((socket: Socket) => {
+      socket?.emit(
+        'message',
+        new MessageModel(
+          message.id,
+          user?.nickname,
+          message.message,
+          CHATTYPE_ME,
+        ),
+      );
+    });
   }
 
   /**

@@ -14,7 +14,11 @@ import {
   CHANNEL_PARTICIPANT_NORMAL,
   CHANNEL_PARTICIPANT_OWNER,
 } from '../channel/type/type.channel-participant';
-import { GATEWAY_CHANNEL, GateWayType } from 'src/gateway/type/type.gateway';
+import {
+  GATEWAY_CHANNEL,
+  GATEWAY_NOTIFICATION,
+  GateWayType,
+} from 'src/gateway/type/type.gateway';
 import { GameInviteModel } from './model/game.invite.model';
 import { GameModel } from './model/game.model';
 
@@ -101,12 +105,23 @@ export class UserFactory {
 
   setSocket(userId: number, type: GateWayType, socket: Socket): void {
     const user: UserModel = this.findById(userId);
-    user.socket[type] = socket;
+    if (!user.socket[type]) {
+      user.socket[type] = new Map<string, Socket>();
+    }
+    user.socket[type].set(socket.id, socket);
     if (socket && user.playingGame) {
       user.status = USERSTATUS_INGAME;
     } else if (socket) {
       user.status = USERSTATUS_ONLINE;
-    } else if (!user.socket['notification']) {
+    } else if (!user.socket[GATEWAY_NOTIFICATION].size) {
+      user.status = USERSTATUS_OFFLINE;
+    }
+  }
+
+  deleteSocket(userId: number, type: GateWayType, socket: Socket): void {
+    const user: UserModel = this.findById(userId);
+    user.socket[type].delete(socket.id);
+    if (!user.socket['notification'].size) {
       user.status = USERSTATUS_OFFLINE;
     }
   }

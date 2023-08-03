@@ -33,9 +33,11 @@ export class FriendGateWay implements OnGatewayConnection, OnGatewayDisconnect {
       socket.disconnect();
       return;
     }
-    if (user.socket && user.socket[GATEWAY_FRIEND]?.id !== socket?.id) {
-      user.socket[GATEWAY_FRIEND]?.disconnect();
+    if (user.socket[GATEWAY_FRIEND]?.size >= 5) {
+      socket.disconnect();
+      return;
     }
+
     this.userFactory.setSocket(user.id, GATEWAY_FRIEND, socket);
 
     await this.getFriendsStatus(user.id);
@@ -67,7 +69,9 @@ export class FriendGateWay implements OnGatewayConnection, OnGatewayDisconnect {
       const friend: UserModel = this.userFactory.findById(friendId);
       data[friend.nickname] = friend.status;
     });
-    user.socket[GATEWAY_FRIEND]?.emit('friends', data);
+    user.socket[GATEWAY_FRIEND]?.forEach((socket: Socket) => {
+      socket?.emit('friends', data);
+    });
   }
 
   /**
@@ -88,11 +92,15 @@ export class FriendGateWay implements OnGatewayConnection, OnGatewayDisconnect {
       const friend: UserModel = this.userFactory.findById(friendId);
       data[friend.nickname] = friend.status;
     });
-    user.socket[GATEWAY_FRIEND]?.emit('friends', data);
+    user.socket[GATEWAY_FRIEND]?.forEach((socket: Socket) => {
+      socket?.emit('friends', data);
+    });
   }
 
   async friendNotice(targetId: number): Promise<void> {
     const target: UserModel = this.userFactory.findById(targetId);
-    target.socket[GATEWAY_FRIEND]?.emit('friend', {});
+    target.socket[GATEWAY_FRIEND]?.forEach((socket: Socket) => {
+      socket?.emit('friend', {});
+    });
   }
 }

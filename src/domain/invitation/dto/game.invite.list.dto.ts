@@ -5,13 +5,12 @@ export class GameInvitation {
   from: string;
   createdAt: Date;
 
-  constructor(gameId:string ,senderNickname: string){
+  constructor(gameId: string, senderNickname: string) {
     this.id = gameId;
     this.from = senderNickname;
     this.createdAt = new Date();
   }
 }
-
 
 export default class GameInviteListDto {
   invitations: GameInvitation[];
