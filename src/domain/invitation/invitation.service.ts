@@ -48,6 +48,7 @@ import axios from 'axios';
 import { GameModel } from '../factory/model/game.model';
 import { GAMETYPE_NORMAL } from 'src/global/type/type.game';
 import { NotificationGateWay } from 'src/gateway/notification.gateway';
+import { ChannelMessage } from '../channel/entity/channel-message.entity';
 
 @Injectable()
 export class InvitationService {
@@ -138,7 +139,9 @@ export class InvitationService {
     checkUserIsInvited(user, postDto.channelId);
     this.userFactory.deleteChannelInvite(postDto.userId, postDto.channelId);
 
-    await this.exitIfUserIsInChannel(postDto.userId);
+    const message: ChannelMessage = await this.exitIfUserIsInChannel(
+      postDto.userId,
+    );
 
     await this.joinChannel(
       new ChannelJoinDto(
@@ -151,7 +154,11 @@ export class InvitationService {
 
     /** 트랜잭션이 성공하면 Factory에도 결과를 반영한다 */
     runOnTransactionComplete(() => {
-      this.channelGateWay.joinChannel(postDto.userId, postDto.channelId);
+      this.channelGateWay.joinChannel(
+        postDto.userId,
+        postDto.channelId,
+        message.id,
+      );
     });
   }
 
@@ -205,7 +212,7 @@ export class InvitationService {
    * channel - 채널의 인원수를 업데이트한다
    * message - 채널 입장 메시지를 저장한다
    * */
-  private async joinChannel(dto: ChannelJoinDto): Promise<void> {
+  private async joinChannel(dto: ChannelJoinDto): Promise<ChannelMessage> {
     await validateChannelJoin(dto, this.channelRepository, this.channelFactory);
 
     await this.channelUserRepository.save(
@@ -214,7 +221,9 @@ export class InvitationService {
     await this.channelRepository.updateHeadCount(
       new UpdateChannelHeadCountDto(dto.channelId, 1),
     );
-    await this.messageRepository.save(SaveChannelMessageDto.fromJoinDto(dto));
+    return await this.messageRepository.save(
+      SaveChannelMessageDto.fromJoinDto(dto),
+    );
   }
 
   /**
@@ -224,7 +233,7 @@ export class InvitationService {
    * channel - 채널의 인원수를 업데이트한다
    * message - 채널 퇴장 메시지를 저장한다
    * */
-  private async exitChannel(dto: ChannelExitDto): Promise<void> {
+  private async exitChannel(dto: ChannelExitDto): Promise<ChannelMessage> {
     await this.channelUserRepository.deleteByUserIdAndChannelId(
       dto.userId,
       dto.channelId,
@@ -232,24 +241,28 @@ export class InvitationService {
     await this.channelRepository.updateHeadCount(
       new UpdateChannelHeadCountDto(dto.channelId, -1),
     );
-    await this.messageRepository.save(SaveChannelMessageDto.fromExitDto(dto));
+    return await this.messageRepository.save(
+      SaveChannelMessageDto.fromExitDto(dto),
+    );
   }
 
   /**
    * 유저가 채널에 속해 있는지 확인하고, 속해 있다면 퇴장시키는 함수
    * 채널에 속해 있지 않은 경우 아무것도 하지 않는다
    * */
-  private async exitIfUserIsInChannel(userId: number): Promise<void> {
+  private async exitIfUserIsInChannel(userId: number): Promise<ChannelMessage> {
     const channelUser: ChannelUser =
       await this.channelUserRepository.findByUserIdAndNotDeleted(userId);
+    let message: ChannelMessage = null;
     if (channelUser) {
-      await this.exitChannel(
+      message = await this.exitChannel(
         new ChannelExitDto(userId, channelUser.channel.id),
       );
       if (channelUser.channel.headCount === 1) {
         await this.channelRepository.deleteById(channelUser.channel.id);
       }
     }
+    return message;
   }
 
   private async postGameFromInvitation(

@@ -45,6 +45,7 @@ import {
   CHAT_UNMUTE,
   CHAT_UNSETADMIN,
 } from '../type/type.channel.action';
+import { ChannelMessage } from '../entity/channel-message.entity';
 
 @Injectable()
 export class ChannelAdminService {
@@ -84,7 +85,7 @@ export class ChannelAdminService {
       CHANNEL_PARTICIPANT_ADMIN,
     );
 
-    await this.messageRepository.save(
+    const message: ChannelMessage = await this.messageRepository.save(
       SaveChannelMessageDto.fromCommandDto(postDto),
     );
 
@@ -95,6 +96,7 @@ export class ChannelAdminService {
         postDto.targetUserId,
         postDto.channelId,
         CHAT_SETADMIN,
+        message.id,
       );
     });
   }
@@ -126,7 +128,7 @@ export class ChannelAdminService {
       CHANNEL_PARTICIPANT_NORMAL,
     );
 
-    await this.messageRepository.save(
+    const message: ChannelMessage = await this.messageRepository.save(
       SaveChannelMessageDto.fromCommandDto(deleteDto),
     );
 
@@ -140,6 +142,7 @@ export class ChannelAdminService {
         deleteDto.targetUserId,
         deleteDto.channelId,
         CHAT_UNSETADMIN,
+        message.id,
       );
     });
   }
@@ -166,7 +169,7 @@ export class ChannelAdminService {
 
     await this.removeUser(new ChannelExitDto(dto.targetUserId, channel.id));
 
-    await this.messageRepository.save(
+    const message: ChannelMessage = await this.messageRepository.save(
       SaveChannelMessageDto.fromCommandDto(deleteDto),
     );
 
@@ -178,6 +181,7 @@ export class ChannelAdminService {
         deleteDto.targetUserId,
         deleteDto.channelId,
         CHAT_KICK,
+        message.id,
       );
     });
   }
@@ -212,7 +216,7 @@ export class ChannelAdminService {
 
     await this.removeUser(new ChannelExitDto(postDto.targetUserId, channel.id));
 
-    await this.messageRepository.save(
+    const message: ChannelMessage = await this.messageRepository.save(
       SaveChannelMessageDto.fromCommandDto(postDto),
     );
 
@@ -225,6 +229,7 @@ export class ChannelAdminService {
         postDto.targetUserId,
         postDto.channelId,
         CHAT_BAN,
+        message.id,
       );
     });
   }
@@ -255,7 +260,7 @@ export class ChannelAdminService {
       true,
     );
 
-    await this.messageRepository.save(
+    const message: ChannelMessage = await this.messageRepository.save(
       SaveChannelMessageDto.fromCommandDto(postDto),
     );
 
@@ -267,6 +272,7 @@ export class ChannelAdminService {
         postDto.targetUserId,
         postDto.channelId,
         CHAT_MUTE,
+        message.id,
       );
     });
   }
@@ -297,7 +303,7 @@ export class ChannelAdminService {
       false,
     );
 
-    await this.messageRepository.save(
+    const message: ChannelMessage = await this.messageRepository.save(
       SaveChannelMessageDto.fromCommandDto(deleteDto),
     );
 
@@ -312,6 +318,7 @@ export class ChannelAdminService {
         deleteDto.targetUserId,
         deleteDto.channelId,
         CHAT_UNMUTE,
+        message.id,
       );
     });
   }

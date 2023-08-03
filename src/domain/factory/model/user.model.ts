@@ -20,7 +20,7 @@ export class UserModel {
   channelInviteList: Map<string, ChannelInviteModel>;
   roleType: ChannelParticipantType;
   isMuted: boolean;
-  socket: Map<string, Socket>;
+  socket: Map<string, Map<string, Socket>>;
   profileImage: string;
   status: UserStatusType;
   directMessageFriendId: number;
@@ -42,7 +42,7 @@ export class UserModel {
     this.channelInviteList = new Map<string, ChannelInviteModel>();
     this.roleType = null;
     this.isMuted = false;
-    this.socket = new Map<string, Socket>();
+    this.socket = new Map<string, Map<string, Socket>>();
     this.profileImage = profileImage;
     this.status = USERSTATUS_OFFLINE;
   }
