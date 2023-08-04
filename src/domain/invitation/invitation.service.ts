@@ -139,11 +139,9 @@ export class InvitationService {
     checkUserIsInvited(user, postDto.channelId);
     this.userFactory.deleteChannelInvite(postDto.userId, postDto.channelId);
 
-    const message: ChannelMessage = await this.exitIfUserIsInChannel(
-      postDto.userId,
-    );
+    await this.exitIfUserIsInChannel(postDto.userId);
 
-    await this.joinChannel(
+    const message: ChannelMessage = await this.joinChannel(
       new ChannelJoinDto(
         postDto.userId,
         postDto.channelId,
