@@ -27,19 +27,19 @@ export function checkUserInChannel(
 
 export function checkChannelExist(channel: Channel | ChannelModel): void {
   if (!channel) {
-    throw new NotFoundException('Channel does not exist');
+    throw new NotFoundException('no bang');
   }
 }
 
 export function checkChannelIsPrivate(channel: Channel): void {
   if (channel.type === CHANNEL_PRIVATE) {
-    throw new BadRequestException('Channel is private');
+    throw new BadRequestException('private');
   }
 }
 
 export function checkChannelIsFull(channel: Channel): void {
   if (channel.headCount >= channel.maxHeadCount) {
-    throw new BadRequestException('Channel is full');
+    throw new BadRequestException('full bang');
   }
 }
 
@@ -51,13 +51,13 @@ export async function checkChannelPassword(
     channel.type === CHANNEL_PROTECTED &&
     !(await bcrypt.compare(password, channel.password))
   ) {
-    throw new BadRequestException('Password is wrong');
+    throw new BadRequestException('wrong password');
   }
 }
 
 export function checkUserIsBanned(channel: ChannelModel, userId: number): void {
   if (channel.banList.has(userId)) {
-    throw new BadRequestException('You are banned');
+    throw new BadRequestException('ban');
   }
 }
 
@@ -141,6 +141,6 @@ export async function checkChannelNameIsDuplicate(
 ): Promise<void> {
   const channel = await repository.findByChannelName(name);
   if (channel) {
-    throw new BadRequestException('Channel name already exists');
+    throw new BadRequestException('title taken');
   }
 }
