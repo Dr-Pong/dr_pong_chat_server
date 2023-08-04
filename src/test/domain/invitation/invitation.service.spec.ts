@@ -380,7 +380,7 @@ describe('InvitationService', () => {
 
         await expect(
           service.postChannelAcceptInvite(InviteAcceptRequest),
-        ).rejects.toThrow(new BadRequestException('Channel is full'));
+        ).rejects.toThrow(new BadRequestException('full bang'));
 
         const savedUserFt: UserModel = userFactory.findById(user.id);
 
