@@ -82,7 +82,7 @@ export class DirectMessageGateway
     const friend: UserModel = this.userFactory.findById(friendId);
 
     if (friend?.directMessageFriendId === user?.id) {
-      friend?.socket[GATEWAY_DIRECTMESSAGE].forEach((socket: Socket) => {
+      friend?.socket[GATEWAY_DIRECTMESSAGE]?.forEach((socket: Socket) => {
         socket?.emit(
           'message',
           new MessageModel(
@@ -94,7 +94,7 @@ export class DirectMessageGateway
         );
       });
     }
-    user?.socket[GATEWAY_DIRECTMESSAGE].forEach((socket: Socket) => {
+    user?.socket[GATEWAY_DIRECTMESSAGE]?.forEach((socket: Socket) => {
       socket?.emit(
         'message',
         new MessageModel(

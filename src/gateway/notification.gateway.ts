@@ -38,7 +38,8 @@ export class NotificationGateWay
   async handleConnection(@ConnectedSocket() socket: Socket): Promise<void> {
     const user: UserModel = getUserFromSocket(socket, this.userFactory);
     if (!user) {
-      socket.disconnect();
+      console.log('user not found', socket.id);
+      // socket.disconnect();
       return;
     }
 
@@ -52,7 +53,7 @@ export class NotificationGateWay
 
     await this.sendStatusToFriends(user.id, user.status);
     if (user.playingGame?.id) {
-      user.socket[GATEWAY_NOTIFICATION].forEach((socket: Socket) => {
+      user.socket[GATEWAY_NOTIFICATION]?.forEach((socket: Socket) => {
         socket?.emit('isInGame', {
           roomId: user.playingGame.id,
           gameType: user.playingGame.type,
@@ -80,7 +81,7 @@ export class NotificationGateWay
    */
   async friendNotice(targetId: number): Promise<void> {
     const target: UserModel = this.userFactory.findById(targetId);
-    target.socket[GATEWAY_NOTIFICATION].forEach((socket: Socket) => {
+    target.socket[GATEWAY_NOTIFICATION]?.forEach((socket: Socket) => {
       socket?.emit('friend', {});
     });
   }
@@ -93,7 +94,7 @@ export class NotificationGateWay
   async newChatNotice(userId: number, targetId: number): Promise<void> {
     const target: UserModel = this.userFactory.findById(targetId);
     if (target.directMessageFriendId !== userId) {
-      target.socket[GATEWAY_NOTIFICATION].forEach((socket: Socket) => {
+      target.socket[GATEWAY_NOTIFICATION]?.forEach((socket: Socket) => {
         socket?.emit('newChat', {});
       });
     }
@@ -106,7 +107,7 @@ export class NotificationGateWay
    */
   async inviteChannel(targetId: number, invite: ChannelInviteModel) {
     const target: UserModel = this.userFactory.findById(targetId);
-    target.socket[GATEWAY_NOTIFICATION].forEach((socket: Socket) => {
+    target.socket[GATEWAY_NOTIFICATION]?.forEach((socket: Socket) => {
       socket?.emit('invite', invite);
     });
     this.userFactory.inviteChannel(target.id, invite);
@@ -119,7 +120,7 @@ export class NotificationGateWay
       invite.id,
       sender.nickname,
     );
-    receiver.socket[GATEWAY_NOTIFICATION].forEach((socket: Socket) => {
+    receiver.socket[GATEWAY_NOTIFICATION]?.forEach((socket: Socket) => {
       socket?.emit('invite', gameInvitation);
     });
     this.userFactory.inviteGame(senderId, receiver.id, invite);
@@ -131,10 +132,10 @@ export class NotificationGateWay
       sender?.gameInvite?.receiverId,
     );
     if (!sender || !receiver) return;
-    sender.socket[GATEWAY_NOTIFICATION].forEach((socket: Socket) => {
+    sender.socket[GATEWAY_NOTIFICATION]?.forEach((socket: Socket) => {
       socket?.emit('deleteInvite', {});
     });
-    receiver.socket[GATEWAY_NOTIFICATION].forEach((socket: Socket) => {
+    receiver.socket[GATEWAY_NOTIFICATION]?.forEach((socket: Socket) => {
       socket?.emit('deleteInvite', {});
     });
     this.userFactory.deleteGameInviteBySenderId(sender.id);
@@ -159,7 +160,7 @@ export class NotificationGateWay
       const friendId: number =
         c.sender.id === user.id ? c.receiver.id : c.sender.id;
       const friend: UserModel = this.userFactory.findById(friendId);
-      friend?.socket[GATEWAY_FRIEND].forEach((socket: Socket) => {
+      friend?.socket[GATEWAY_FRIEND]?.forEach((socket: Socket) => {
         socket?.emit('friends', data);
       });
     }

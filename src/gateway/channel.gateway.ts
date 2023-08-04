@@ -118,7 +118,7 @@ export class ChannelGateWay
           ),
         );
     });
-    user.socket[GATEWAY_CHANNEL].forEach((socket: Socket) => {
+    user.socket[GATEWAY_CHANNEL]?.forEach((socket: Socket) => {
       socket?.emit(
         CHAT_MESSAGE,
         new MessageModel(
