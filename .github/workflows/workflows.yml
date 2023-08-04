@@ -26,12 +26,13 @@ jobs:
       - run: npm run build --if-present
 
       # Start the database service
-      - name: Start database service
-        run: docker-compose up -d db
+     - name: Start database service
+        run: docker-compose up -d chat-db
 
       # Wait for the database service to start
       - name: Wait for database service
-        run: docker-compose exec db bash -c "while ! nc -z localhost 5432; do sleep 1; done"
+        run: docker-compose exec chat-db bash -c "while ! nc -z localhost 5433; do sleep 1; done"
+
 
       # # Run database migrations (if applicable)
       # - name: Run database migrations
