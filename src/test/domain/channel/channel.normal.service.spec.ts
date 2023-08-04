@@ -566,7 +566,7 @@ describe('ChannelUserService', () => {
         await service.postChannel(postChannelRequest);
 
         await expect(service.postChannel(duplicatedRequest)).rejects.toThrow(
-          new BadRequestException('Channel name already exists'),
+          new BadRequestException('title taken'),
         );
 
         const savedChannelFt: ChannelModel = channelFactory.findByChannelName(
@@ -769,7 +769,7 @@ describe('ChannelUserService', () => {
 
         await expect(
           service.postChannelJoin(joinChannelRequest),
-        ).rejects.toThrow(new BadRequestException('Password is wrong'));
+        ).rejects.toThrow(new BadRequestException('wrong password'));
       });
 
       it('[Error Case] private 채팅방 입장', async () => {
@@ -784,7 +784,7 @@ describe('ChannelUserService', () => {
 
         await expect(() =>
           service.postChannelJoin(joinChannelRequest),
-        ).rejects.toThrow(new BadRequestException('Channel is private'));
+        ).rejects.toThrow(new BadRequestException('private'));
       });
 
       it('[Error Case] Ban되어 있는 경우', async () => {
@@ -799,7 +799,7 @@ describe('ChannelUserService', () => {
 
         await expect(() =>
           service.postChannelJoin(joinChannelRequest),
-        ).rejects.toThrow(new BadRequestException('You are banned'));
+        ).rejects.toThrow(new BadRequestException('ban'));
       });
     });
 
