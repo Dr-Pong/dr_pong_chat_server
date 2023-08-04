@@ -10,15 +10,6 @@ on:
 jobs:
   CI:
     runs-on: ubuntu-latest
-    services:
-      db:
-        image: postgres:latest
-        env:
-          POSTGRES_USER: chat_db_user
-          POSTGRES_PASSWORD: chat_db_password
-          POSTGRES_DB: chat_db
-        ports:
-          - 5432:5432
     steps:
       - uses: actions/checkout@v3
       # Set up Node.js
