@@ -43,7 +43,9 @@ export class UserFactory {
   joinChannel(userId: number, channel: ChannelModel): void {
     const user: UserModel = this.findById(userId);
     user.joinedChannel = channel.id;
-    user.socket[GATEWAY_CHANNEL]?.join(channel.id);
+    user.socket[GATEWAY_CHANNEL]?.forEach((socket: Socket) => {
+      socket.join(channel.id);
+    });
     if (channel.muteList.has(user.id)) {
       user.isMuted = true;
     }
@@ -52,7 +54,9 @@ export class UserFactory {
 
   leaveChannel(userId: number): void {
     const user: UserModel = this.findById(userId);
-    user.socket[GATEWAY_CHANNEL]?.leave(user.joinedChannel);
+    user.socket[GATEWAY_CHANNEL]?.forEach((socket: Socket) => {
+      socket.leave(user.joinedChannel);
+    });
     user.joinedChannel = null;
     user.isMuted = false;
     user.roleType = null;

@@ -87,7 +87,9 @@ export class ChannelGateWay
    */
   async leaveChannel(userId: number, channelId: string): Promise<void> {
     const user: UserModel = this.userFactory.findById(userId);
-    user.socket[GATEWAY_CHANNEL]?.leave(channelId);
+    user.socket[GATEWAY_CHANNEL]?.forEach((socket: Socket) => {
+      socket.leave(channelId);
+    });
     user.joinedChannel = null;
     this.channelFactory.leave(user.id, channelId);
   }
