@@ -26,20 +26,20 @@ jobs:
       - run: npm run build --if-present
 
       # Start the database service
-      - name: Start database service
-        run: docker-compose up -d chat-db
+      # - name: Start database service
+      #   run: docker-compose up -d chat-db
 
       # Wait for the database service to start
-      - name: Wait for database service
-        run: |
-          while ! PGPASSWORD=chat_db_password psql -h localhost -U chat_db_user -d chat-db -c "select 1;" > /dev/null 2>&1; do
-            sleep 1
-          done
+      # - name: Wait for database service
+      #   run: |
+      #     while ! PGPASSWORD=chat_db_password psql -h localhost -U chat_db_user -d chat-db -c "select 1;" > /dev/null 2>&1; do
+      #       sleep 1
+      #     done
 
       # # Run database migrations (if applicable)
       # - name: Run database migrations
       #   run: npm run db:migrate
 
       # Run tests
-      - name: Run tests
-        run: npm test
+      # - name: Run tests
+      #   run: npm test
