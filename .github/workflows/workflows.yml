@@ -1,4 +1,4 @@
-name: Dr Pong API Server CI
+name: Dr Pong Chat Server CI
 
 on:
   push:
