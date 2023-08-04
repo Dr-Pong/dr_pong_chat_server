@@ -103,7 +103,7 @@ export class ChannelGateWay
 
     sockets?.forEach((socket) => {
       if (
-        socket.id !== user.socket[GATEWAY_CHANNEL]?.id &&
+        !user.socket[GATEWAY_CHANNEL]?.has(socket.id) &&
         !this.userFactory
           .findById(this.sockets.get(socket.id))
           .blockedList.has(user.id)
