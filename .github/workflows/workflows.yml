@@ -31,8 +31,7 @@ jobs:
 
       # Wait for the database service to start
       - name: Wait for database service
-        run: docker run --network container:chat-db appropriate/nc -z chat-db 5432
-
+        run: docker exec chat-db bash -c "while ! nc -z localhost 5432; do sleep 1; done"
       # # Run database migrations (if applicable)
       # - name: Run database migrations
       #   run: npm run db:migrate
