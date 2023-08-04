@@ -48,7 +48,6 @@ export class NotificationGateWay
       return;
     }
 
-    this.sockets.set(socket.id, user.id);
     this.userFactory.setSocket(user.id, GATEWAY_NOTIFICATION, socket);
 
     await this.sendStatusToFriends(user.id, user.status);
@@ -67,12 +66,12 @@ export class NotificationGateWay
    * 네임스페이스에서 연결이 끊어지면 친구들에게 자신의 상태를 알립니다. (offline)
    */
   async handleDisconnect(@ConnectedSocket() socket: Socket): Promise<void> {
-    const user: UserModel = this.userFactory.findById(
-      this.sockets.get(socket.id),
-    );
+    const user: UserModel = getUserFromSocket(socket, this.userFactory);
+    if (!user) {
+      return;
+    }
     await this.sendStatusToFriends(user.id, USERSTATUS_OFFLINE);
     this.userFactory.deleteSocket(user.id, GATEWAY_NOTIFICATION, socket);
-    this.sockets.delete(socket.id);
   }
 
   /**

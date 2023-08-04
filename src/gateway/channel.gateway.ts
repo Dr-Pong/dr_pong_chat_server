@@ -60,9 +60,10 @@ export class ChannelGateWay
   }
 
   async handleDisconnect(@ConnectedSocket() socket: Socket) {
-    const userId = this.sockets.get(socket.id);
+    const user: UserModel = getUserFromSocket(socket, this.userFactory);
+    if (!user) return;
 
-    this.userFactory.deleteSocket(userId, GATEWAY_CHANNEL, socket);
+    this.userFactory.deleteSocket(user.id, GATEWAY_CHANNEL, socket);
     this.sockets.delete(socket.id);
   }
 

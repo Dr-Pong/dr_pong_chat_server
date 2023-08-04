@@ -48,7 +48,7 @@ export class FriendGateWay implements OnGatewayConnection, OnGatewayDisconnect {
     if (!user) {
       return;
     }
-    this.userFactory.setSocket(user.id, GATEWAY_FRIEND, null);
+    this.userFactory.deleteSocket(user.id, GATEWAY_FRIEND, socket);
   }
 
   @SubscribeMessage('status')

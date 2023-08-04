@@ -28,7 +28,6 @@ export class DirectMessageGateway
     private readonly directMessageRepository: DirectMessageRepository,
     private readonly directMessageRoomRepository: DirectMessageRoomRepository,
   ) {}
-  sockets: Map<string, number> = new Map();
 
   /**
    * 'dm' 네임스페이스에 연결되었을 때 실행되는 메서드입니다.
@@ -47,7 +46,6 @@ export class DirectMessageGateway
       return;
     }
 
-    this.sockets.set(socket.id, user.id);
     this.userFactory.setSocket(user.id, GATEWAY_DIRECTMESSAGE, socket);
   }
 
@@ -56,17 +54,17 @@ export class DirectMessageGateway
    * 유저가 dm을 주고받는 중에 연결이 끊겼다면, 마지막 읽은 메시지 id를 업데이트합니다.
    */
   async handleDisconnect(@ConnectedSocket() socket: Socket): Promise<void> {
-    const userId = this.sockets.get(socket.id);
+    const user: UserModel = getUserFromSocket(socket, this.userFactory);
+    if (!user) return;
 
     try {
-      await this.updateLastMessageId(userId);
+      await this.updateLastMessageId(user.id);
     } catch (e) {
       console.log('error in disconnect', e);
     }
 
-    this.sockets.delete(socket.id);
-    this.userFactory.deleteSocket(userId, GATEWAY_DIRECTMESSAGE, socket);
-    this.userFactory.setDirectMessageFriendId(userId, null);
+    this.userFactory.deleteSocket(user.id, GATEWAY_DIRECTMESSAGE, socket);
+    this.userFactory.setDirectMessageFriendId(user.id, null);
   }
 
   /**
@@ -118,9 +116,7 @@ export class DirectMessageGateway
   ): Promise<void> {
     if (!data.nickname) return;
     const friend: UserModel = this.userFactory.findByNickname(data.nickname);
-    const user: UserModel = this.userFactory.findById(
-      this.sockets.get(socket.id),
-    );
+    const user: UserModel = getUserFromSocket(socket, this.userFactory);
     if (!friend || !user) return;
 
     this.userFactory.setDirectMessageFriendId(user.id, friend?.id);
