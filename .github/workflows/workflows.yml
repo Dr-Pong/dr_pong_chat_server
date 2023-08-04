@@ -31,7 +31,11 @@ jobs:
 
       # Wait for the database service to start
       - name: Wait for database service
-        run: docker exec chat-db bash -c "while ! nc -z localhost 5432; do sleep 1; done"
+        run: |
+          while ! PGPASSWORD=chat_db_password psql -h localhost -U chat_db_user -d chat-db -c "select 1;" > /dev/null 2>&1; do
+            sleep 1
+          done
+
       # # Run database migrations (if applicable)
       # - name: Run database migrations
       #   run: npm run db:migrate
