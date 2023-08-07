@@ -41,7 +41,7 @@ export class DirectMessageGateway
       return;
     }
 
-    if (user.socket[GATEWAY_DIRECTMESSAGE]?.size >= 5) {
+    if (user.dmSocket?.size >= 5) {
       socket.disconnect();
       return;
     }
@@ -80,7 +80,7 @@ export class DirectMessageGateway
     const friend: UserModel = this.userFactory.findById(friendId);
 
     if (friend?.directMessageFriendId === user?.id) {
-      friend?.socket[GATEWAY_DIRECTMESSAGE]?.forEach((socket: Socket) => {
+      friend?.dmSocket?.forEach((socket: Socket) => {
         socket?.emit(
           'message',
           new MessageModel(
@@ -92,7 +92,7 @@ export class DirectMessageGateway
         );
       });
     }
-    user?.socket[GATEWAY_DIRECTMESSAGE]?.forEach((socket: Socket) => {
+    user?.dmSocket?.forEach((socket: Socket) => {
       socket?.emit(
         'message',
         new MessageModel(

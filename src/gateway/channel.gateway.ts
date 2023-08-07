@@ -47,7 +47,7 @@ export class ChannelGateWay
       socket.disconnect();
       return;
     }
-    if (user.socket[GATEWAY_CHANNEL]?.size >= 5) {
+    if (user.channelSocket?.size >= 5) {
       socket.disconnect();
       return;
     }
@@ -87,7 +87,7 @@ export class ChannelGateWay
    */
   async leaveChannel(userId: number, channelId: string): Promise<void> {
     const user: UserModel = this.userFactory.findById(userId);
-    user.socket[GATEWAY_CHANNEL]?.forEach((socket: Socket) => {
+    user.channelSocket?.forEach((socket: Socket) => {
       socket.leave(channelId);
     });
     user.joinedChannel = null;
@@ -106,7 +106,7 @@ export class ChannelGateWay
 
     sockets?.forEach((socket) => {
       if (
-        !user.socket[GATEWAY_CHANNEL]?.has(socket.id) &&
+        !user.channelSocket?.has(socket.id) &&
         !this.userFactory
           .findById(this.sockets.get(socket.id))
           .blockedList.has(user.id)
@@ -121,7 +121,7 @@ export class ChannelGateWay
           ),
         );
     });
-    user.socket[GATEWAY_CHANNEL]?.forEach((socket: Socket) => {
+    user.channelSocket?.forEach((socket: Socket) => {
       socket?.emit(
         CHAT_MESSAGE,
         new MessageModel(
@@ -162,7 +162,7 @@ export class ChannelGateWay
 
   async sendOutEvent(targetUserId: number, reason: string) {
     const user: UserModel = this.userFactory.findById(targetUserId);
-    user.socket[GATEWAY_CHANNEL]?.forEach((socket: Socket) => {
+    user.channelSocket?.forEach((socket: Socket) => {
       socket?.emit('out', {
         type: reason,
       });
@@ -171,14 +171,14 @@ export class ChannelGateWay
 
   async sendMuteEvent(targetUserId: number) {
     const user: UserModel = this.userFactory.findById(targetUserId);
-    user.socket[GATEWAY_CHANNEL]?.forEach((socket: Socket) => {
+    user.channelSocket?.forEach((socket: Socket) => {
       socket?.emit('mute', {});
     });
   }
 
   async sendUnMuteEvent(targetUserId: number) {
     const user: UserModel = this.userFactory.findById(targetUserId);
-    user.socket[GATEWAY_CHANNEL]?.forEach((socket: Socket) => {
+    user.channelSocket?.forEach((socket: Socket) => {
       socket?.emit('unmute', {});
     });
   }

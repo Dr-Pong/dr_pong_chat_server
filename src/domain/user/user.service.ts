@@ -102,7 +102,7 @@ export class UserService {
     this.userFactory.setSocket(
       userId,
       GATEWAY_NOTIFICATION,
-      user.socket[GATEWAY_NOTIFICATION],
+      user.notificationSocket?.values().next().value ?? null,
     );
     this.notificationGateway.sendStatusToFriends(userId, user.status);
   }
