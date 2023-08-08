@@ -5,8 +5,9 @@ import {
   OnGatewayDisconnect,
   SubscribeMessage,
   WebSocketGateway,
+  WebSocketServer,
 } from '@nestjs/websockets';
-import { Socket } from 'socket.io';
+import { Server, Socket } from 'socket.io';
 import { DirectMessageRepository } from 'src/domain/direct-message/direct-message.repository';
 import { UserModel } from 'src/domain/factory/model/user.model';
 import { UserFactory } from 'src/domain/factory/user.factory';
@@ -16,7 +17,10 @@ import { IsolationLevel, Transactional } from 'typeorm-transactional';
 import { MessageModel } from './dto/message.model';
 import { CHATTYPE_ME, CHATTYPE_OTHERS } from 'src/global/type/type.chat';
 import { GATEWAY_DIRECTMESSAGE } from './type/type.gateway';
-import { getUserFromSocket } from 'src/global/utils/socket.utils';
+import {
+  getUserFromSocket,
+  sendToAllSockets,
+} from 'src/global/utils/socket.utils';
 import { DirectMessage } from 'src/domain/direct-message/direct-message.entity';
 
 @WebSocketGateway({ namespace: 'dm' })
@@ -28,6 +32,8 @@ export class DirectMessageGateway
     private readonly directMessageRepository: DirectMessageRepository,
     private readonly directMessageRoomRepository: DirectMessageRoomRepository,
   ) {}
+  @WebSocketServer()
+  server: Server;
 
   /**
    * 'dm' 네임스페이스에 연결되었을 때 실행되는 메서드입니다.
@@ -80,29 +86,52 @@ export class DirectMessageGateway
     const friend: UserModel = this.userFactory.findById(friendId);
 
     if (friend?.directMessageFriendId === user?.id) {
-      friend?.dmSocket?.forEach((socket: Socket) => {
-        socket?.emit(
-          'message',
-          new MessageModel(
-            message.id,
-            user?.nickname,
-            message.message,
-            CHATTYPE_OTHERS,
-          ),
-        );
-      });
-    }
-    user?.dmSocket?.forEach((socket: Socket) => {
-      socket?.emit(
+      sendToAllSockets(
+        friend.dmSocket,
+        this.server,
         'message',
         new MessageModel(
           message.id,
           user?.nickname,
           message.message,
-          CHATTYPE_ME,
+          CHATTYPE_OTHERS,
         ),
       );
-    });
+
+      // friend?.dmSocket?.forEach((socket: Socket) => {
+      //   socket?.emit(
+      //     'message',
+      //     new MessageModel(
+      //       message.id,
+      //       user?.nickname,
+      //       message.message,
+      //       CHATTYPE_OTHERS,
+      //     ),
+      //   );
+      // });
+    }
+    sendToAllSockets(
+      user.dmSocket,
+      this.server,
+      'message',
+      new MessageModel(
+        message.id,
+        user?.nickname,
+        message.message,
+        CHATTYPE_ME,
+      ),
+    );
+    // user?.dmSocket?.forEach((socket: Socket) => {
+    //   socket?.emit(
+    //     'message',
+    //     new MessageModel(
+    //       message.id,
+    //       user?.nickname,
+    //       message.message,
+    //       CHATTYPE_ME,
+    //     ),
+    //   );
+    // });
   }
 
   /**

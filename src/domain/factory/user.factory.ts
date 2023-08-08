@@ -45,9 +45,6 @@ export class UserFactory {
   joinChannel(userId: number, channel: ChannelModel): void {
     const user: UserModel = this.findById(userId);
     user.joinedChannel = channel.id;
-    user.channelSocket?.forEach((socket: Socket) => {
-      socket.join(channel.id);
-    });
     if (channel.muteList.has(user.id)) {
       user.isMuted = true;
     }
@@ -56,9 +53,6 @@ export class UserFactory {
 
   leaveChannel(userId: number): void {
     const user: UserModel = this.findById(userId);
-    user.channelSocket?.forEach((socket: Socket) => {
-      socket.leave(user.joinedChannel);
-    });
     user.joinedChannel = null;
     user.isMuted = false;
     user.roleType = null;
@@ -113,16 +107,16 @@ export class UserFactory {
     const user: UserModel = this.findById(userId);
     switch (type) {
       case GATEWAY_NOTIFICATION:
-        user.notificationSocket.set(socket.id, socket);
+        user.notificationSocket.set(socket.id, socket.id);
         break;
       case GATEWAY_CHANNEL:
-        user.channelSocket.set(socket.id, socket);
+        user.channelSocket.set(socket.id, socket.id);
         break;
       case GATEWAY_FRIEND:
-        user.friendSocket.set(socket.id, socket);
+        user.friendSocket.set(socket.id, socket.id);
         break;
       case GATEWAY_DIRECTMESSAGE:
-        user.dmSocket.set(socket.id, socket);
+        user.dmSocket.set(socket.id, socket.id);
         break;
     }
     if (socket && user.playingGame) {

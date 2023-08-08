@@ -4,8 +4,9 @@ import {
   OnGatewayDisconnect,
   SubscribeMessage,
   WebSocketGateway,
+  WebSocketServer,
 } from '@nestjs/websockets';
-import { Socket } from 'socket.io';
+import { Server, Socket } from 'socket.io';
 import { UserFactory } from 'src/domain/factory/user.factory';
 import { FriendRepository } from 'src/domain/friend/friend.repository';
 import { UserModel } from 'src/domain/factory/model/user.model';
@@ -13,7 +14,10 @@ import { Friend } from 'src/domain/friend/friend.entity';
 import { UserStatusType } from 'src/global/type/type.user.status';
 import { GATEWAY_FRIEND } from './type/type.gateway';
 import { IsolationLevel, Transactional } from 'typeorm-transactional';
-import { getUserFromSocket } from 'src/global/utils/socket.utils';
+import {
+  getUserFromSocket,
+  sendToAllSockets,
+} from 'src/global/utils/socket.utils';
 
 @WebSocketGateway({ namespace: 'friends' })
 export class FriendGateWay implements OnGatewayConnection, OnGatewayDisconnect {
@@ -21,6 +25,8 @@ export class FriendGateWay implements OnGatewayConnection, OnGatewayDisconnect {
     private readonly userFactory: UserFactory,
     private readonly friendRepository: FriendRepository,
   ) {}
+  @WebSocketServer()
+  server: Server;
 
   /**
    * 'friends' 네임스페이스에 연결되었을 때 실행되는 메서드입니다.
@@ -28,7 +34,7 @@ export class FriendGateWay implements OnGatewayConnection, OnGatewayDisconnect {
    * 유저가 친구들의 상태를 받아오려면 네임스페이스에 연결되어 있어야 합니다.
    */
   async handleConnection(@ConnectedSocket() socket: Socket): Promise<void> {
-    const user: UserModel = getUserFromSocket(socket, this.userFactory);
+    const user: UserModel = await getUserFromSocket(socket, this.userFactory);
     if (!user) {
       socket.disconnect();
       return;
@@ -44,7 +50,7 @@ export class FriendGateWay implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   async handleDisconnect(@ConnectedSocket() socket: Socket): Promise<void> {
-    const user: UserModel = getUserFromSocket(socket, this.userFactory);
+    const user: UserModel = await getUserFromSocket(socket, this.userFactory);
     if (!user) {
       return;
     }
@@ -54,7 +60,7 @@ export class FriendGateWay implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('status')
   @Transactional({ isolationLevel: IsolationLevel.READ_UNCOMMITTED })
   async emitFriendStatus(@ConnectedSocket() socket: Socket): Promise<void> {
-    const user: UserModel = getUserFromSocket(socket, this.userFactory);
+    const user: UserModel = await getUserFromSocket(socket, this.userFactory);
     if (!user) return;
 
     const friends: Friend[] = await this.friendRepository.findFriendsByUserId(
@@ -69,9 +75,10 @@ export class FriendGateWay implements OnGatewayConnection, OnGatewayDisconnect {
       const friend: UserModel = this.userFactory.findById(friendId);
       data[friend.nickname] = friend.status;
     });
-    user.friendSocket?.forEach((socket: Socket) => {
-      socket?.emit('friends', data);
-    });
+    sendToAllSockets(user.friendSocket, this.server, 'friends', data);
+    // user.friendSocket?.forEach((socket: Socket) => {
+    //   socket?.emit('friends', data);
+    // });
   }
 
   /**
@@ -92,15 +99,17 @@ export class FriendGateWay implements OnGatewayConnection, OnGatewayDisconnect {
       const friend: UserModel = this.userFactory.findById(friendId);
       data[friend.nickname] = friend.status;
     });
-    user.friendSocket?.forEach((socket: Socket) => {
-      socket?.emit('friends', data);
-    });
+    sendToAllSockets(user.friendSocket, this.server, 'friends', data);
+    // user.friendSocket?.forEach((socket: Socket) => {
+    //   socket?.emit('friends', data);
+    // });
   }
 
   async friendNotice(targetId: number): Promise<void> {
     const target: UserModel = this.userFactory.findById(targetId);
-    target.friendSocket?.forEach((socket: Socket) => {
-      socket?.emit('friend', {});
-    });
+    sendToAllSockets(target.friendSocket, this.server, 'friend', {});
+    // target.friendSocket?.forEach((socket: Socket) => {
+    //   socket?.emit('friend', {});
+    // });
   }
 }
