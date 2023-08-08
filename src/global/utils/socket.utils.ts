@@ -1,5 +1,5 @@
 import { JwtService } from '@nestjs/jwt';
-import { Socket } from 'socket.io';
+import { Server, Socket } from 'socket.io';
 import { UserModel } from 'src/domain/factory/model/user.model';
 import { UserFactory } from 'src/domain/factory/user.factory';
 import * as dotenv from 'dotenv';
@@ -40,4 +40,15 @@ export function getUserFromSocket(
     console.log(accesstoken, e);
     return null;
   }
+}
+
+export function sendToAllSockets(
+  sockets: Map<string, string>,
+  server: Server,
+  event: string,
+  data: any,
+): void {
+  sockets.forEach((socketId: string) => {
+    server.to(socketId).emit(event, data);
+  });
 }
