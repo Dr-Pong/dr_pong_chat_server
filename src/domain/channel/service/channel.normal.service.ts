@@ -254,7 +254,7 @@ export class ChannelNormalService {
       throw new BadRequestException('User is not joined channel');
     }
 
-    await this.exitChannel(
+    const message: ChannelMessage = await this.exitChannel(
       new ChannelExitDto(deleteDto.userId, channelUser.channel.id),
     );
     if (channelUser.channel.headCount === 1) {
@@ -263,7 +263,11 @@ export class ChannelNormalService {
 
     /** 트랜잭션이 성공하면 Factory에도 결과를 반영한다 */
     runOnTransactionComplete(() => {
-      this.channelGateway.leaveChannel(deleteDto.userId, deleteDto.channelId);
+      this.channelGateway.leaveChannel(
+        deleteDto.userId,
+        deleteDto.channelId,
+        message.id,
+      );
     });
   }
 

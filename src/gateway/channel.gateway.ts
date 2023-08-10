@@ -11,6 +11,7 @@ import { UserFactory } from 'src/domain/factory/user.factory';
 import { UserModel } from 'src/domain/factory/model/user.model';
 import {
   CHAT_JOIN,
+  CHAT_LEAVE,
   CHAT_MESSAGE,
   ChannelActionType,
 } from 'src/domain/channel/type/type.channel.action';
@@ -92,13 +93,18 @@ export class ChannelGateWay
    * 유저가 채널에서 나가도록 하는 함수입니다.
    * 채널에서 나가면 채널에 있는 모든 유저에게 퇴장 메시지를 보냅니다.
    */
-  async leaveChannel(userId: number, channelId: string): Promise<void> {
+  async leaveChannel(
+    userId: number,
+    channelId: string,
+    messageId: number,
+  ): Promise<void> {
     const user: UserModel = this.userFactory.findById(userId);
     user.channelSocket?.forEach((socket: string) => {
       this.server.in(socket).socketsLeave(channelId);
     });
     user.joinedChannel = null;
     this.channelFactory.leave(user.id, channelId);
+    this.sendNoticeToChannel(userId, channelId, CHAT_LEAVE, messageId);
   }
 
   /**
