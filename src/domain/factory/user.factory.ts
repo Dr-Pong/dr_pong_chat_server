@@ -14,7 +14,13 @@ import {
   CHANNEL_PARTICIPANT_NORMAL,
   CHANNEL_PARTICIPANT_OWNER,
 } from '../channel/type/type.channel-participant';
-import { GATEWAY_CHANNEL, GateWayType } from 'src/gateway/type/type.gateway';
+import {
+  GATEWAY_CHANNEL,
+  GATEWAY_DIRECTMESSAGE,
+  GATEWAY_FRIEND,
+  GATEWAY_NOTIFICATION,
+  GateWayType,
+} from 'src/gateway/type/type.gateway';
 import { GameInviteModel } from './model/game.invite.model';
 import { GameModel } from './model/game.model';
 
@@ -39,7 +45,6 @@ export class UserFactory {
   joinChannel(userId: number, channel: ChannelModel): void {
     const user: UserModel = this.findById(userId);
     user.joinedChannel = channel.id;
-    user.socket[GATEWAY_CHANNEL]?.join(channel.id);
     if (channel.muteList.has(user.id)) {
       user.isMuted = true;
     }
@@ -48,7 +53,6 @@ export class UserFactory {
 
   leaveChannel(userId: number): void {
     const user: UserModel = this.findById(userId);
-    user.socket[GATEWAY_CHANNEL]?.leave(user.joinedChannel);
     user.joinedChannel = null;
     user.isMuted = false;
     user.roleType = null;
@@ -101,12 +105,46 @@ export class UserFactory {
 
   setSocket(userId: number, type: GateWayType, socket: Socket): void {
     const user: UserModel = this.findById(userId);
-    user.socket[type] = socket;
+    switch (type) {
+      case GATEWAY_NOTIFICATION:
+        user.notificationSocket.set(socket.id, socket.id);
+        break;
+      case GATEWAY_CHANNEL:
+        user.channelSocket.set(socket.id, socket.id);
+        break;
+      case GATEWAY_FRIEND:
+        user.friendSocket.set(socket.id, socket.id);
+        break;
+      case GATEWAY_DIRECTMESSAGE:
+        user.dmSocket.set(socket.id, socket.id);
+        break;
+    }
     if (socket && user.playingGame) {
       user.status = USERSTATUS_INGAME;
     } else if (socket) {
       user.status = USERSTATUS_ONLINE;
-    } else if (!user.socket['notification']) {
+    } else if (!user.notificationSocket.size) {
+      user.status = USERSTATUS_OFFLINE;
+    }
+  }
+
+  deleteSocket(userId: number, type: GateWayType, socket: Socket): void {
+    const user: UserModel = this.findById(userId);
+    switch (type) {
+      case GATEWAY_NOTIFICATION:
+        user.notificationSocket.delete(socket.id);
+        break;
+      case GATEWAY_CHANNEL:
+        user.channelSocket.delete(socket.id);
+        break;
+      case GATEWAY_FRIEND:
+        user.friendSocket.delete(socket.id);
+        break;
+      case GATEWAY_DIRECTMESSAGE:
+        user.dmSocket.delete(socket.id);
+        break;
+    }
+    if (!user.notificationSocket.size) {
       user.status = USERSTATUS_OFFLINE;
     }
   }

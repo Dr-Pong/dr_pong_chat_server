@@ -3,8 +3,9 @@ import {
   OnGatewayConnection,
   OnGatewayDisconnect,
   WebSocketGateway,
+  WebSocketServer,
 } from '@nestjs/websockets';
-import { Socket } from 'socket.io';
+import { Server, Socket } from 'socket.io';
 import { UserFactory } from 'src/domain/factory/user.factory';
 import { UserModel } from 'src/domain/factory/model/user.model';
 import { FriendRepository } from 'src/domain/friend/friend.repository';
@@ -13,8 +14,11 @@ import {
   UserStatusType,
 } from 'src/global/type/type.user.status';
 import { Friend } from 'src/domain/friend/friend.entity';
-import { GATEWAY_FRIEND, GATEWAY_NOTIFICATION } from './type/type.gateway';
-import { getUserFromSocket } from 'src/global/utils/socket.utils';
+import { GATEWAY_NOTIFICATION } from './type/type.gateway';
+import {
+  getUserFromSocket,
+  sendToAllSockets,
+} from 'src/global/utils/socket.utils';
 import { ChannelInviteModel } from 'src/domain/factory/model/channel.invite.model';
 import { GameInviteModel } from 'src/domain/factory/model/game.invite.model';
 import { GameInvitation } from 'src/domain/invitation/dto/game.invite.list.dto';
@@ -27,6 +31,8 @@ export class NotificationGateWay
     private readonly userFactory: UserFactory,
     private readonly friendRepository: FriendRepository,
   ) {}
+  @WebSocketServer()
+  server: Server;
   private sockets: Map<string, number> = new Map();
 
   /**
@@ -36,26 +42,32 @@ export class NotificationGateWay
    * 알림을 받기 위해서는 네임스페이스에 연결되어 있어야 합니다.
    */
   async handleConnection(@ConnectedSocket() socket: Socket): Promise<void> {
-    const user: UserModel = getUserFromSocket(socket, this.userFactory);
+    const user: UserModel = await getUserFromSocket(socket, this.userFactory);
     if (!user) {
+      console.log('user not found', socket.id);
+      // socket.disconnect();
+      return;
+    }
+
+    if (user.notificationSocket?.size >= 5) {
       socket.disconnect();
       return;
     }
 
-    if (user.socket[GATEWAY_NOTIFICATION]?.id !== socket?.id) {
-      await user.socket[GATEWAY_NOTIFICATION]?.emit('multiConnect');
-      await user.socket[GATEWAY_NOTIFICATION]?.disconnect();
-    }
-
-    this.sockets.set(socket.id, user.id);
     this.userFactory.setSocket(user.id, GATEWAY_NOTIFICATION, socket);
 
     await this.sendStatusToFriends(user.id, user.status);
     if (user.playingGame?.id) {
-      user.socket[GATEWAY_NOTIFICATION]?.emit('isInGame', {
+      sendToAllSockets(user.notificationSocket, this.server, 'isInGame', {
         roomId: user.playingGame.id,
         gameType: user.playingGame.type,
       });
+      // user.notificationSocket?.forEach((socket: Socket) => {
+      //   socket?.emit('isInGame', {
+      //     roomId: user.playingGame.id,
+      //     gameType: user.playingGame.type,
+      //   });
+      // });
     }
   }
 
@@ -64,12 +76,12 @@ export class NotificationGateWay
    * 네임스페이스에서 연결이 끊어지면 친구들에게 자신의 상태를 알립니다. (offline)
    */
   async handleDisconnect(@ConnectedSocket() socket: Socket): Promise<void> {
-    const user: UserModel = this.userFactory.findById(
-      this.sockets.get(socket.id),
-    );
+    const user: UserModel = await getUserFromSocket(socket, this.userFactory);
+    if (!user) {
+      return;
+    }
     await this.sendStatusToFriends(user.id, USERSTATUS_OFFLINE);
-    this.userFactory.setSocket(user.id, GATEWAY_NOTIFICATION, null);
-    this.sockets.delete(socket.id);
+    this.userFactory.deleteSocket(user.id, GATEWAY_NOTIFICATION, socket);
   }
 
   /**
@@ -78,7 +90,10 @@ export class NotificationGateWay
    */
   async friendNotice(targetId: number): Promise<void> {
     const target: UserModel = this.userFactory.findById(targetId);
-    target.socket[GATEWAY_NOTIFICATION]?.emit('friend', {});
+    sendToAllSockets(target.notificationSocket, this.server, 'friend', {});
+    // target.notificationSocket?.forEach((socket: Socket) => {
+    //   socket?.emit('friend', {});
+    // });
   }
 
   /**
@@ -88,9 +103,12 @@ export class NotificationGateWay
    */
   async newChatNotice(userId: number, targetId: number): Promise<void> {
     const target: UserModel = this.userFactory.findById(targetId);
-    if (target.directMessageFriendId !== userId) {
-      target.socket[GATEWAY_NOTIFICATION]?.emit('newChat', {});
-    }
+    sendToAllSockets(target.notificationSocket, this.server, 'newChat', {});
+    // if (target.directMessageFriendId !== userId) {
+    //   target.notificationSocket?.forEach((socket: Socket) => {
+    //     socket?.emit('newChat', {});
+    //   });
+    // }
   }
 
   /**
@@ -100,15 +118,29 @@ export class NotificationGateWay
    */
   async inviteChannel(targetId: number, invite: ChannelInviteModel) {
     const target: UserModel = this.userFactory.findById(targetId);
-    target.socket[GATEWAY_NOTIFICATION]?.emit('invite', invite);
+    sendToAllSockets(target.notificationSocket, this.server, 'invite', invite);
+    // target.notificationSocket?.forEach((socket: Socket) => {
+    //   socket?.emit('invite', invite);
+    // });
     this.userFactory.inviteChannel(target.id, invite);
   }
 
   async inviteGame(senderId: number, invite: GameInviteModel) {
     const sender: UserModel = this.userFactory.findById(senderId);
     const receiver: UserModel = this.userFactory.findById(invite.receiverId);
-    const gameInvitation: GameInvitation = new GameInvitation(invite.id, sender.nickname)
-    receiver.socket[GATEWAY_NOTIFICATION]?.emit('invite', gameInvitation);
+    const gameInvitation: GameInvitation = new GameInvitation(
+      invite.id,
+      sender.nickname,
+    );
+    sendToAllSockets(
+      receiver.notificationSocket,
+      this.server,
+      'invite',
+      gameInvitation,
+    );
+    // receiver.notificationSocket?.forEach((socket: Socket) => {
+    //   socket?.emit('invite', gameInvitation);
+    // });
     this.userFactory.inviteGame(senderId, receiver.id, invite);
   }
 
@@ -118,8 +150,24 @@ export class NotificationGateWay
       sender?.gameInvite?.receiverId,
     );
     if (!sender || !receiver) return;
-    sender.socket[GATEWAY_NOTIFICATION]?.emit('deleteInvite', {});
-    receiver.socket[GATEWAY_NOTIFICATION]?.emit('deleteInvite', {});
+    sendToAllSockets(
+      sender.notificationSocket,
+      this.server,
+      'deleteInvite',
+      {},
+    );
+    sendToAllSockets(
+      receiver.notificationSocket,
+      this.server,
+      'deleteInvite',
+      {},
+    );
+    // sender.notificationSocket?.forEach((socket: Socket) => {
+    //   socket?.emit('deleteInvite', {});
+    // });
+    // receiver.notificationSocket?.forEach((socket: Socket) => {
+    //   socket?.emit('deleteInvite', {});
+    // });
     this.userFactory.deleteGameInviteBySenderId(sender.id);
   }
 
@@ -142,7 +190,10 @@ export class NotificationGateWay
       const friendId: number =
         c.sender.id === user.id ? c.receiver.id : c.sender.id;
       const friend: UserModel = this.userFactory.findById(friendId);
-      friend?.socket[GATEWAY_FRIEND]?.emit('friends', data);
+      sendToAllSockets(friend.notificationSocket, this.server, 'friends', data);
+      // friend?.friendSocket?.forEach((socket: Socket) => {
+      //   socket?.emit('friends', data);
+      // });
     }
   }
 }

@@ -116,7 +116,11 @@ export class DirectMessageService {
     await this.renewDirectMessageRoom(userId, friendId, newMessage.id);
 
     runOnTransactionComplete(() => {
-      this.directMessageGateway.sendMessageToFriend(userId, friendId, message);
+      this.directMessageGateway.sendMessageToFriend(
+        userId,
+        friendId,
+        newMessage,
+      );
       this.notificationGateway.newChatNotice(userId, friendId);
     });
   }

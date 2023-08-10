@@ -5,8 +5,9 @@ import {
   OnGatewayDisconnect,
   SubscribeMessage,
   WebSocketGateway,
+  WebSocketServer,
 } from '@nestjs/websockets';
-import { Socket } from 'socket.io';
+import { Server, Socket } from 'socket.io';
 import { DirectMessageRepository } from 'src/domain/direct-message/direct-message.repository';
 import { UserModel } from 'src/domain/factory/model/user.model';
 import { UserFactory } from 'src/domain/factory/user.factory';
@@ -14,9 +15,13 @@ import { FriendChatManager } from 'src/global/utils/generate.room.id';
 import { DirectMessageRoomRepository } from 'src/domain/direct-message-room/direct-message-room.repository';
 import { IsolationLevel, Transactional } from 'typeorm-transactional';
 import { MessageModel } from './dto/message.model';
-import { CHATTYPE_OTHERS } from 'src/global/type/type.chat';
+import { CHATTYPE_ME, CHATTYPE_OTHERS } from 'src/global/type/type.chat';
 import { GATEWAY_DIRECTMESSAGE } from './type/type.gateway';
-import { getUserFromSocket } from 'src/global/utils/socket.utils';
+import {
+  getUserFromSocket,
+  sendToAllSockets,
+} from 'src/global/utils/socket.utils';
+import { DirectMessage } from 'src/domain/direct-message/direct-message.entity';
 
 @WebSocketGateway({ namespace: 'dm' })
 export class DirectMessageGateway
@@ -27,7 +32,8 @@ export class DirectMessageGateway
     private readonly directMessageRepository: DirectMessageRepository,
     private readonly directMessageRoomRepository: DirectMessageRoomRepository,
   ) {}
-  sockets: Map<string, number> = new Map();
+  @WebSocketServer()
+  server: Server;
 
   /**
    * 'dm' 네임스페이스에 연결되었을 때 실행되는 메서드입니다.
@@ -41,11 +47,11 @@ export class DirectMessageGateway
       return;
     }
 
-    if (user.socket && user.socket[GATEWAY_DIRECTMESSAGE]?.id !== socket?.id) {
-      user.socket[GATEWAY_DIRECTMESSAGE]?.disconnect();
+    if (user.dmSocket?.size >= 5) {
+      socket.disconnect();
+      return;
     }
 
-    this.sockets.set(socket.id, user.id);
     this.userFactory.setSocket(user.id, GATEWAY_DIRECTMESSAGE, socket);
   }
 
@@ -54,17 +60,17 @@ export class DirectMessageGateway
    * 유저가 dm을 주고받는 중에 연결이 끊겼다면, 마지막 읽은 메시지 id를 업데이트합니다.
    */
   async handleDisconnect(@ConnectedSocket() socket: Socket): Promise<void> {
-    const userId = this.sockets.get(socket.id);
+    const user: UserModel = getUserFromSocket(socket, this.userFactory);
+    if (!user) return;
 
     try {
-      await this.updateLastMessageId(userId);
+      await this.updateLastMessageId(user.id);
     } catch (e) {
       console.log('error in disconnect', e);
     }
 
-    this.sockets.delete(socket.id);
-    this.userFactory.setSocket(userId, GATEWAY_DIRECTMESSAGE, null);
-    this.userFactory.setDirectMessageFriendId(userId, null);
+    this.userFactory.deleteSocket(user.id, GATEWAY_DIRECTMESSAGE, socket);
+    this.userFactory.setDirectMessageFriendId(user.id, null);
   }
 
   /**
@@ -74,20 +80,58 @@ export class DirectMessageGateway
   async sendMessageToFriend(
     userId: number,
     friendId: number,
-    content: string,
+    message: DirectMessage,
   ): Promise<void> {
     const user: UserModel = this.userFactory.findById(userId);
     const friend: UserModel = this.userFactory.findById(friendId);
 
-    const message: MessageModel = new MessageModel(
-      user?.nickname,
-      content,
-      CHATTYPE_OTHERS,
-    );
-
     if (friend?.directMessageFriendId === user?.id) {
-      friend?.socket[GATEWAY_DIRECTMESSAGE]?.emit('message', message);
+      sendToAllSockets(
+        friend.dmSocket,
+        this.server,
+        'message',
+        new MessageModel(
+          message.id,
+          user?.nickname,
+          message.message,
+          CHATTYPE_OTHERS,
+        ),
+      );
+
+      // friend?.dmSocket?.forEach((socket: Socket) => {
+      //   socket?.emit(
+      //     'message',
+      //     new MessageModel(
+      //       message.id,
+      //       user?.nickname,
+      //       message.message,
+      //       CHATTYPE_OTHERS,
+      //     ),
+      //   );
+      // });
     }
+    sendToAllSockets(
+      user.dmSocket,
+      this.server,
+      'message',
+      new MessageModel(
+        message.id,
+        user?.nickname,
+        message.message,
+        CHATTYPE_ME,
+      ),
+    );
+    // user?.dmSocket?.forEach((socket: Socket) => {
+    //   socket?.emit(
+    //     'message',
+    //     new MessageModel(
+    //       message.id,
+    //       user?.nickname,
+    //       message.message,
+    //       CHATTYPE_ME,
+    //     ),
+    //   );
+    // });
   }
 
   /**
@@ -101,9 +145,7 @@ export class DirectMessageGateway
   ): Promise<void> {
     if (!data.nickname) return;
     const friend: UserModel = this.userFactory.findByNickname(data.nickname);
-    const user: UserModel = this.userFactory.findById(
-      this.sockets.get(socket.id),
-    );
+    const user: UserModel = getUserFromSocket(socket, this.userFactory);
     if (!friend || !user) return;
 
     this.userFactory.setDirectMessageFriendId(user.id, friend?.id);

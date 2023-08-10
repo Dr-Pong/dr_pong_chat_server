@@ -12,21 +12,16 @@ import {
 } from 'typeorm-transactional';
 import { UserFactory } from '../../factory/user.factory';
 import { ChannelUser } from '../entity/channel-user.entity';
-import { PostChannelAcceptInviteDto } from '../../invitation/dto/post.channel.accept.invite.dto';
 import { Page } from 'src/global/utils/page';
 import { SaveChannelDto } from '../dto/post/save.channel.dto';
 import { SaveChannelUserDto } from '../dto/post/save.channel-user.dto';
 import {
   checkUserInChannel,
   checkChannelExist,
-  checkUserIsInvited,
   validateChannelJoin,
   checkChannelNameIsDuplicate,
 } from '../validation/validation.channel';
-import {
-  JOIN_CHANNEL_INVITE,
-  JOIN_CHANNEL_JOIN,
-} from 'src/domain/channel/type/type.join.channel';
+import { JOIN_CHANNEL_JOIN } from 'src/domain/channel/type/type.join.channel';
 import { ChannelMessageRepository } from '../repository/channel-message.repository';
 import { PostChannelMessageDto } from '../dto/post/post.channel-message.dto';
 import { MessageDto } from 'src/gateway/dto/message.dto';
@@ -56,6 +51,7 @@ import { GetChannelMessageHistoryDto } from '../dto/get/get.channel-message.hist
 import { UpdateChannelHeadCountDto } from '../dto/patch/update.channel.headcount.dto';
 import { ChannelIdDto } from '../dto/channel.id.dto';
 import { ChannelGateWay } from 'src/gateway/channel.gateway';
+import { CHAT_JOIN } from '../type/type.channel.action';
 
 @Injectable()
 export class ChannelNormalService {
@@ -135,12 +131,12 @@ export class ChannelNormalService {
 
     const message: MessageDto = MessageDto.fromPostDto(postDto);
 
-    await this.messageRepository.save(
+    const newMessage: ChannelMessage = await this.messageRepository.save(
       SaveChannelMessageDto.fromMessageDto(message),
     );
 
     runOnTransactionComplete(() => {
-      this.channelGateway.sendMessageToChannel(message);
+      this.channelGateway.sendMessageToChannel(newMessage);
     });
   }
 
@@ -187,13 +183,25 @@ export class ChannelNormalService {
       new SaveChannelUserDto(postDto.userId, newChannel.id),
     );
 
+    const message: ChannelMessage = await this.messageRepository.save({
+      userId: postDto.userId,
+      channelId: newChannel.id,
+      type: CHAT_JOIN,
+      content: CHAT_JOIN,
+      time: new Date(),
+    });
+
     /** 트랜잭션이 성공하면 Factory에도 결과를 반영한다 */
     runOnTransactionComplete(() => {
       this.channelFactory.create(
         postDto.userId,
         ChannelModel.fromEntity(newChannel),
       );
-      this.channelGateway.joinChannel(postDto.userId, newChannel.id);
+      this.channelGateway.joinChannel(
+        postDto.userId,
+        newChannel.id,
+        message.id,
+      );
     });
 
     return { id: newChannel.id };
@@ -211,7 +219,7 @@ export class ChannelNormalService {
 
     await this.exitIfUserIsInChannel(postDto.userId);
 
-    await this.joinChannel(
+    const message: ChannelMessage = await this.joinChannel(
       new ChannelJoinDto(
         postDto.userId,
         postDto.channelId,
@@ -222,7 +230,11 @@ export class ChannelNormalService {
 
     /** 트랜잭션이 성공하면 Factory에도 결과를 반영한다 */
     runOnTransactionComplete(() => {
-      this.channelGateway.joinChannel(postDto.userId, postDto.channelId);
+      this.channelGateway.joinChannel(
+        postDto.userId,
+        postDto.channelId,
+        message.id,
+      );
     });
   }
 
@@ -242,7 +254,7 @@ export class ChannelNormalService {
       throw new BadRequestException('User is not joined channel');
     }
 
-    await this.exitChannel(
+    const message: ChannelMessage = await this.exitChannel(
       new ChannelExitDto(deleteDto.userId, channelUser.channel.id),
     );
     if (channelUser.channel.headCount === 1) {
@@ -251,7 +263,11 @@ export class ChannelNormalService {
 
     /** 트랜잭션이 성공하면 Factory에도 결과를 반영한다 */
     runOnTransactionComplete(() => {
-      this.channelGateway.leaveChannel(deleteDto.userId, deleteDto.channelId);
+      this.channelGateway.leaveChannel(
+        deleteDto.userId,
+        deleteDto.channelId,
+        message.id,
+      );
     });
   }
 
@@ -298,7 +314,7 @@ export class ChannelNormalService {
    * channel - 채널의 인원수를 업데이트한다
    * message - 채널 입장 메시지를 저장한다
    * */
-  private async joinChannel(dto: ChannelJoinDto): Promise<void> {
+  private async joinChannel(dto: ChannelJoinDto): Promise<ChannelMessage> {
     await validateChannelJoin(dto, this.channelRepository, this.channelFactory);
 
     await this.channelUserRepository.save(
@@ -307,7 +323,9 @@ export class ChannelNormalService {
     await this.channelRepository.updateHeadCount(
       new UpdateChannelHeadCountDto(dto.channelId, 1),
     );
-    await this.messageRepository.save(SaveChannelMessageDto.fromJoinDto(dto));
+    return await this.messageRepository.save(
+      SaveChannelMessageDto.fromJoinDto(dto),
+    );
   }
 
   /**
@@ -317,7 +335,7 @@ export class ChannelNormalService {
    * channel - 채널의 인원수를 업데이트한다
    * message - 채널 퇴장 메시지를 저장한다
    * */
-  private async exitChannel(dto: ChannelExitDto): Promise<void> {
+  private async exitChannel(dto: ChannelExitDto): Promise<ChannelMessage> {
     await this.channelUserRepository.deleteByUserIdAndChannelId(
       dto.userId,
       dto.channelId,
@@ -325,24 +343,28 @@ export class ChannelNormalService {
     await this.channelRepository.updateHeadCount(
       new UpdateChannelHeadCountDto(dto.channelId, -1),
     );
-    await this.messageRepository.save(SaveChannelMessageDto.fromExitDto(dto));
+    return await this.messageRepository.save(
+      SaveChannelMessageDto.fromExitDto(dto),
+    );
   }
 
   /**
    * 유저가 채널에 속해 있는지 확인하고, 속해 있다면 퇴장시키는 함수
    * 채널에 속해 있지 않은 경우 아무것도 하지 않는다
    * */
-  private async exitIfUserIsInChannel(userId: number): Promise<void> {
+  private async exitIfUserIsInChannel(userId: number): Promise<ChannelMessage> {
     const channelUser: ChannelUser =
       await this.channelUserRepository.findByUserIdAndNotDeleted(userId);
+    let message: ChannelMessage = null;
     if (channelUser) {
-      await this.exitChannel(
+      message = await this.exitChannel(
         new ChannelExitDto(userId, channelUser.channel.id),
       );
       if (channelUser.channel.headCount === 1) {
         await this.channelRepository.deleteById(channelUser.channel.id);
       }
     }
+    return message;
   }
 
   private checkUserAlreadyInChannel(
