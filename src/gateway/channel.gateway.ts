@@ -114,9 +114,14 @@ export class ChannelGateWay
     const blockedList = [];
     channel.users.forEach(async (userId) => {
       const participant: UserModel = this.userFactory.findById(userId);
-      if (participant.blockedList.has(user.id))
-        blockedList.push(participant.id);
-      if (participant.id === user.id) blockedList.push(participant.id);
+      if (participant.blockedList.has(user.id)) {
+        participant.channelSocket?.forEach((socket: string) => {
+          blockedList.push(socket);
+        });
+      }
+    });
+    user.channelSocket.forEach((socket: string) => {
+      blockedList.push(socket);
     });
 
     this.server?.to(channel.id).except(blockedList).emit(CHAT_MESSAGE, {
