@@ -127,7 +127,8 @@ export class ChannelGateWay
     this.server?.to(channel.id).except(blockedList).emit(CHAT_MESSAGE, {
       id: message.id,
       nickname: user.nickname,
-      content: message.content,
+      message: message.content,
+      time: message.time,
       type: CHATTYPE_OTHERS,
     });
     // const sockets = await this.server?.in(message.channel.id).fetchSockets();
