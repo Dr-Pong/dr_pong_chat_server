@@ -116,6 +116,7 @@ export class ChannelGateWay
       const participant: UserModel = this.userFactory.findById(userId);
       if (participant.blockedList.has(user.id))
         blockedList.push(participant.id);
+      if (participant.id === user.id) blockedList.push(participant.id);
     });
 
     this.server?.to(channel.id).except(blockedList).emit(CHAT_MESSAGE, {
