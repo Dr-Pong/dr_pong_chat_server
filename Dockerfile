@@ -7,14 +7,16 @@ WORKDIR /app
 # Copy package.json and package-lock.json
 COPY package*.json ./
 
+# Copy source code
+COPY . .
+
 # Install dependencies
 RUN npm install
 
-# Copy source code
-COPY . .
+RUN npm run build
 
 # Expose the desired port (replace 3000 with your server's port)
 EXPOSE 4000
 
 # Run the server
-CMD [ "npm", "run", "start" ]
+CMD [ "npm", "run", "start:prod" ]
