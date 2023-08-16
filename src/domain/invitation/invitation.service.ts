@@ -284,6 +284,7 @@ export class InvitationService {
       return game;
     } catch (error) {
       console.log(error.errno, error.code, error.message);
+      await this.notificationGateWay.deleteGameInvite(senderId);
       throw new BadRequestException('게임 생성에 실패했습니다.');
     }
   }

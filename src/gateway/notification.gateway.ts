@@ -56,7 +56,7 @@ export class NotificationGateWay
 
     this.userFactory.setSocket(user.id, GATEWAY_NOTIFICATION, socket);
 
-    await this.sendStatusToFriends(user.id, user.status);
+    await this.sendStatusToFriends(user.id);
     if (user.playingGame?.id) {
       sendToAllSockets(user.notificationSocket, this.server, 'isInGame', {
         roomId: user.playingGame.id,
@@ -80,7 +80,7 @@ export class NotificationGateWay
     if (!user) {
       return;
     }
-    await this.sendStatusToFriends(user.id, USERSTATUS_OFFLINE);
+    await this.sendStatusToFriends(user.id);
     this.userFactory.deleteSocket(user.id, GATEWAY_NOTIFICATION, socket);
   }
 
@@ -175,22 +175,19 @@ export class NotificationGateWay
    * 친구 상태를 친구들에게 알리는 메서드입니다.
    * 현재 friend namespace에 연결된 모든 자신의 친구들에게 자신의 상태를 알립니다.
    */
-  async sendStatusToFriends(
-    userId: number,
-    status: UserStatusType,
-  ): Promise<void> {
+  async sendStatusToFriends(userId: number): Promise<void> {
     const user: UserModel = this.userFactory.findById(userId);
     const friends: Friend[] = await this.friendRepository.findFriendsByUserId(
       user.id,
     );
 
     const data: { [key: string]: UserStatusType } = {};
-    data[user.nickname] = status;
+    data[user.nickname] = user.status;
     for (const c of friends) {
       const friendId: number =
         c.sender.id === user.id ? c.receiver.id : c.sender.id;
       const friend: UserModel = this.userFactory.findById(friendId);
-      sendToAllSockets(friend.notificationSocket, this.server, 'friends', data);
+      sendToAllSockets(friend.friendSocket, this.server, 'friends', data);
       // friend?.friendSocket?.forEach((socket: Socket) => {
       //   socket?.emit('friends', data);
       // });
