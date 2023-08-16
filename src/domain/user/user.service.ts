@@ -28,7 +28,6 @@ import {
 } from 'src/global/type/type.user.status';
 import { GameModel } from '../factory/model/game.model';
 import { GameMode, GameType } from '../../global/type/type.game';
-import { GATEWAY_NOTIFICATION } from 'src/gateway/type/type.gateway';
 
 @Injectable()
 export class UserService {
@@ -96,7 +95,7 @@ export class UserService {
   ): Promise<void> {
     this.userFactory.setGame(userId, new GameModel(gameId, type, mode));
     this.userFactory.setStatus(userId, USERSTATUS_INGAME);
-    this.notificationGateway.sendStatusToFriends(userId, USERSTATUS_INGAME);
+    this.notificationGateway.sendStatusToFriends(userId);
   }
 
   async patchUserStateOutGame(userId: number): Promise<void> {
@@ -105,6 +104,6 @@ export class UserService {
     if (user.notificationSocket.size) {
       this.userFactory.setStatus(userId, USERSTATUS_ONLINE);
     }
-    this.notificationGateway.sendStatusToFriends(userId, user.status);
+    this.notificationGateway.sendStatusToFriends(userId);
   }
 }
