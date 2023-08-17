@@ -9,10 +9,7 @@ import { Server, Socket } from 'socket.io';
 import { UserFactory } from 'src/domain/factory/user.factory';
 import { UserModel } from 'src/domain/factory/model/user.model';
 import { FriendRepository } from 'src/domain/friend/friend.repository';
-import {
-  USERSTATUS_OFFLINE,
-  UserStatusType,
-} from 'src/global/type/type.user.status';
+import { UserStatusType } from 'src/global/type/type.user.status';
 import { Friend } from 'src/domain/friend/friend.entity';
 import { GATEWAY_NOTIFICATION } from './type/type.gateway';
 import {
@@ -22,6 +19,7 @@ import {
 import { ChannelInviteModel } from 'src/domain/factory/model/channel.invite.model';
 import { GameInviteModel } from 'src/domain/factory/model/game.invite.model';
 import { GameInvitation } from 'src/domain/invitation/dto/game.invite.list.dto';
+import { IsolationLevel, Transactional } from 'typeorm-transactional';
 
 @WebSocketGateway({ namespace: '' })
 export class NotificationGateWay
@@ -80,8 +78,8 @@ export class NotificationGateWay
     if (!user) {
       return;
     }
-    await this.sendStatusToFriends(user.id);
     this.userFactory.deleteSocket(user.id, GATEWAY_NOTIFICATION, socket);
+    await this.sendStatusToFriends(user.id);
   }
 
   /**
@@ -175,6 +173,7 @@ export class NotificationGateWay
    * 친구 상태를 친구들에게 알리는 메서드입니다.
    * 현재 friend namespace에 연결된 모든 자신의 친구들에게 자신의 상태를 알립니다.
    */
+  @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
   async sendStatusToFriends(userId: number): Promise<void> {
     const user: UserModel = this.userFactory.findById(userId);
     const friends: Friend[] = await this.friendRepository.findFriendsByUserId(
