@@ -1,5 +1,5 @@
 import { JwtService } from '@nestjs/jwt';
-import { Server, Socket } from 'socket.io';
+import { Socket } from 'socket.io';
 import { UserModel } from 'src/domain/factory/model/user.model';
 import { UserFactory } from 'src/domain/factory/user.factory';
 import * as dotenv from 'dotenv';
@@ -43,12 +43,11 @@ export function getUserFromSocket(
 }
 
 export function sendToAllSockets(
-  sockets: Map<string, string>,
-  server: Server,
+  sockets: Map<string, Socket>,
   event: string,
   data: any,
 ): void {
-  sockets.forEach((socketId: string) => {
-    server.to(socketId).emit(event, data);
+  sockets.forEach((socket: Socket) => {
+    socket.emit(event, data);
   });
 }
