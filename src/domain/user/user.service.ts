@@ -95,7 +95,7 @@ export class UserService {
   ): Promise<void> {
     this.userFactory.setGame(userId, new GameModel(gameId, type, mode));
     this.userFactory.setStatus(userId, USERSTATUS_INGAME);
-    this.notificationGateway.sendStatusToFriends(userId);
+    await this.notificationGateway.sendStatusToFriends(userId);
   }
 
   async patchUserStateOutGame(userId: number): Promise<void> {
@@ -104,6 +104,6 @@ export class UserService {
     if (user.notificationSocket.size) {
       this.userFactory.setStatus(userId, USERSTATUS_ONLINE);
     }
-    this.notificationGateway.sendStatusToFriends(userId);
+    await this.notificationGateway.sendStatusToFriends(userId);
   }
 }
