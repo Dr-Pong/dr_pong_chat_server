@@ -7,7 +7,7 @@ import {
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
-import { Server, Socket } from 'socket.io';
+import { Namespace, Server, Socket } from 'socket.io';
 import { DirectMessageRepository } from 'src/domain/direct-message/direct-message.repository';
 import { UserModel } from 'src/domain/factory/model/user.model';
 import { UserFactory } from 'src/domain/factory/user.factory';
@@ -33,7 +33,7 @@ export class DirectMessageGateway
     private readonly directMessageRoomRepository: DirectMessageRoomRepository,
   ) {}
   @WebSocketServer()
-  server: Server;
+  server: Namespace;
 
   /**
    * 'dm' 네임스페이스에 연결되었을 때 실행되는 메서드입니다.
@@ -88,7 +88,6 @@ export class DirectMessageGateway
     if (friend?.directMessageFriendId === user?.id) {
       sendToAllSockets(
         friend.dmSocket,
-        this.server,
         'message',
         new MessageModel(
           message.id,
@@ -112,7 +111,6 @@ export class DirectMessageGateway
     }
     sendToAllSockets(
       user.dmSocket,
-      this.server,
       'message',
       new MessageModel(
         message.id,

@@ -4,9 +4,8 @@ import {
   OnGatewayDisconnect,
   SubscribeMessage,
   WebSocketGateway,
-  WebSocketServer,
 } from '@nestjs/websockets';
-import { Server, Socket } from 'socket.io';
+import { Socket } from 'socket.io';
 import { UserFactory } from 'src/domain/factory/user.factory';
 import { FriendRepository } from 'src/domain/friend/friend.repository';
 import { UserModel } from 'src/domain/factory/model/user.model';
@@ -25,8 +24,6 @@ export class FriendGateWay implements OnGatewayConnection, OnGatewayDisconnect {
     private readonly userFactory: UserFactory,
     private readonly friendRepository: FriendRepository,
   ) {}
-  @WebSocketServer()
-  server: Server;
 
   /**
    * 'friends' 네임스페이스에 연결되었을 때 실행되는 메서드입니다.
@@ -75,7 +72,7 @@ export class FriendGateWay implements OnGatewayConnection, OnGatewayDisconnect {
       const friend: UserModel = this.userFactory.findById(friendId);
       data[friend.nickname] = friend.status;
     });
-    sendToAllSockets(user.friendSocket, this.server, 'friends', data);
+    sendToAllSockets(user.friendSocket, 'friends', data);
     // user.friendSocket?.forEach((socket: Socket) => {
     //   socket?.emit('friends', data);
     // });
@@ -99,7 +96,7 @@ export class FriendGateWay implements OnGatewayConnection, OnGatewayDisconnect {
       const friend: UserModel = this.userFactory.findById(friendId);
       data[friend.nickname] = friend.status;
     });
-    sendToAllSockets(user.friendSocket, this.server, 'friends', data);
+    sendToAllSockets(user.friendSocket, 'friends', data);
     // user.friendSocket?.forEach((socket: Socket) => {
     //   socket?.emit('friends', data);
     // });
@@ -107,7 +104,7 @@ export class FriendGateWay implements OnGatewayConnection, OnGatewayDisconnect {
 
   async friendNotice(targetId: number): Promise<void> {
     const target: UserModel = this.userFactory.findById(targetId);
-    sendToAllSockets(target.friendSocket, this.server, 'friend', {});
+    sendToAllSockets(target.friendSocket, 'friend', {});
     // target.friendSocket?.forEach((socket: Socket) => {
     //   socket?.emit('friend', {});
     // });
