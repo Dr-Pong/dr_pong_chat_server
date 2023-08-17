@@ -3,9 +3,8 @@ import {
   OnGatewayConnection,
   OnGatewayDisconnect,
   WebSocketGateway,
-  WebSocketServer,
 } from '@nestjs/websockets';
-import { Server, Socket } from 'socket.io';
+import { Socket } from 'socket.io';
 import { UserFactory } from 'src/domain/factory/user.factory';
 import { UserModel } from 'src/domain/factory/model/user.model';
 import { FriendRepository } from 'src/domain/friend/friend.repository';
@@ -29,8 +28,6 @@ export class NotificationGateWay
     private readonly userFactory: UserFactory,
     private readonly friendRepository: FriendRepository,
   ) {}
-  @WebSocketServer()
-  server: Server;
   private sockets: Map<string, number> = new Map();
 
   /**
@@ -56,7 +53,7 @@ export class NotificationGateWay
 
     await this.sendStatusToFriends(user.id);
     if (user.playingGame?.id) {
-      sendToAllSockets(user.notificationSocket, this.server, 'isInGame', {
+      sendToAllSockets(user.notificationSocket, 'isInGame', {
         roomId: user.playingGame.id,
         gameType: user.playingGame.type,
       });
@@ -88,7 +85,7 @@ export class NotificationGateWay
    */
   async friendNotice(targetId: number): Promise<void> {
     const target: UserModel = this.userFactory.findById(targetId);
-    sendToAllSockets(target.notificationSocket, this.server, 'friend', {});
+    sendToAllSockets(target.notificationSocket, 'friend', {});
     // target.notificationSocket?.forEach((socket: Socket) => {
     //   socket?.emit('friend', {});
     // });
@@ -101,7 +98,7 @@ export class NotificationGateWay
    */
   async newChatNotice(userId: number, targetId: number): Promise<void> {
     const target: UserModel = this.userFactory.findById(targetId);
-    sendToAllSockets(target.notificationSocket, this.server, 'newChat', {});
+    sendToAllSockets(target.notificationSocket, 'newChat', {});
     // if (target.directMessageFriendId !== userId) {
     //   target.notificationSocket?.forEach((socket: Socket) => {
     //     socket?.emit('newChat', {});
@@ -116,7 +113,7 @@ export class NotificationGateWay
    */
   async inviteChannel(targetId: number, invite: ChannelInviteModel) {
     const target: UserModel = this.userFactory.findById(targetId);
-    sendToAllSockets(target.notificationSocket, this.server, 'invite', invite);
+    sendToAllSockets(target.notificationSocket, 'invite', invite);
     // target.notificationSocket?.forEach((socket: Socket) => {
     //   socket?.emit('invite', invite);
     // });
@@ -130,12 +127,7 @@ export class NotificationGateWay
       invite.id,
       sender.nickname,
     );
-    sendToAllSockets(
-      receiver.notificationSocket,
-      this.server,
-      'invite',
-      gameInvitation,
-    );
+    sendToAllSockets(receiver.notificationSocket, 'invite', gameInvitation);
     // receiver.notificationSocket?.forEach((socket: Socket) => {
     //   socket?.emit('invite', gameInvitation);
     // });
@@ -148,18 +140,8 @@ export class NotificationGateWay
       sender?.gameInvite?.receiverId,
     );
     if (!sender || !receiver) return;
-    sendToAllSockets(
-      sender.notificationSocket,
-      this.server,
-      'deleteInvite',
-      {},
-    );
-    sendToAllSockets(
-      receiver.notificationSocket,
-      this.server,
-      'deleteInvite',
-      {},
-    );
+    sendToAllSockets(sender.notificationSocket, 'deleteInvite', {});
+    sendToAllSockets(receiver.notificationSocket, 'deleteInvite', {});
     // sender.notificationSocket?.forEach((socket: Socket) => {
     //   socket?.emit('deleteInvite', {});
     // });
@@ -186,7 +168,7 @@ export class NotificationGateWay
       const friendId: number =
         c.sender.id === user.id ? c.receiver.id : c.sender.id;
       const friend: UserModel = this.userFactory.findById(friendId);
-      sendToAllSockets(friend.friendSocket, this.server, 'friends', data);
+      sendToAllSockets(friend.friendSocket, 'friends', data);
       // friend?.friendSocket?.forEach((socket: Socket) => {
       //   socket?.emit('friends', data);
       // });

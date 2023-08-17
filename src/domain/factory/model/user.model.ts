@@ -28,10 +28,10 @@ export class UserModel {
   /** 알림에서 필요한 정보 */
   gameInviteList: Map<string, GameInviteModel>;
   gameInvite: GameInviteModel;
-  notificationSocket: Map<string, string>;
-  channelSocket: Map<string, string>;
-  friendSocket: Map<string, string>;
-  dmSocket: Map<string, string>;
+  notificationSocket: Map<string, Socket>;
+  channelSocket: Map<string, Socket>;
+  friendSocket: Map<string, Socket>;
+  dmSocket: Map<string, Socket>;
 
   static fromEntity(user: User): UserModel {
     const { id, nickname } = user;
@@ -50,10 +50,10 @@ export class UserModel {
     this.channelInviteList = new Map<string, ChannelInviteModel>();
     this.roleType = null;
     this.isMuted = false;
-    this.notificationSocket = new Map<string, string>();
-    this.channelSocket = new Map<string, string>();
-    this.friendSocket = new Map<string, string>();
-    this.dmSocket = new Map<string, string>();
+    this.notificationSocket = new Map<string, Socket>();
+    this.channelSocket = new Map<string, Socket>();
+    this.friendSocket = new Map<string, Socket>();
+    this.dmSocket = new Map<string, Socket>();
     this.profileImage = profileImage;
     this.status = USERSTATUS_OFFLINE;
   }
