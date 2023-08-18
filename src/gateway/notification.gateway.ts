@@ -98,7 +98,9 @@ export class NotificationGateWay
    */
   async newChatNotice(userId: number, targetId: number): Promise<void> {
     const target: UserModel = this.userFactory.findById(targetId);
-    sendToAllSockets(target.notificationSocket, 'newChat', {});
+    if (target.directMessageFriendId !== userId) {
+      sendToAllSockets(target.notificationSocket, 'newChat', {});
+    }
     // if (target.directMessageFriendId !== userId) {
     //   target.notificationSocket?.forEach((socket: Socket) => {
     //     socket?.emit('newChat', {});
