@@ -209,8 +209,17 @@ export class UserFactory {
     sender.gameInvite = null;
   }
 
-  setDirectMessageFriendId(userId: number, friendId: number): void {
+  setDirectMessageFriendId(
+    userId: number,
+    friendId: number,
+    socketId: string,
+  ): void {
     const user: UserModel = this.findById(userId);
-    user.directMessageFriendId = friendId;
+    user.directMessageFriendId.set(socketId, friendId);
+  }
+
+  deleteDirectMessageFriendId(userId: number, socketId: string): void {
+    const user: UserModel = this.findById(userId);
+    user.directMessageFriendId.delete(socketId);
   }
 }

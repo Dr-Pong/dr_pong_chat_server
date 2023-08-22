@@ -20,7 +20,7 @@ export class UserModel {
   /** 채팅방에서 필요한 정보 */
   isMuted: boolean;
   joinedChannel: string;
-  directMessageFriendId: number;
+  directMessageFriendId: Map<string, number>;
   roleType: ChannelParticipantType;
   channelInviteList: Map<string, ChannelInviteModel>;
   blockedList: Map<number, number>;
@@ -48,6 +48,7 @@ export class UserModel {
     this.gameInvite = null;
     this.gameInviteList = new Map<string, GameInviteModel>();
     this.channelInviteList = new Map<string, ChannelInviteModel>();
+    this.directMessageFriendId = new Map<string, number>();
     this.roleType = null;
     this.isMuted = false;
     this.notificationSocket = new Map<string, Socket>();

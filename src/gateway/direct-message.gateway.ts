@@ -61,7 +61,7 @@ export class DirectMessageGateway
     if (!user) return;
 
     this.userFactory.deleteSocket(user.id, GATEWAY_DIRECTMESSAGE, socket);
-    this.userFactory.setDirectMessageFriendId(user.id, null);
+    this.userFactory.deleteDirectMessageFriendId(user.id, socket.id);
   }
 
   /**
@@ -163,6 +163,7 @@ export class DirectMessageGateway
     const user: UserModel = getUserFromSocket(socket, this.userFactory);
     if (!friend || !user) return;
 
+    this.userFactory.setDirectMessageFriendId(user.id, friend.id, socket.id);
     await socket.join(FriendChatManager.generateRoomId(user.id, friend.id));
 
     try {
