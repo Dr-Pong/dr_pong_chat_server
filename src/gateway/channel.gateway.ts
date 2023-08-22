@@ -127,7 +127,7 @@ export class ChannelGateWay
       }
     });
     user.channelSocket.forEach((socket: Socket) => {
-      blockedList.push(socket);
+      blockedList.push(socket.id);
     });
 
     this.server?.to(channel.id).except(blockedList).emit(CHAT_MESSAGE, {
