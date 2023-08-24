@@ -116,7 +116,7 @@ export class InvitationController {
   async gameInviteDelete(@Requestor() requestor: UserIdCardDto): Promise<void> {
     const { id: userId } = requestor;
     const deleteDto = new DeleteGameInviteDto(userId);
-    await this.inviteService.deleteGameInvite(deleteDto);
+    await this.inviteService.deleteGameInviteCancel(deleteDto);
   }
 
   /**
