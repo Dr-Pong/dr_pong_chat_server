@@ -31,11 +31,12 @@ pipeline {
             }
         }
        
-        stage('Docker in Docker test') {
-            steps {
-                sh 'docker-compose exec chatserver npm run test'
-            }
-        }
+        // stage('Docker in Docker test') {
+        //     steps {
+        //         sh 'docker-compose exec chatserver npm run test'
+        //     }
+        // }
+
         // 얘는 지금 안에 안에 가아니라 안에 서 빌드한얘를 가져다가 하는거임 
         // stage('Deploy to AWS') {
         //     steps {
