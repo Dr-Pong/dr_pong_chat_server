@@ -4,9 +4,11 @@ on:
   push:
     branches:
       - /^\d+-.*$/
+      - deploy
   pull_request:
     branches:
       - main
+
 jobs:
   CI:
     runs-on: ubuntu-latest
@@ -20,26 +22,78 @@ jobs:
           cache: "npm"
 
       # clean install
-      - run: npm install
+      - name: Install dependencies
+        run: npm install
 
       # build
-      - run: npm run build --if-present
+      - name: Build
+        run: npm run build --if-present
+      - name: Create .env file
+        run: |
+          echo "FT_CLIENT_ID=${{ secrets.FT_CLIENT_ID }}" > .env
+          echo "FT_CLIENT_SECRET=${{ secrets.FT_CLIENT_SECRET }}" >> .env
+          echo "FT_REDIRECT_URI=${{ secrets.FT_REDIRECT_URI }}" >> .env
+          echo "FT_TOKEN_URI=${{ secrets.FT_TOKEN_URI }}" >> .env
+          echo "FT_USER_INFO=${{ secrets.FT_USER_INFO }}" >> .env
+          echo "GG_CLIENT_ID=${{ secrets.GG_CLIENT_ID }}" >> .env
+          echo "GG_CLIENT_SECRET=${{ secrets.GG_CLIENT_SECRET }}" >> .env
+          echo "GG_REDIRECT_URI=${{ secrets.GG_REDIRECT_URI }}" >> .env
+          echo "GG_TOKEN_URI=${{ secrets.GG_TOKEN_URI }}" >> .env
+          echo "GG_USER_INFO=${{ secrets.GG_USER_INFO }}" >> .env
+          echo "FRONTEND_URL=${{ secrets.FRONTEND_URL }}" >> .env
+          echo "GATEWAY_URL=${{ secrets.GATEWAY_URL }}" >> .env
+          echo "WEBSERVER_URL=${{ secrets.WEBSERVER_URL }}" >> .env
+          echo "GAMESERVER_URL=${{ secrets.GAMESERVER_URL }}" >> .env
+          echo "CHATSERVER_URL=${{ secrets.CHATSERVER_URL }}" >> .env
+          echo "API_DB_USER=${{ secrets.API_DB_USER }}" >> .env
+          echo "API_DB_PASSWORD=${{ secrets.API_DB_PASSWORD }}" >> .env
+          echo "API_DB_NAME=${{ secrets.API_DB_NAME }}" >> .env
+          echo "WEB_DB_USER=${{ secrets.WEB_DB_USER }}" >> .env
+          echo "WEB_DB_PASSWORD=${{ secrets.WEB_DB_PASSWORD }}" >> .env
+          echo "WEB_DB_NAME=${{ secrets.WEB_DB_NAME }}" >> .env
+          echo "GAME_DB_USER=${{ secrets.GAME_DB_USER }}" >> .env
+          echo "GAME_DB_PASSWORD=${{ secrets.GAME_DB_PASSWORD }}" >> .env
+          echo "GAME_DB_NAME=${{ secrets.GAME_DB_NAME }}" >> .env
+          echo "CHAT_DB_NAME=${{ secrets.CHAT_DB_NAME }}" >> .env
+          echo "CHAT_DB_PASSWORD=${{ secrets.CHAT_DB_PASSWORD }}" >> .env
+          echo "CHAT_DB_USER=${{ secrets.CHAT_DB_USER }}" >> .env
+          echo "REDIS_HOST=${{ secrets.REDIS_HOST }}" >> .env
+          echo "REDIS_CACHE_HOST=${{ secrets.REDIS_CACHE_HOST }}" >> .env
+          echo "REDIS_PORT=${{ secrets.REDIS_PORT }}" >> .env
+          echo "ACHIEVEMENTS_ARRAY_SIZE=${{ secrets.ACHIEVEMENTS_ARRAY_SIZE }}" >> .env
+          echo "EMOJI_ARRAY_SIZE=${{ secrets.EMOJI_ARRAY_SIZE }}" >> .env
+          echo "BCRYPT_COST=${{ secrets.BCRYPT_COST }}" >> .env
+          echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
+          echo "JWT_EXPIRATION_TIME=${{ secrets.JWT_EXPIRATION_TIME }}" >> .env
+          echo "GAME_FINISH_SCORE=${{ secrets.GAME_FINISH_SCORE }}" >> .env
+          echo "GAME_TIME=${{ secrets.GAME_TIME }}" >> .env
+          echo "BOARD_WIDTH=${{ secrets.BOARD_WIDTH }}" >> .env
+          echo "BOARD_HEIGHT=${{ secrets.BOARD_HEIGHT }}" >> .env
+          echo "BALL_SIZE=${{ secrets.BALL_SIZE }}" >> .env
+          echo "BALL_SPEED=${{ secrets.BALL_SPEED }}" >> .env
+          echo "BAR_WIDTH=${{ secrets.BAR_WIDTH }}" >> .env
+          echo "BAR_SPEED=${{ secrets.BAR_SPEED }}" >> .env
+          echo "GAME_FRAME=${{ secrets.GAME_FRAME }}" >> .env
+          echo "GAME_START_DELAY=${{ secrets.GAME_START_DELAY }}" >> .env
+          echo "SALT_STRING=${{ secrets.SALT_STRING }}" >> .env
+          echo "DOCTOR_CUT=${{ secrets.DOCTOR_CUT }}" >> .env
+          echo "MASTER_CUT=${{ secrets.MASTER_CUT }}" >> .env
+          echo "BACHELOR_CUT=${{ secrets.BACHELOR_CUT }}" >> .env
+          echo "STUDENT_CUT=${{ secrets.STUDENT_CUT }}" >> .env
+          echo "GAME_WIN_EXP=${{ secrets.GAME_WIN_EXP }}" >> .env
+          echo "GAME_TIE_EXP=${{ secrets.GAME_TIE_EXP }}" >> .env
+          echo "GAME_LOSE_EXP=${{ secrets.GAME_LOSE_EXP }}" >> .env
+          echo "LEVEL_UP_EXP=${{ secrets.LEVEL_UP_EXP }}" >> .env
+          echo "CRYPTO_ALGORITHM=${{ secrets.CRYPTO_ALGORITHM }}" >> .env
+          echo "CRYPTO_SECRET_IV=${{ secrets.CRYPTO_SECRET_IV }}" >> .env
+          echo "CRYPTO_SECRET_KEY=${{ secrets.CRYPTO_SECRET_KEY }}" >> .env
 
-      # Start the database service
-      # - name: Start database service
-      #   run: docker-compose up -d chat-db
-
-      # Wait for the database service to start
-      # - name: Wait for database service
-      #   run: |
-      #     while ! PGPASSWORD=chat_db_password psql -h localhost -U chat_db_user -d chat-db -c "select 1;" > /dev/null 2>&1; do
-      #       sleep 1
-      #     done
-
-      # # Run database migrations (if applicable)
-      # - name: Run database migrations
-      #   run: npm run db:migrate
-
-      # Run tests
-      # - name: Run tests
-      #   run: npm test
+      - name: Build Docker Image
+        run: docker-compose build
+      
+      - name: Run Docker Container
+        run: docker-compose up -d
+      
+      api gateway는 pass 
+      - name: Test 
+        run: npm test -- --bail
