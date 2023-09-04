@@ -135,8 +135,12 @@ export class DirectMessageService {
       FriendChatManager.generateRoomId(userId, friendId),
     );
 
+    let isChatting = false;
+    this.userFactory.findById(friendId)?.directMessageFriendId.forEach((id) => {
+      if (id === userId) isChatting = true;
+    });
     // 대화방의 마지막 메시지 업데이트
-    if (this.userFactory.findById(friendId)?.directMessageFriendId === userId) {
+    if (isChatting) {
       this.directMessageRoomRepository.updateLastMessageIdByUserIdAndFriendId(
         friendId,
         userId,

@@ -82,8 +82,8 @@ export class ChannelGateWay
     messageId: number,
   ): Promise<void> {
     const user: UserModel = this.userFactory.findById(userId);
-    user.channelSocket?.forEach((socket: string) => {
-      this.server.in(socket).socketsJoin(channelId);
+    user.channelSocket?.forEach((socket: Socket) => {
+      this.server.in(socket.id).socketsJoin(channelId);
     });
     this.channelFactory.join(userId, channelId);
     this.sendNoticeToChannel(userId, channelId, CHAT_JOIN, messageId);
@@ -99,8 +99,8 @@ export class ChannelGateWay
     messageId: number,
   ): Promise<void> {
     const user: UserModel = this.userFactory.findById(userId);
-    user.channelSocket?.forEach((socket: string) => {
-      this.server.in(socket).socketsLeave(channelId);
+    user.channelSocket?.forEach((socket: Socket) => {
+      this.server.in(socket.id).socketsLeave(channelId);
     });
     user.joinedChannel = null;
     this.channelFactory.leave(user.id, channelId);
@@ -121,13 +121,13 @@ export class ChannelGateWay
     channel.users.forEach(async (userId) => {
       const participant: UserModel = this.userFactory.findById(userId);
       if (participant.blockedList.has(user.id)) {
-        participant.channelSocket?.forEach((socket: string) => {
-          blockedList.push(socket);
+        participant.channelSocket?.forEach((socket: Socket) => {
+          blockedList.push(socket.id);
         });
       }
     });
-    user.channelSocket.forEach((socket: string) => {
-      blockedList.push(socket);
+    user.channelSocket.forEach((socket: Socket) => {
+      blockedList.push(socket.id);
     });
 
     this.server?.to(channel.id).except(blockedList).emit(CHAT_MESSAGE, {
@@ -157,7 +157,6 @@ export class ChannelGateWay
     // });
     sendToAllSockets(
       user.channelSocket,
-      this.server,
       CHAT_MESSAGE,
       new MessageModel(message.id, user.nickname, message.content, CHATTYPE_ME),
     );
@@ -191,18 +190,18 @@ export class ChannelGateWay
 
   async sendOutEvent(targetUserId: number, reason: string) {
     const user: UserModel = this.userFactory.findById(targetUserId);
-    sendToAllSockets(user.channelSocket, this.server, 'out', {
+    sendToAllSockets(user.channelSocket, 'out', {
       type: reason,
     });
   }
 
   async sendMuteEvent(targetUserId: number) {
     const user: UserModel = this.userFactory.findById(targetUserId);
-    sendToAllSockets(user.channelSocket, this.server, 'mute', {});
+    sendToAllSockets(user.channelSocket, 'mute', {});
   }
 
   async sendUnMuteEvent(targetUserId: number) {
     const user: UserModel = this.userFactory.findById(targetUserId);
-    sendToAllSockets(user.channelSocket, this.server, 'unmute', {});
+    sendToAllSockets(user.channelSocket, 'unmute', {});
   }
 }

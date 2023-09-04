@@ -17,10 +17,7 @@ import { IsolationLevel, Transactional } from 'typeorm-transactional';
 import { MessageModel } from './dto/message.model';
 import { CHATTYPE_ME, CHATTYPE_OTHERS } from 'src/global/type/type.chat';
 import { GATEWAY_DIRECTMESSAGE } from './type/type.gateway';
-import {
-  getUserFromSocket,
-  sendToAllSockets,
-} from 'src/global/utils/socket.utils';
+import { getUserFromSocket } from 'src/global/utils/socket.utils';
 import { DirectMessage } from 'src/domain/direct-message/direct-message.entity';
 
 @WebSocketGateway({ namespace: 'dm' })
@@ -63,14 +60,8 @@ export class DirectMessageGateway
     const user: UserModel = getUserFromSocket(socket, this.userFactory);
     if (!user) return;
 
-    try {
-      await this.updateLastMessageId(user.id);
-    } catch (e) {
-      console.log('error in disconnect', e);
-    }
-
     this.userFactory.deleteSocket(user.id, GATEWAY_DIRECTMESSAGE, socket);
-    this.userFactory.setDirectMessageFriendId(user.id, null);
+    this.userFactory.deleteDirectMessageFriendId(user.id, socket.id);
   }
 
   /**
@@ -84,11 +75,12 @@ export class DirectMessageGateway
   ): Promise<void> {
     const user: UserModel = this.userFactory.findById(userId);
     const friend: UserModel = this.userFactory.findById(friendId);
+    if (!user || !friend) return;
 
-    if (friend?.directMessageFriendId === user?.id) {
-      sendToAllSockets(
-        friend.dmSocket,
-        this.server,
+    this.server
+      ?.to(FriendChatManager.generateRoomId(userId, friendId))
+      ?.except([...user.dmSocket?.keys()])
+      ?.emit(
         'message',
         new MessageModel(
           message.id,
@@ -97,30 +89,53 @@ export class DirectMessageGateway
           CHATTYPE_OTHERS,
         ),
       );
+    console.log('server', this.server);
+    this.server
+      ?.to(FriendChatManager.generateRoomId(userId, friendId))
+      ?.except([...friend.dmSocket.keys()])
+      ?.emit(
+        'message',
+        new MessageModel(
+          message.id,
+          user?.nickname,
+          message.message,
+          CHATTYPE_ME,
+        ),
+      );
+    // if (friend?.directMessageFriendId === user?.id) {
+    //   sendToAllSockets(
+    //     friend.dmSocket,
+    //     'message',
+    //     new MessageModel(
+    //       message.id,
+    //       user?.nickname,
+    //       message.message,
+    //       CHATTYPE_OTHERS,
+    //     ),
+    //   );
 
-      // friend?.dmSocket?.forEach((socket: Socket) => {
-      //   socket?.emit(
-      //     'message',
-      //     new MessageModel(
-      //       message.id,
-      //       user?.nickname,
-      //       message.message,
-      //       CHATTYPE_OTHERS,
-      //     ),
-      //   );
-      // });
-    }
-    sendToAllSockets(
-      user.dmSocket,
-      this.server,
-      'message',
-      new MessageModel(
-        message.id,
-        user?.nickname,
-        message.message,
-        CHATTYPE_ME,
-      ),
-    );
+    // friend?.dmSocket?.forEach((socket: Socket) => {
+    //   socket?.emit(
+    //     'message',
+    //     new MessageModel(
+    //       message.id,
+    //       user?.nickname,
+    //       message.message,
+    //       CHATTYPE_OTHERS,
+    //     ),
+    //   );
+    // });
+    // }
+    // sendToAllSockets(
+    //   user.dmSocket,
+    //   'message',
+    //   new MessageModel(
+    //     message.id,
+    //     user?.nickname,
+    //     message.message,
+    //     CHATTYPE_ME,
+    //   ),
+    // );
     // user?.dmSocket?.forEach((socket: Socket) => {
     //   socket?.emit(
     //     'message',
@@ -148,10 +163,11 @@ export class DirectMessageGateway
     const user: UserModel = getUserFromSocket(socket, this.userFactory);
     if (!friend || !user) return;
 
-    this.userFactory.setDirectMessageFriendId(user.id, friend?.id);
+    this.userFactory.setDirectMessageFriendId(user.id, friend.id, socket.id);
+    await socket.join(FriendChatManager.generateRoomId(user.id, friend.id));
 
     try {
-      await this.updateLastMessageId(user.id);
+      await this.updateLastMessageId(user.id, friend.id);
     } catch (e) {
       console.log('error in dear', e);
     }
@@ -163,18 +179,18 @@ export class DirectMessageGateway
    * 그리고 해당 친구와의 대화방의 마지막 읽은 메시지 id를 업데이트합니다.
    */
   @Transactional({ isolationLevel: IsolationLevel.REPEATABLE_READ })
-  private async updateLastMessageId(userId: number): Promise<void> {
-    const user: UserModel = this.userFactory.findById(userId);
-    if (!user?.directMessageFriendId) return;
-
+  private async updateLastMessageId(
+    userId: number,
+    friendId: number,
+  ): Promise<void> {
     const lastMessageId: number =
       await this.directMessageRepository.findLastMessageIdByRoomId(
-        FriendChatManager.generateRoomId(user.id, user.directMessageFriendId),
+        FriendChatManager.generateRoomId(userId, friendId),
       );
 
     await this.directMessageRoomRepository.updateLastMessageIdByUserIdAndFriendId(
-      user.id,
-      user.directMessageFriendId,
+      userId,
+      friendId,
       lastMessageId,
     );
   }

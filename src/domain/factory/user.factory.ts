@@ -107,16 +107,16 @@ export class UserFactory {
     const user: UserModel = this.findById(userId);
     switch (type) {
       case GATEWAY_NOTIFICATION:
-        user.notificationSocket.set(socket.id, socket.id);
+        user.notificationSocket.set(socket.id, socket);
         break;
       case GATEWAY_CHANNEL:
-        user.channelSocket.set(socket.id, socket.id);
+        user.channelSocket.set(socket.id, socket);
         break;
       case GATEWAY_FRIEND:
-        user.friendSocket.set(socket.id, socket.id);
+        user.friendSocket.set(socket.id, socket);
         break;
       case GATEWAY_DIRECTMESSAGE:
-        user.dmSocket.set(socket.id, socket.id);
+        user.dmSocket.set(socket.id, socket);
         break;
     }
     if (socket && user.playingGame) {
@@ -144,7 +144,9 @@ export class UserFactory {
         user.dmSocket.delete(socket.id);
         break;
     }
-    if (!user.notificationSocket.size) {
+    if (user.playingGame) {
+      user.status = USERSTATUS_INGAME;
+    } else if (!user.notificationSocket.size) {
       user.status = USERSTATUS_OFFLINE;
     }
   }
@@ -207,8 +209,17 @@ export class UserFactory {
     sender.gameInvite = null;
   }
 
-  setDirectMessageFriendId(userId: number, friendId: number): void {
+  setDirectMessageFriendId(
+    userId: number,
+    friendId: number,
+    socketId: string,
+  ): void {
     const user: UserModel = this.findById(userId);
-    user.directMessageFriendId = friendId;
+    user.directMessageFriendId.set(socketId, friendId);
+  }
+
+  deleteDirectMessageFriendId(userId: number, socketId: string): void {
+    const user: UserModel = this.findById(userId);
+    user.directMessageFriendId.delete(socketId);
   }
 }
