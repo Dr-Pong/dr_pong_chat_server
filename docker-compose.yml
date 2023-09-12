@@ -1,0 +1,40 @@
+version: '3.8'
+services:
+  chatserver:
+    container_name: chatserver
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    ports:
+      - 4000:4000
+    networks:
+      - my-network
+    depends_on:
+      - chat-db
+    environment:
+      - TYPEORM_HOST=chat-db
+    env_file:
+      - ./.env
+    volumes:
+      - chat-db-data:/var/lib/postgresql/data
+
+  chat-db:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: ${CHAT_DB_USER}
+      POSTGRES_PASSWORD: ${CHAT_DB_PASSWORD}
+      POSTGRES_DB: ${CHAT_DB_NAME}
+    ports:
+      - 5433:5432
+    networks:
+      - my-network
+    volumes:
+      - chat-db-data:/var/lib/postgresql/data
+
+networks:
+  my-network:
+    name: my-network
+    driver: bridge
+
+volumes:
+  chat-db-data:
