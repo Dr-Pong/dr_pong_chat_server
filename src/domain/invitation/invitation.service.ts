@@ -175,8 +175,8 @@ export class InvitationService {
     await this.notificationGateWay.inviteGame(senderId, newInvite);
   }
 
-  async deleteGameInvite(deleteDto: DeleteGameInviteDto): Promise<void> {
-    await this.notificationGateWay.deleteGameInvite(deleteDto?.senderId);
+  async deleteGameInviteCancel(deleteDto: DeleteGameInviteDto): Promise<void> {
+    await this.notificationGateWay.cancelGameInvite(deleteDto?.senderId);
   }
 
   async postGameInviteAccept(
@@ -199,7 +199,7 @@ export class InvitationService {
     const invitation: GameInviteModel = receiver.gameInviteList.get(inviteId);
 
     const sender: UserModel = this.userFactory.findById(invitation?.senderId);
-    await this.notificationGateWay.deleteGameInvite(sender.id);
+    await this.notificationGateWay.rejectGameInvite(sender.id);
   }
 
   /**
@@ -284,7 +284,7 @@ export class InvitationService {
       return game;
     } catch (error) {
       console.log(error.errno, error.code, error.message);
-      await this.notificationGateWay.deleteGameInvite(senderId);
+      await this.notificationGateWay.cancelGameInvite(senderId);
       throw new BadRequestException('게임 생성에 실패했습니다.');
     }
   }

@@ -482,7 +482,7 @@ describe('InvitationService', () => {
         receiverId: user2.id,
       };
 
-      await service.deleteGameInvite(deleteDto);
+      await service.deleteGameInviteCancel(deleteDto);
       const savedUserFt: UserModel = userFactory.findById(userData.users[0].id);
       const receivedUserFt: UserModel = userFactory.findById(
         userData.users[1].id,

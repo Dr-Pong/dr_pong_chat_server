@@ -142,13 +142,12 @@ export class NotificationGateWay
     this.userFactory.inviteGame(senderId, receiver.id, invite);
   }
 
-  async deleteGameInvite(senderId: number) {
+  async cancelGameInvite(senderId: number) {
     const sender: UserModel = this.userFactory.findById(senderId);
     const receiver: UserModel = this.userFactory.findById(
       sender?.gameInvite?.receiverId,
     );
     if (!sender || !receiver) return;
-    sendToAllSockets(sender.notificationSocket, 'deleteInvite', {});
     sendToAllSockets(receiver.notificationSocket, 'deleteInvite', {});
     // sender.notificationSocket?.forEach((socket: Socket) => {
     //   socket?.emit('deleteInvite', {});
@@ -156,6 +155,13 @@ export class NotificationGateWay
     // receiver.notificationSocket?.forEach((socket: Socket) => {
     //   socket?.emit('deleteInvite', {});
     // });
+    this.userFactory.deleteGameInviteBySenderId(sender.id);
+  }
+
+  async rejectGameInvite(senderId: number) {
+    const sender: UserModel = this.userFactory.findById(senderId);
+    if (!sender) return;
+    sendToAllSockets(sender.notificationSocket, 'deleteInvite', {});
     this.userFactory.deleteGameInviteBySenderId(sender.id);
   }
 
