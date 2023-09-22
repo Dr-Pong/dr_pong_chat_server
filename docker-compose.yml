@@ -31,6 +31,17 @@ services:
     volumes:
       - chat-db-data:/var/lib/postgresql/data
 
+  nginx:
+    image: nginx
+    build:
+      context: ./nginx
+    restart: always
+    ports:
+      - 443:443
+      - 80:80
+    volumes:
+      - cert_volume:/etc/letsencrypt/
+
 networks:
   my-network:
     name: my-network
@@ -38,3 +49,8 @@ networks:
 
 volumes:
   chat-db-data:
+  cert_volume:
+    driver_opts:
+      type: none
+      o: 'bind'
+      device: '${HOME}/certs'
