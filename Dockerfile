@@ -16,7 +16,7 @@ RUN npm install
 RUN npm run build
 
 # Expose the desired port (replace 3000 with your server's port)
-EXPOSE 4000
+EXPOSE 3000
 
 # Run the server
 CMD [ "npm", "run", "start:prod" ]
