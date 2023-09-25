@@ -39,8 +39,7 @@ export class NotificationGateWay
   async handleConnection(@ConnectedSocket() socket: Socket): Promise<void> {
     const user: UserModel = await getUserFromSocket(socket, this.userFactory);
     if (!user) {
-      console.log('user not found', socket.id);
-      // socket.disconnect();
+      socket.disconnect();
       return;
     }
 
