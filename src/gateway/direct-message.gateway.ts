@@ -89,7 +89,6 @@ export class DirectMessageGateway
           CHATTYPE_OTHERS,
         ),
       );
-    console.log('server', this.server);
     this.server
       ?.to(FriendChatManager.generateRoomId(userId, friendId))
       ?.except([...friend.dmSocket.keys()])
@@ -166,11 +165,7 @@ export class DirectMessageGateway
     this.userFactory.setDirectMessageFriendId(user.id, friend.id, socket.id);
     await socket.join(FriendChatManager.generateRoomId(user.id, friend.id));
 
-    try {
-      await this.updateLastMessageId(user.id, friend.id);
-    } catch (e) {
-      console.log('error in dear', e);
-    }
+    await this.updateLastMessageId(user.id, friend.id);
   }
 
   /**

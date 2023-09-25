@@ -28,7 +28,6 @@ export function getUserFromSocket(
 
   const accesstoken = socket.handshake.auth?.Authorization?.split(' ')[1];
   if (!accesstoken) {
-    console.log('no token', socket.id);
     return null;
   }
   try {
@@ -37,7 +36,6 @@ export function getUserFromSocket(
     const user: UserModel = userFactory.findById(userId);
     return user;
   } catch (e) {
-    console.log(accesstoken, e);
     return null;
   }
 }

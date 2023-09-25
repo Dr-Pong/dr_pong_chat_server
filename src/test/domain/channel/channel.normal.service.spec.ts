@@ -160,10 +160,12 @@ describe('ChannelUserService', () => {
         expect(channelList.channels[0]).toHaveProperty('maxCount');
         expect(channelList).toHaveProperty('currentPage');
         expect(channelList).toHaveProperty('totalPage');
+        expect(channelList.currentPage).toBe(1);
+        expect(channelList.totalPage).toBe(1);
       });
 
       it('[Valid Case] 채팅방 목록 조회(popular)', async () => {
-        await channelData.createBasicChannels(10);
+        await channelData.createBasicChannels(12);
 
         const getPopularPageDto: GetChannelPageDto = {
           page: 1,
@@ -181,6 +183,8 @@ describe('ChannelUserService', () => {
         expect(channelList.channels[0]).toHaveProperty('maxCount');
         expect(channelList).toHaveProperty('currentPage');
         expect(channelList).toHaveProperty('totalPage');
+        expect(channelList.currentPage).toBe(1);
+        expect(channelList.totalPage).toBe(2);
         expect(channelList.channels[0].headCount).toBeGreaterThanOrEqual(
           channelList.channels[1].headCount,
         );

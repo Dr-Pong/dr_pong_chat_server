@@ -66,7 +66,7 @@ export class ChannelRepository {
 
     const page: Page<Channel[]> = new Page();
     page.content = channels;
-    page.totalPage = Math.floor(totalChannels / findDto.count) + 1;
+    page.totalPage = Math.floor(totalChannels / (findDto.count + 1)) + 1;
     page.currentPage =
       findDto.page > page.totalPage ? page.totalPage : findDto.page;
 
@@ -102,7 +102,7 @@ export class ChannelRepository {
 
     const page: Page<Channel[]> = new Page();
     page.content = channels;
-    page.totalPage = Math.floor(totalChannels / findDto.count) + 1;
+    page.totalPage = Math.floor(totalChannels / (findDto.count + 1)) + 1;
     page.currentPage =
       findDto.page > page.totalPage ? page.totalPage : findDto.page;
 
